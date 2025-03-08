@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync, readdirSync } from "fs";
+import {readFileSync} from "fs";
 import YAML from "yaml";
-import { toPascalCase } from "./strings";
+import {toPascalCase} from "./strings";
 
 const IGNORED_ATTRS = [
   "availability",
@@ -46,18 +46,19 @@ type MqttEntity = {
 };
 
 export function generateMqttEntityModel(
+  basedir: string,
   entityName: string,
-  docFile: string
 ): MqttEntity {
-  console.log(entityName, docFile);
+  const docFile = `${basedir}/${entityName}.md`;
+  const modelFile = `${basedir}/${entityName}.yml`;
+  console.log(entityName, docFile, modelFile);
   const docContent = readFileSync(docFile).toString();
+  const modelContent = readFileSync(modelFile).toString();
 
-  const modelDescriptorYaml =
-    /{% configuration %}([^]*?){% endconfiguration %}/gm.exec(docContent);
   try {
-    const modelDescriptor = YAML.parse(modelDescriptorYaml!![1]);
+    const modelDescriptor = YAML.parse(modelContent);
     const entries = Object.entries(modelDescriptor)
-      .filter(([name, attrs]) => !IGNORED_ATTRS.includes(name));
+      .filter(([name, _attrs]) => !IGNORED_ATTRS.includes(name));
     for (const [name, attrs] of entries) {
       const attrsFieldAttributes = attrs as FieldAttributes
       appendRustType(name, attrsFieldAttributes);
@@ -68,12 +69,12 @@ export function generateMqttEntityModel(
 
     return {
       entityName,
-      entityDoc: "", //docContent,
-      imports: new Set(entries.map(([name, attrs]) => attrs.import).filter(importInstruction => !!importInstruction)),
+      entityDoc: docContent,
+      imports: new Set(entries.map(([_name, attrs]) => attrs.import).filter(importInstruction => !!importInstruction)),
       properties: Object.fromEntries(entries),
     };
   } catch (e) {
-    console.error(modelDescriptorYaml!![1]);
+    console.error(modelContent);
     throw e;
   }
 }

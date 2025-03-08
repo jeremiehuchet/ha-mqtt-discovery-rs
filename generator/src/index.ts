@@ -7,39 +7,9 @@ import { toPascalCase } from "./strings";
 
 const BASEDIR = process.env.DEVENV_ROOT;
 
-const ENTITIES = [
-  "alarm_control_panel",
-  "binary_sensor",
-  "button",
-  "camera",
-  "climate",
-  "cover",
-  "device_tracker",
-  "device_trigger",
-  "event",
-  "fan",
-  "humidifier",
-  "image",
-  "lawn_mower",
-  //"light",
-  "lock",
-  "number",
-  "scene",
-  "select",
-  "sensor",
-  "siren",
-  "switch",
-  "tag",
-  "text",
-  "update",
-  "vacuum",
-  "valve",
-  "water_heater",
-];
-
 Handlebars.registerHelper("abbreviation", (name: string) => {
   const abbreviation = Object.entries(allAbbreviations).find(
-    ([shortName, fullName]) => name === fullName
+    ([_shortName, fullName]) => name === fullName
   );
   return new Handlebars.SafeString(abbreviation ? abbreviation[0] : name);
 });
@@ -51,11 +21,11 @@ Handlebars.registerHelper("comment", (text: string) => {
 Handlebars.registerHelper("toPascalCase", toPascalCase);
 
 // generate entities types
-for (const entityName of ENTITIES) {
-  const model = generateMqttEntityModel(
-    entityName,
-    `${BASEDIR}/generator/input/${entityName}.mqtt.markdown`
-  );
+const entities = readdirSync(`${BASEDIR}/generator/input/`)
+    .filter(fileName => fileName.endsWith('.md'))
+    .map(fileName => fileName.replace(/\.md/, ''));
+for (const entityName of entities) {
+  const model = generateMqttEntityModel(`${BASEDIR}/generator/input/`, entityName);
   const template = readFileSync(
     `${BASEDIR}/generator/src/rust_model.mustache`
   ).toString();
@@ -83,5 +53,5 @@ writeFileSync(`${BASEDIR}/src/mqtt/device_classes.rs`, output);
 const templateMod = readFileSync(
   `${BASEDIR}/generator/src/rust_mod.mustache`
 ).toString();
-const outputMod = Handlebars.compile(templateMod)(ENTITIES);
+const outputMod = Handlebars.compile(templateMod)(entities);
 writeFileSync(`${BASEDIR}/src/mqtt/mod.rs`, outputMod);

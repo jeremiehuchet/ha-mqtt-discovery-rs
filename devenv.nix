@@ -2,8 +2,10 @@
 
 {
   packages = [
+    pkgs.json2yaml
     pkgs.openssl
     pkgs.pkg-config
+    pkgs.yaml2json
     pkgs.vscode
   ];
 
@@ -20,15 +22,33 @@
 
   scripts.update-ha-docs-src.exec = ''
     set -e
-    rm -rf $DEVENV_ROOT/generator/input
-    mkdir -p $DEVENV_ROOT/generator/input $DEVENV_ROOT/generator/input/device_classes
-    cp -r ${inputs.homeassistant-docs}/source/_integrations/*.mqtt.markdown $DEVENV_ROOT/generator/input/
-    cp $(grep -lri '^###* Device Class' ${inputs.homeassistant-docs}/source/_integrations/) $DEVENV_ROOT/generator/input/device_classes/
+    rm -rf "$DEVENV_ROOT/generator/input"
+    mkdir -p "$DEVENV_ROOT/generator/input" "$DEVENV_ROOT/generator/input/device_classes"
+    for entity_doc in ${inputs.homeassistant-docs}/source/_integrations/*.mqtt.markdown ; do
+      entity_name=$(basename "''${entity_doc%.mqtt.markdown}")
+      cat "$entity_doc" \
+          | sed '/^{% configuration %}$/,/^{% endconfiguration %}$/d' \
+          | sed 's/{% term "[\\"]*" %}/\\1/g' \
+          | sed 's/^{% caution %}$/🚨 Caution\\/g' \
+          | sed 's/^{% important %}$/⚠ Important\\/g' \
+          | sed 's/^{% note %}$/🛈 Note\\/g' \
+          > "$DEVENV_ROOT/generator/input/''${entity_name}.md"
+      for tag in caution important note raw ; do
+          sed -i "/^{% $tag %}$/d" "$DEVENV_ROOT/generator/input/''${entity_name}.md"
+          sed -i "/^{% end$tag %}$/d" "$DEVENV_ROOT/generator/input/''${entity_name}.md"
+      done
+      cat "$entity_doc" \
+          | sed '1,/^{% configuration %}$/d' \
+          | sed '/^{% endconfiguration %}$/,$d' \
+          | yaml2json | json2yaml \
+          > "$DEVENV_ROOT/generator/input/''${entity_name}.yml"
+    done
+    cp $(grep -lri '^###* Device Class' '${inputs.homeassistant-docs}/source/_integrations/') "$DEVENV_ROOT/generator/input/device_classes/"
     chmod -R +w generator/input/
   '';
 
   scripts.generate-types.exec = ''
-    bun run generator/src/index.ts
-    find src -type f -exec rustfmt --edition 2024 {} \+
+    bun run $DEVENV_ROOT/generator/src/index.ts
+    find $DEVENV_ROOT/src -type f -exec rustfmt --edition 2024 {} \+
   '';
 }
