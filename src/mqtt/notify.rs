@@ -4,26 +4,24 @@ use crate::Entity;
 use serde_derive::Serialize;
 
 /// ---
-/// title: "MQTT Text"
-/// description: "Instructions on how to interact with a device exposing text capability through MQTT from within Home Assistant."
+/// title: "MQTT notify"
+/// description: "Instructions on how to integrate MQTT notify entities into Home Assistant."
 /// ha_category:
-///   - Text
-/// ha_release: "2022.12"
+///   - Notifications
+/// ha_release: 2024.5
 /// ha_iot_class: Configurable
 /// ha_domain: mqtt
 /// ---
 ///
-/// The `mqtt` Text platform allows you to integrate devices that show text that can be set remotely. Optionally the text state can be monitored too using MQTT.
+/// The **MQTT notify** platform lets you send an MQTT message when the `send_message` action is called. This can be used to expose a action of a remote device that allows processing a message, such as showing it on a screen.
 ///
 /// ## Configuration
-///
-/// To enable MQTT text platform in your installation, add the following to your {% term "`configuration.yaml`" %} file:
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
 /// mqtt:
-///   - text:
-///       command_topic: command-topic
+///   - notify:
+///       command_topic: "home/living_room/status_screen/notifications"
 /// ```
 ///
 ///
@@ -32,25 +30,27 @@ use serde_derive::Serialize;
 ///
 /// ## Examples
 ///
-/// This is an example of a manual configured MQTT `text` item.
+/// In this section, you will find some real-life examples of how to use this feature.
 ///
+/// ### Full configuration
+///
+/// The example below shows a full configuration for a notify entity.
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
 /// mqtt:
-///   - text:
-///       name: "Remote LCD screen"
-///       icon: mdi:ab-testing
-///       mode: "text"
-///       command_topic: "txt/cmd"
-///       state_topic: "txt/state"
-///       min: 2
-///       max: 20
+///   - notify:
+///       unique_id: living_room_stat_scr01
+///       name: "Living room status screen"
+///       command_topic: "home/living_room/status_screen/notifications"
+///       availability:
+///         - topic: "home/living_room/status_screen/available"
+///       qos: 0
+///       retain: false
 /// ```
 ///
-///
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Text {
+pub struct Notify {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
@@ -76,15 +76,15 @@ pub struct Text {
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub command_template: Option<String>,
 
-    /// The MQTT topic to publish the text value that is set.
-    #[serde(rename = "cmd_t")]
-    pub command_topic: String,
+    /// The MQTT topic to publish send message commands at.
+    #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    pub command_topic: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
     #[serde(rename = "en", skip_serializing_if = "Option::is_none")]
     pub enabled_by_default: Option<bool>,
 
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
+    /// The encoding of the published messages.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
     pub encoding: Option<String>,
 
@@ -92,41 +92,25 @@ pub struct Text {
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
     pub entity_picture: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
+    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
+    #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    pub icon: Option<String>,
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current select state when a message is received on this topic.
+    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
     pub json_attributes_topic: Option<String>,
 
-    /// The maximum size of a text being set or received (maximum is 255).
-    #[serde(rename = "max", skip_serializing_if = "Option::is_none")]
-    pub max: Option<i32>,
-
-    /// The minimum size of a text being set or received.
-    #[serde(rename = "min", skip_serializing_if = "Option::is_none")]
-    pub min: Option<i32>,
-
-    /// The mode off the text entity. Must be either `text` or `password`.
-    #[serde(rename = "mode", skip_serializing_if = "Option::is_none")]
-    pub mode: Option<String>,
-
-    /// The name of the text entity. Can be set to `null` if only the device name is relevant.
+    /// The name to use when displaying this notify entity. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
     /// Used instead of `name` for automatic generation of `entity_id`
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
-
-    /// A valid regular expression the text being set or received must match with.
-    #[serde(rename = "ptrn", skip_serializing_if = "Option::is_none")]
-    pub pattern: Option<String>,
-
-    /// Must be `text`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -136,20 +120,12 @@ pub struct Text {
     #[serde(rename = "ret", skip_serializing_if = "Option::is_none")]
     pub retain: Option<bool>,
 
-    /// The MQTT topic subscribed to receive text state updates. Text state updates should match the `pattern` (if set) and meet the size constraints `min` and `max`. Can be used with `value_template` to render the incoming payload to a text update.
-    #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
-    pub state_topic: Option<String>,
-
-    /// An ID that uniquely identifies this Select. If two Selects have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
+    /// An ID that uniquely identifies this notify entity. If two notify entities have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
     pub unique_id: Option<String>,
-
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the text state value from the payload received on `state_topic`.
-    #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
-    pub value_template: Option<String>,
 }
 
-impl Text {
+impl Notify {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
@@ -187,9 +163,9 @@ impl Text {
         self
     }
 
-    /// The MQTT topic to publish the text value that is set.
+    /// The MQTT topic to publish send message commands at.
     pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
+        self.command_topic = Some(command_topic.into());
         self
     }
 
@@ -199,7 +175,7 @@ impl Text {
         self
     }
 
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
+    /// The encoding of the published messages.
     pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
         self.encoding = Some(encoding.into());
         self
@@ -211,7 +187,13 @@ impl Text {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
+    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
+    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
+        self.icon = Some(icon.into());
+        self
+    }
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -220,31 +202,13 @@ impl Text {
         self
     }
 
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current select state when a message is received on this topic.
+    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
         self.json_attributes_topic = Some(json_attributes_topic.into());
         self
     }
 
-    /// The maximum size of a text being set or received (maximum is 255).
-    pub fn max(mut self, max: i32) -> Self {
-        self.max = Some(max);
-        self
-    }
-
-    /// The minimum size of a text being set or received.
-    pub fn min(mut self, min: i32) -> Self {
-        self.min = Some(min);
-        self
-    }
-
-    /// The mode off the text entity. Must be either `text` or `password`.
-    pub fn mode<T: Into<String>>(mut self, mode: T) -> Self {
-        self.mode = Some(mode.into());
-        self
-    }
-
-    /// The name of the text entity. Can be set to `null` if only the device name is relevant.
+    /// The name to use when displaying this notify entity. Can be set to `null` if only the device name is relevant.
     pub fn name<T: Into<String>>(mut self, name: T) -> Self {
         self.name = Some(name.into());
         self
@@ -253,18 +217,6 @@ impl Text {
     /// Used instead of `name` for automatic generation of `entity_id`
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// A valid regular expression the text being set or received must match with.
-    pub fn pattern<T: Into<String>>(mut self, pattern: T) -> Self {
-        self.pattern = Some(pattern.into());
-        self
-    }
-
-    /// Must be `text`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
         self
     }
 
@@ -280,26 +232,14 @@ impl Text {
         self
     }
 
-    /// The MQTT topic subscribed to receive text state updates. Text state updates should match the `pattern` (if set) and meet the size constraints `min` and `max`. Can be used with `value_template` to render the incoming payload to a text update.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this Select. If two Selects have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
+    /// An ID that uniquely identifies this notify entity. If two notify entities have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
         self.unique_id = Some(unique_id.into());
         self
     }
-
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the text state value from the payload received on `state_topic`.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
 }
 
-impl Default for Text {
+impl Default for Notify {
     fn default() -> Self {
         Self {
             topic_prefix: Default::default(),
@@ -312,26 +252,20 @@ impl Default for Text {
             enabled_by_default: Default::default(),
             encoding: Default::default(),
             entity_picture: Default::default(),
+            icon: Default::default(),
             json_attributes_template: Default::default(),
             json_attributes_topic: Default::default(),
-            max: Default::default(),
-            min: Default::default(),
-            mode: Default::default(),
             name: Default::default(),
             object_id: Default::default(),
-            pattern: Default::default(),
-            platform: "text".to_string(),
             qos: Default::default(),
             retain: Default::default(),
-            state_topic: Default::default(),
             unique_id: Default::default(),
-            value_template: Default::default(),
         }
     }
 }
 
-impl From<Text> for Entity {
-    fn from(value: Text) -> Self {
-        Entity::Text(value)
+impl From<Notify> for Entity {
+    fn from(value: Notify) -> Self {
+        Entity::Notify(value)
     }
 }

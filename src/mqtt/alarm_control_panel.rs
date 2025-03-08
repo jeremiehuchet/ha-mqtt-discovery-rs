@@ -3,6 +3,124 @@ use super::common::{Availability, Device, EntityCategory, Origin};
 use crate::Entity;
 use serde_derive::Serialize;
 
+/// ---
+/// title: "MQTT Alarm control panel"
+/// description: "Instructions on how to integrate MQTT capable alarm panels into Home Assistant."
+/// ha_category:
+///   - Alarm
+/// ha_release: 0.7.4
+/// ha_iot_class: Configurable
+/// ha_domain: mqtt
+/// related:
+///   - docs: /docs/configuration/
+///     title: Configuration file
+/// ---
+///
+/// The `mqtt` alarm panel {% term integration %} enables the possibility to control MQTT capable alarm panels. The Alarm icon will change state after receiving a new state from `state_topic`. If these messages are published with *RETAIN* flag, the MQTT alarm panel will receive an instant state update after subscription and will start with the correct state. Otherwise, the initial state will be `unknown`.
+///
+/// The {% term integration %} will accept the following states from your Alarm Panel (in lower case):
+///
+/// - `disarmed`
+/// - `armed_home`
+/// - `armed_away`
+/// - `armed_night`
+/// - `armed_vacation`
+/// - `armed_custom_bypass`
+/// - `pending`
+/// - `triggered`
+/// - `arming`
+/// - `disarming`
+///
+/// The {% term integration %} can control your Alarm Panel by publishing to the `command_topic` when a user interacts with the Home Assistant frontend.
+///
+/// ## Configuration
+///
+/// To enable this {% term integration %}, add the following lines to your {% term "`configuration.yaml`" %} file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - alarm_control_panel:
+///       state_topic: "home/alarm"
+///       command_topic: "home/alarm/set"
+/// ```
+///
+///
+/// ## Examples
+///
+/// In this section you find some real-life examples of how to use this alarm control panel.
+///
+/// ### Configuration with partial feature support
+///
+/// The example below shows a full configuration with an alarm panel that only supports the `arm_home` and `arm_away` features.
+///
+///
+/// ```yaml
+/// # Example with partial feature support
+/// mqtt:
+///   - alarm_control_panel:
+///       name: "Alarm Panel"
+///       supported_features:
+///         - arm_home
+///         - arm_away
+///       state_topic: "alarmdecoder/panel"
+///       command_topic: "alarmdecoder/panel/set"
+/// ```
+///
+///
+/// ### Configuration with local code validation
+///
+/// The example below shows a full configuration with local code validation.
+///
+///
+/// ```yaml
+/// # Example using text based code with local validation configuration.yaml
+/// mqtt:
+///   - alarm_control_panel:
+///       name: "Alarm Panel With Numeric Keypad"
+///       state_topic: "alarmdecoder/panel"
+///       value_template: "{{value_json.state}}"
+///       command_topic: "alarmdecoder/panel/set"
+///       code: mys3cretc0de
+/// ```
+///
+///
+/// ### Configurations with remote code validation
+///
+/// The example below shows a full configuration with remote code validation and `command_template`.
+///
+///
+/// ```yaml
+/// # Example using text code with remote validation configuration.yaml
+/// mqtt:
+///   - alarm_control_panel:
+///       name: "Alarm Panel With Text Code Dialog"
+///       state_topic: "alarmdecoder/panel"
+///       value_template: "{{ value_json.state }}"
+///       command_topic: "alarmdecoder/panel/set"
+///       code: REMOTE_CODE_TEXT
+///       command_template: >
+///         { "action": "{{ action }}", "code": "{{ code }}" }
+/// ```
+///
+/// ```yaml
+/// # Example using numeric code with remote validation configuration.yaml
+/// mqtt:
+///   - alarm_control_panel:
+///       name: "Alarm Panel With Numeric Keypad"
+///       state_topic: "alarmdecoder/panel"
+///       value_template: "{{ value_json.state }}"
+///       command_topic: "alarmdecoder/panel/set"
+///       code: REMOTE_CODE
+///       command_template: >
+///         { "action": "{{ action }}", "code": "{{ code }}" }
+/// ```
+///
+///
+/// 🚨 Caution\
+/// When your MQTT connection is not secured, this will send your secret code over the network unprotected!
+///  
 ///
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct AlarmControlPanel {
@@ -87,6 +205,10 @@ pub struct AlarmControlPanel {
     #[serde(rename = "pl_arm_away", skip_serializing_if = "Option::is_none")]
     pub payload_arm_away: Option<String>,
 
+    /// The payload to set armed-custom-bypass mode on your Alarm Panel.
+    #[serde(rename = "pl_arm_custom_b", skip_serializing_if = "Option::is_none")]
+    pub payload_arm_custom_bypass: Option<String>,
+
     /// The payload to set armed-home mode on your Alarm Panel.
     #[serde(rename = "pl_arm_home", skip_serializing_if = "Option::is_none")]
     pub payload_arm_home: Option<String>,
@@ -98,10 +220,6 @@ pub struct AlarmControlPanel {
     /// The payload to set armed-vacation mode on your Alarm Panel.
     #[serde(rename = "pl_arm_vacation", skip_serializing_if = "Option::is_none")]
     pub payload_arm_vacation: Option<String>,
-
-    /// The payload to set armed-custom-bypass mode on your Alarm Panel.
-    #[serde(rename = "pl_arm_custom_b", skip_serializing_if = "Option::is_none")]
-    pub payload_arm_custom_bypass: Option<String>,
 
     /// The payload to disarm your Alarm Panel.
     #[serde(rename = "pl_disarm", skip_serializing_if = "Option::is_none")]
@@ -265,6 +383,15 @@ impl AlarmControlPanel {
         self
     }
 
+    /// The payload to set armed-custom-bypass mode on your Alarm Panel.
+    pub fn payload_arm_custom_bypass<T: Into<String>>(
+        mut self,
+        payload_arm_custom_bypass: T,
+    ) -> Self {
+        self.payload_arm_custom_bypass = Some(payload_arm_custom_bypass.into());
+        self
+    }
+
     /// The payload to set armed-home mode on your Alarm Panel.
     pub fn payload_arm_home<T: Into<String>>(mut self, payload_arm_home: T) -> Self {
         self.payload_arm_home = Some(payload_arm_home.into());
@@ -280,15 +407,6 @@ impl AlarmControlPanel {
     /// The payload to set armed-vacation mode on your Alarm Panel.
     pub fn payload_arm_vacation<T: Into<String>>(mut self, payload_arm_vacation: T) -> Self {
         self.payload_arm_vacation = Some(payload_arm_vacation.into());
-        self
-    }
-
-    /// The payload to set armed-custom-bypass mode on your Alarm Panel.
-    pub fn payload_arm_custom_bypass<T: Into<String>>(
-        mut self,
-        payload_arm_custom_bypass: T,
-    ) -> Self {
-        self.payload_arm_custom_bypass = Some(payload_arm_custom_bypass.into());
         self
     }
 
@@ -370,10 +488,10 @@ impl Default for AlarmControlPanel {
             name: Default::default(),
             object_id: Default::default(),
             payload_arm_away: Default::default(),
+            payload_arm_custom_bypass: Default::default(),
             payload_arm_home: Default::default(),
             payload_arm_night: Default::default(),
             payload_arm_vacation: Default::default(),
-            payload_arm_custom_bypass: Default::default(),
             payload_disarm: Default::default(),
             payload_trigger: Default::default(),
             platform: "alarm_control_panel".to_string(),

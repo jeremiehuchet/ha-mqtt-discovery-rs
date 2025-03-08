@@ -5,6 +5,100 @@ use crate::Entity;
 pub use rust_decimal::Decimal;
 use serde_derive::Serialize;
 
+/// ---
+/// title: "MQTT HVAC"
+/// description: "Instructions on how to integrate MQTT HVAC into Home Assistant."
+/// ha_category:
+///   - Climate
+/// ha_release: 0.55
+/// ha_iot_class: Local Polling
+/// ha_domain: mqtt
+/// ---
+///
+/// The `mqtt` climate platform lets you control your MQTT enabled HVAC devices.
+///
+/// ## Configuration
+///
+/// To enable this climate platform in your installation, first add the following to your {% term "`configuration.yaml`" %} file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - climate:
+///       name: Study
+///       mode_command_topic: "study/ac/mode/set"
+/// ```
+///
+///
+/// ## Optimistic mode
+///
+/// If a property works in *optimistic mode* (when the corresponding state topic is not set), Home Assistant will assume that any state changes published to the command topics did work and change the internal state of the entity immediately after publishing to the command topic. If it does not work in optimistic mode, the internal state of the entity is only updated when the requested update is confirmed by the device through the state topic. You can enforce optimistic mode by setting the `optimistic` option to `true`. When set, the internal state will always be updated, even when a state topic is defined.
+///
+/// ## Using templates
+///
+/// For all `*_state_topic`s, a template can be specified that will be used to render the incoming payloads on these topics. Also, a default template that applies to all state topics can be specified as `value_template`. This can be useful if you received payloads are e.g., in JSON format. Since in JSON, a quoted string (e.g., `"foo"`) is just a string, this can also be used for unquoting.
+///
+/// Say you receive the operation mode `"auto"` via your `mode_state_topic`, but the mode is actually called just `auto`, here's what you could do:
+///
+///
+/// ```yaml
+/// mqtt:
+///   - climate:
+///       name: Study
+///       modes:
+///         - "off"
+///         - "heat"
+///         - "auto"
+///       mode_command_topic: "study/ac/mode/set"
+///       mode_state_topic: "study/ac/mode/state"
+///       mode_state_template: "{{ value_json }}"
+/// ```
+///
+///
+/// This will parse the incoming `"auto"` as JSON, resulting in `auto`. Obviously, in this case you could also just set `value_template: {% raw %}"{{ value_json }}"{% endraw %}`.
+///
+/// Similarly for `*_command_topic`s, a template can be specified to render the outgoing payloads on these topics.
+///
+/// ## Example
+///
+/// A full configuration example looks like the one below.
+///
+///
+/// ```yaml
+/// # Full example configuration.yaml entry
+/// mqtt:
+///   - climate:
+///       name: Study
+///       modes:
+///         - "off"
+///         - "cool"
+///         - "fan_only"
+///       swing_horizontal_modes:
+///         - "on"
+///         - "off"
+///       swing_modes:
+///         - "on"
+///         - "off"
+///       fan_modes:
+///         - "high"
+///         - "medium"
+///         - "low"
+///       preset_modes:
+///         - "eco"
+///         - "sleep"
+///         - "activity"
+///       power_command_topic: "study/ac/power/set"
+///       preset_mode_command_topic: "study/ac/preset_mode/set"
+///       mode_command_topic: "study/ac/mode/set"
+///       mode_command_template: "{{ value if value=="off" else "on" }}"
+///       temperature_command_topic: "study/ac/temperature/set"
+///       fan_mode_command_topic: "study/ac/fan/set"
+///       swing_horizontal_mode_command_topic: "study/ac/swingH/set"
+///       swing_mode_command_topic: "study/ac/swing/set"
+///       precision: 1.0
+/// ```
+///
 ///
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Climate {
@@ -91,13 +185,13 @@ pub struct Climate {
     #[serde(rename = "fan_modes", skip_serializing_if = "Option::is_none")]
     pub fan_modes: Option<Vec<String>>,
 
-    /// Set the initial target temperature. The default value depends on the temperature unit and will be 21° or 69.8°F.
-    #[serde(rename = "init", skip_serializing_if = "Option::is_none")]
-    pub initial: Option<Decimal>,
-
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
+
+    /// Set the initial target temperature. The default value depends on the temperature unit and will be 21° or 69.8°F.
+    #[serde(rename = "init", skip_serializing_if = "Option::is_none")]
+    pub initial: Option<Decimal>,
 
     /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
@@ -209,6 +303,41 @@ pub struct Climate {
     #[serde(rename = "ret", skip_serializing_if = "Option::is_none")]
     pub retain: Option<bool>,
 
+    /// A template to render the value sent to the `swing_horizontal_mode_command_topic` with.
+    #[serde(
+        rename = "swing_horizontal_mode_command_template",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub swing_horizontal_mode_command_template: Option<String>,
+
+    /// The MQTT topic to publish commands to change the swing horizontal mode.
+    #[serde(
+        rename = "swing_horizontal_mode_command_topic",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub swing_horizontal_mode_command_topic: Option<String>,
+
+    /// A template to render the value received on the `swing_horizontal_mode_state_topic` with.
+    #[serde(
+        rename = "swing_horizontal_mode_state_template",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub swing_horizontal_mode_state_template: Option<String>,
+
+    /// The MQTT topic to subscribe for changes of the HVAC swing horizontal mode. If this is not set, the swing horizontal mode works in optimistic mode (see below).
+    #[serde(
+        rename = "swing_horizontal_mode_state_topic",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub swing_horizontal_mode_state_topic: Option<String>,
+
+    /// A list of supported swing horizontal modes.
+    #[serde(
+        rename = "swing_horizontal_modes",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub swing_horizontal_modes: Option<Vec<String>>,
+
     /// A template to render the value sent to the `swing_mode_command_topic` with.
     #[serde(rename = "swing_mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub swing_mode_command_template: Option<String>,
@@ -240,13 +369,17 @@ pub struct Climate {
     #[serde(rename = "hum_cmd_t", skip_serializing_if = "Option::is_none")]
     pub target_humidity_command_topic: Option<String>,
 
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the climate `target_humidity` state.
+    #[serde(rename = "hum_state_tpl", skip_serializing_if = "Option::is_none")]
+    pub target_humidity_state_template: Option<String>,
+
     /// The MQTT topic subscribed to receive the target humidity. If this is not set, the target humidity works in optimistic mode (see below). A `"None"` value received will reset the target humidity. Empty values (`'''`) will be ignored.
     #[serde(rename = "hum_stat_t", skip_serializing_if = "Option::is_none")]
     pub target_humidity_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the climate `target_humidity` state.
-    #[serde(rename = "hum_state_tpl", skip_serializing_if = "Option::is_none")]
-    pub target_humidity_state_template: Option<String>,
+    /// Step size for temperature set point.
+    #[serde(rename = "temp_step", skip_serializing_if = "Option::is_none")]
+    pub temp_step: Option<Decimal>,
 
     /// A template to render the value sent to the `temperature_command_topic` with.
     #[serde(rename = "temp_cmd_tpl", skip_serializing_if = "Option::is_none")]
@@ -299,10 +432,6 @@ pub struct Climate {
     /// Defines the temperature unit of the device, `C` or `F`. If this is not set, the temperature unit is set to the system temperature unit.
     #[serde(rename = "temp_unit", skip_serializing_if = "Option::is_none")]
     pub temperature_unit: Option<TemperatureUnit>,
-
-    /// Step size for temperature set point.
-    #[serde(rename = "temp_step", skip_serializing_if = "Option::is_none")]
-    pub temp_step: Option<Decimal>,
 
     /// An ID that uniquely identifies this HVAC device. If two HVAC devices have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
@@ -441,15 +570,15 @@ impl Climate {
         self
     }
 
-    /// Set the initial target temperature. The default value depends on the temperature unit and will be 21° or 69.8°F.
-    pub fn initial(mut self, initial: Decimal) -> Self {
-        self.initial = Some(initial);
-        self
-    }
-
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
         self.icon = Some(icon.into());
+        self
+    }
+
+    /// Set the initial target temperature. The default value depends on the temperature unit and will be 21° or 69.8°F.
+    pub fn initial(mut self, initial: Decimal) -> Self {
+        self.initial = Some(initial);
         self
     }
 
@@ -621,6 +750,58 @@ impl Climate {
         self
     }
 
+    /// A template to render the value sent to the `swing_horizontal_mode_command_topic` with.
+    pub fn swing_horizontal_mode_command_template<T: Into<String>>(
+        mut self,
+        swing_horizontal_mode_command_template: T,
+    ) -> Self {
+        self.swing_horizontal_mode_command_template =
+            Some(swing_horizontal_mode_command_template.into());
+        self
+    }
+
+    /// The MQTT topic to publish commands to change the swing horizontal mode.
+    pub fn swing_horizontal_mode_command_topic<T: Into<String>>(
+        mut self,
+        swing_horizontal_mode_command_topic: T,
+    ) -> Self {
+        self.swing_horizontal_mode_command_topic = Some(swing_horizontal_mode_command_topic.into());
+        self
+    }
+
+    /// A template to render the value received on the `swing_horizontal_mode_state_topic` with.
+    pub fn swing_horizontal_mode_state_template<T: Into<String>>(
+        mut self,
+        swing_horizontal_mode_state_template: T,
+    ) -> Self {
+        self.swing_horizontal_mode_state_template =
+            Some(swing_horizontal_mode_state_template.into());
+        self
+    }
+
+    /// The MQTT topic to subscribe for changes of the HVAC swing horizontal mode. If this is not set, the swing horizontal mode works in optimistic mode (see below).
+    pub fn swing_horizontal_mode_state_topic<T: Into<String>>(
+        mut self,
+        swing_horizontal_mode_state_topic: T,
+    ) -> Self {
+        self.swing_horizontal_mode_state_topic = Some(swing_horizontal_mode_state_topic.into());
+        self
+    }
+
+    /// A list of supported swing horizontal modes.
+    pub fn swing_horizontal_modes<T: Into<String>>(
+        mut self,
+        swing_horizontal_modes: Vec<T>,
+    ) -> Self {
+        self.swing_horizontal_modes = Some(
+            swing_horizontal_modes
+                .into_iter()
+                .map(|v| v.into())
+                .collect(),
+        );
+        self
+    }
+
     /// A template to render the value sent to the `swing_mode_command_topic` with.
     pub fn swing_mode_command_template<T: Into<String>>(
         mut self,
@@ -678,6 +859,15 @@ impl Climate {
         self
     }
 
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the climate `target_humidity` state.
+    pub fn target_humidity_state_template<T: Into<String>>(
+        mut self,
+        target_humidity_state_template: T,
+    ) -> Self {
+        self.target_humidity_state_template = Some(target_humidity_state_template.into());
+        self
+    }
+
     /// The MQTT topic subscribed to receive the target humidity. If this is not set, the target humidity works in optimistic mode (see below). A `"None"` value received will reset the target humidity. Empty values (`'''`) will be ignored.
     pub fn target_humidity_state_topic<T: Into<String>>(
         mut self,
@@ -687,12 +877,9 @@ impl Climate {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the climate `target_humidity` state.
-    pub fn target_humidity_state_template<T: Into<String>>(
-        mut self,
-        target_humidity_state_template: T,
-    ) -> Self {
-        self.target_humidity_state_template = Some(target_humidity_state_template.into());
+    /// Step size for temperature set point.
+    pub fn temp_step(mut self, temp_step: Decimal) -> Self {
+        self.temp_step = Some(temp_step);
         self
     }
 
@@ -807,12 +994,6 @@ impl Climate {
         self
     }
 
-    /// Step size for temperature set point.
-    pub fn temp_step(mut self, temp_step: Decimal) -> Self {
-        self.temp_step = Some(temp_step);
-        self
-    }
-
     /// An ID that uniquely identifies this HVAC device. If two HVAC devices have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
         self.unique_id = Some(unique_id.into());
@@ -848,8 +1029,8 @@ impl Default for Climate {
             fan_mode_state_template: Default::default(),
             fan_mode_state_topic: Default::default(),
             fan_modes: Default::default(),
-            initial: Default::default(),
             icon: Default::default(),
+            initial: Default::default(),
             json_attributes_template: Default::default(),
             json_attributes_topic: Default::default(),
             max_humidity: Default::default(),
@@ -876,6 +1057,11 @@ impl Default for Climate {
             preset_modes: Default::default(),
             qos: Default::default(),
             retain: Default::default(),
+            swing_horizontal_mode_command_template: Default::default(),
+            swing_horizontal_mode_command_topic: Default::default(),
+            swing_horizontal_mode_state_template: Default::default(),
+            swing_horizontal_mode_state_topic: Default::default(),
+            swing_horizontal_modes: Default::default(),
             swing_mode_command_template: Default::default(),
             swing_mode_command_topic: Default::default(),
             swing_mode_state_template: Default::default(),
@@ -883,8 +1069,9 @@ impl Default for Climate {
             swing_modes: Default::default(),
             target_humidity_command_template: Default::default(),
             target_humidity_command_topic: Default::default(),
-            target_humidity_state_topic: Default::default(),
             target_humidity_state_template: Default::default(),
+            target_humidity_state_topic: Default::default(),
+            temp_step: Default::default(),
             temperature_command_template: Default::default(),
             temperature_command_topic: Default::default(),
             temperature_high_command_template: Default::default(),
@@ -898,7 +1085,6 @@ impl Default for Climate {
             temperature_state_template: Default::default(),
             temperature_state_topic: Default::default(),
             temperature_unit: Default::default(),
-            temp_step: Default::default(),
             unique_id: Default::default(),
             value_template: Default::default(),
         }

@@ -3,6 +3,99 @@ use super::common::{Availability, Device, EntityCategory, Origin};
 use crate::Entity;
 use serde_derive::Serialize;
 
+/// ---
+/// title: "MQTT Siren"
+/// description: "Instructions on how to integrate MQTT sirens into Home Assistant."
+/// ha_category:
+///   - Siren
+/// ha_release: 2022.3
+/// ha_iot_class: Configurable
+/// ha_domain: mqtt
+/// ---
+///
+/// The `mqtt` siren platform lets you control your MQTT enabled sirens and text based notification devices.
+///
+/// ## Configuration
+///
+/// In an ideal scenario, the MQTT device will have a `state_topic` to publish state changes. If these messages are published with a `RETAIN` flag, the MQTT siren will receive an instant state update after subscription, and will start with the correct state. Otherwise, the initial state of the siren will be `false` / `off`.
+///
+/// When a `state_topic` is not available, the siren will work in optimistic mode. In this mode, the siren will immediately change state after every command. Otherwise, the siren will wait for state confirmation from the device (message from `state_topic`).
+///
+/// Optimistic mode can be forced, even if the `state_topic` is available. Try to enable it, if experiencing incorrect operation.
+///
+/// To enable this siren in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - siren:
+///       command_topic: "home/bedroom/siren/set"
+/// ```
+///
+///
+/// ⚠ Important\
+/// Make sure that your topic matches exactly. `some-topic/` and `some-topic` are different topics.
+///
+/// ## Examples
+///
+/// In this section, you will find an example of how to use this siren platform.
+///
+/// ### Full configuration
+///
+/// The example below shows a full configuration for a siren.
+///
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - siren:
+///       unique_id: custom_siren
+///       name: "Intrusion siren"
+///       state_topic: "home/alarm/siren1"
+///       command_topic: "home/alarm/siren1/set"
+///       available_tones:
+///         - ping
+///         - siren
+///       availability:
+///         - topic: "home/alarm/siren1/available"
+///       payload_on: "ON"
+///       payload_off: "OFF"
+///       state_on: "ON"
+///       state_off: "OFF"
+///       optimistic: false
+///       qos: 0
+///       retain: true
+/// ```
+///
+///
+/// ### On/Off only siren controlling a Tasmota relay
+///
+/// The example below shows a configuration for an On/Off type siren, which does not accept JSON commands.
+///
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - siren:
+///       unique_id: tasmota_siren
+///       name: "garage"
+///       state_topic: "stat/SIREN/RESULT"
+///       command_topic: "cmnd/SIREN/POWER"
+///       availability_topic: "tele/SIREN/LWT"
+///       command_template: "{{ value }}"
+///       state_value_template: "{{ value_json.POWER }}"
+///       payload_on: "ON"
+///       payload_off: "OFF"
+///       payload_available: "Online"
+///       payload_not_available: "Offline"
+/// ```
+///
+///
+/// For a check, you can use the command line tools `mosquitto_pub` shipped with `mosquitto` to send MQTT messages. This allows you to operate your siren manually:
+///
+/// ```bash
+/// mosquitto_pub -h 127.0.0.1 -t home/alarm/siren1 -m "ON"
+/// ```
 ///
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Siren {
@@ -31,13 +124,13 @@ pub struct Siren {
     #[serde(rename = "av_tones", skip_serializing_if = "Option::is_none")]
     pub available_tones: Option<Vec<String>>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate a custom payload to send to `command_topic`. The variable `value` will be assigned with the configured `payload_on` or `payload_off` setting. The siren turn on action parameters `tone`, `volume_level` or `duration` can be used as variables in the template. When operation in optimistic mode the corresponding state attributes will be set. Turn on parameters will be filtered if a device misses the support.
-    #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
-    pub command_template: Option<String>,
-
     /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate a custom payload to send to `command_topic` when the siren turn off action is called. By default `command_template` will be used as template for action turn off. The variable `value` will be assigned with the configured `payload_off` setting.
     #[serde(rename = "cmd_off_tpl", skip_serializing_if = "Option::is_none")]
     pub command_off_template: Option<String>,
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate a custom payload to send to `command_topic`. The variable `value` will be assigned with the configured `payload_on` or `payload_off` setting. The siren turn on action parameters `tone`, `volume_level` or `duration` can be used as variables in the template. When operation in optimistic mode the corresponding state attributes will be set. Turn on parameters will be filtered if a device misses the support.
+    #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the siren state. Without command templates, a default JSON payload like `{"state":"ON", "tone": "bell", "duration": 10, "volume_level": 0.5 }` is published. When the siren turn on action is performed, the startup parameters will be added to the JSON payload. The `state` value of the JSON payload will be set to the the `payload_on` or `payload_off` configured payload.
     ///
@@ -167,15 +260,15 @@ impl Siren {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate a custom payload to send to `command_topic`. The variable `value` will be assigned with the configured `payload_on` or `payload_off` setting. The siren turn on action parameters `tone`, `volume_level` or `duration` can be used as variables in the template. When operation in optimistic mode the corresponding state attributes will be set. Turn on parameters will be filtered if a device misses the support.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
     /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate a custom payload to send to `command_topic` when the siren turn off action is called. By default `command_template` will be used as template for action turn off. The variable `value` will be assigned with the configured `payload_off` setting.
     pub fn command_off_template<T: Into<String>>(mut self, command_off_template: T) -> Self {
         self.command_off_template = Some(command_off_template.into());
+        self
+    }
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate a custom payload to send to `command_topic`. The variable `value` will be assigned with the configured `payload_on` or `payload_off` setting. The siren turn on action parameters `tone`, `volume_level` or `duration` can be used as variables in the template. When operation in optimistic mode the corresponding state attributes will be set. Turn on parameters will be filtered if a device misses the support.
+    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
+        self.command_template = Some(command_template.into());
         self
     }
 
@@ -325,8 +418,8 @@ impl Default for Siren {
             entity_category: Default::default(),
             availability: Default::default(),
             available_tones: Default::default(),
-            command_template: Default::default(),
             command_off_template: Default::default(),
+            command_template: Default::default(),
             command_topic: Default::default(),
             enabled_by_default: Default::default(),
             encoding: Default::default(),

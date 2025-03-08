@@ -3,6 +3,71 @@ use super::common::{Availability, Device, EntityCategory, Origin};
 use crate::Entity;
 use serde_derive::Serialize;
 
+/// ---
+/// title: "MQTT Scene"
+/// description: "Instructions on how to integrate MQTT scenes into Home Assistant."
+/// ha_category:
+///   - Scene
+/// ha_release: 2020.12
+/// ha_iot_class: Configurable
+/// ha_domain: mqtt
+/// ---
+///
+/// The `mqtt` scene platform lets you control your MQTT enabled scenes.
+///
+/// ## Configuration
+///
+/// To enable a MQTT scene in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - scene:
+///       command_topic: zigbee2mqtt/living_room_group/set
+/// ```
+///
+///
+/// ⚠ Important\
+/// Make sure that your topic matches exactly. `some-topic/` and `some-topic` are different topics.
+///
+/// ## Examples
+///
+/// In this section, you will find some real-life examples of how to use the MQTT Scene.
+///
+/// ### Full configuration
+///
+/// The example below shows a full configuration for a scene.
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - scene:
+///       unique_id: living_room_party_scene
+///       name: "Party Scene"
+///       command_topic: "home/living_room/party_scene/set"
+///       availability:
+///         - topic: "home/living_room/party_scene/available"
+///       payload_on: "ON"
+///       qos: 0
+///       retain: true
+///       device:
+///         name: "Living Room"
+///         identifiers: "livingroom_lights"
+/// ```
+///
+/// ### Use with a JSON Payload
+///
+/// The example below shows a configuration using a JSON payload.
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - scene:
+///       name: Living Room Blue Scene
+///       unique_id: living_room_blue_scene
+///       command_topic: "home/living_room/set"
+///       payload_on: '{"activate_scene": "Blue Scene"}'
+/// ```
 ///
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Scene {
@@ -35,13 +100,13 @@ pub struct Scene {
     #[serde(rename = "en", skip_serializing_if = "Option::is_none")]
     pub enabled_by_default: Option<bool>,
 
-    /// Picture URL for the entity.
-    #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
-    pub entity_picture: Option<String>,
-
     /// The encoding of the published messages.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
     pub encoding: Option<String>,
+
+    /// Picture URL for the entity.
+    #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    pub entity_picture: Option<String>,
 
     /// Icon for the scene.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
@@ -128,15 +193,15 @@ impl Scene {
         self
     }
 
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
     /// The encoding of the published messages.
     pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
         self.encoding = Some(encoding.into());
+        self
+    }
+
+    /// Picture URL for the entity.
+    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
+        self.entity_picture = Some(entity_picture.into());
         self
     }
 
@@ -214,8 +279,8 @@ impl Default for Scene {
             availability: Default::default(),
             command_topic: Default::default(),
             enabled_by_default: Default::default(),
-            entity_picture: Default::default(),
             encoding: Default::default(),
+            entity_picture: Default::default(),
             icon: Default::default(),
             json_attributes_template: Default::default(),
             json_attributes_topic: Default::default(),

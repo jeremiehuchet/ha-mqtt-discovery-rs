@@ -1,9 +1,84 @@
 use super::common::Qos;
 use super::common::{Availability, Device, EntityCategory, Origin};
+use super::device_classes::HumidifierDeviceClass;
 use crate::Entity;
 pub use rust_decimal::Decimal;
 use serde_derive::Serialize;
 
+/// ---
+/// title: "MQTT Humidifier"
+/// description: "Instructions on how to integrate MQTT humidifiers into Home Assistant."
+/// ha_category:
+///   - Humidifier
+/// ha_release: 2021.8
+/// ha_iot_class: Configurable
+/// ha_domain: mqtt
+/// ---
+///
+/// The `mqtt` humidifier platform lets you control your MQTT enabled humidifiers.
+///
+/// ## Configuration
+///
+/// In an ideal scenario, the MQTT device will have a `state_topic` to publish state changes. If these messages are published with a `RETAIN` flag, the MQTT humidifier will receive an instant state update after subscription and will start with the correct state. Otherwise, the initial state of the humidifier will be `unknown`. A MQTT device can reset the current state to `unknown` using a `None` payload.
+///
+/// When a `state_topic` is not available, the humidifier will work in optimistic mode. In this mode, the humidifier will immediately change state after every command. Otherwise, the humidifier will wait for state confirmation from the device (message from `state_topic`). The initial state is set to `False` / `off` in optimistic mode.
+///
+/// Optimistic mode can be forced even if a `state_topic` is available. Try to enable it if you are experiencing incorrect humidifier operation.
+///
+/// To enable MQTT humidifiers in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - humidifier:
+///       command_topic: "bedroom_humidifier/on/set"
+///       target_humidity_command_topic: "bedroom_humidifier/humidity/set"
+/// ```
+///
+///
+/// ⚠ Important\
+/// Make sure that your topics match exactly. `some-topic/` and `some-topic` are different topics.
+///
+/// ## Examples
+///
+/// In this section you find some real-life examples of how to use this humidifier.
+///
+/// ### Full configuration
+///
+/// The example below shows a full configuration for a MQTT humidifier including modes.
+///
+///
+/// ```yaml
+/// # Example configuration.yaml
+/// mqtt:
+///   - humidifier:
+///       name: "Bedroom humidifier"
+///       device_class: "humidifier"
+///       state_topic: "bedroom_humidifier/on/state"
+///       action_topic: "bedroom_humidifier/action"
+///       command_topic: "bedroom_humidifier/on/set"
+///       current_humidity_topic: "bedroom_humidifier/humidity/current"
+///       target_humidity_command_topic: "bedroom_humidifier/humidity/set"
+///       target_humidity_state_topic: "bedroom_humidifier/humidity/state"
+///       mode_state_topic: "bedroom_humidifier/mode/state"
+///       mode_command_topic: "bedroom_humidifier/preset/preset_mode"
+///       modes:
+///         - "normal"
+///         - "eco"
+///         - "away"
+///         - "boost"
+///         - "comfort"
+///         - "home"
+///         - "sleep"
+///         - "auto"
+///         - "baby"
+///       qos: 0
+///       payload_on: "true"
+///       payload_off: "false"
+///       min_humidity: 30
+///       max_humidity: 80
+/// ```
+///
 ///
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Humidifier {
@@ -36,6 +111,14 @@ pub struct Humidifier {
     #[serde(rename = "act_t", skip_serializing_if = "Option::is_none")]
     pub action_topic: Option<String>,
 
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`.
+    #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    pub command_template: Option<String>,
+
+    /// The MQTT topic to publish commands to change the humidifier state.
+    #[serde(rename = "cmd_t")]
+    pub command_topic: String,
+
     /// A template with which the value received on `current_humidity_topic` will be rendered.
     #[serde(
         rename = "current_humidity_template",
@@ -50,17 +133,9 @@ pub struct Humidifier {
     )]
     pub current_humidity_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`.
-    #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
-    pub command_template: Option<String>,
-
-    /// The MQTT topic to publish commands to change the humidifier state.
-    #[serde(rename = "cmd_t")]
-    pub command_topic: String,
-
-    /// The device class of the MQTT device. Must be either `humidifier`, `dehumidifier` or `null`.
+    /// The [device class](/integrations/humidifier/#device-class) of the MQTT device. Must be either `humidifier`, `dehumidifier` or `null`.
     #[serde(rename = "dev_cla", skip_serializing_if = "Option::is_none")]
-    pub device_class: Option<String>,
+    pub device_class: Option<HumidifierDeviceClass>,
 
     /// Flag which defines if the entity should be enabled when first added.
     #[serde(rename = "en", skip_serializing_if = "Option::is_none")]
@@ -94,6 +169,26 @@ pub struct Humidifier {
     #[serde(rename = "min_hum", skip_serializing_if = "Option::is_none")]
     pub min_humidity: Option<Decimal>,
 
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `mode_command_topic`.
+    #[serde(rename = "mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    pub mode_command_template: Option<String>,
+
+    /// The MQTT topic to publish commands to change the `mode` on the humidifier. This attribute ust be configured together with the `modes` attribute.
+    #[serde(rename = "mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    pub mode_command_topic: Option<String>,
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `mode` state.
+    #[serde(rename = "mode_stat_tpl", skip_serializing_if = "Option::is_none")]
+    pub mode_state_template: Option<String>,
+
+    /// The MQTT topic subscribed to receive the humidifier `mode`.
+    #[serde(rename = "mode_stat_t", skip_serializing_if = "Option::is_none")]
+    pub mode_state_topic: Option<String>,
+
+    /// List of available modes this humidifier is capable of running at. Common examples include `normal`, `eco`, `away`, `boost`, `comfort`, `home`, `sleep`, `auto` and `baby`. These examples offer built-in translations but other custom modes are allowed as well.  This attribute ust be configured together with the `mode_command_topic` attribute.
+    #[serde(rename = "modes", skip_serializing_if = "Option::is_none")]
+    pub modes: Option<Vec<String>>,
+
     /// The name of the humidifier. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -122,42 +217,6 @@ pub struct Humidifier {
     #[serde(rename = "pl_rst_mode", skip_serializing_if = "Option::is_none")]
     pub payload_reset_mode: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `target_humidity_command_topic`.
-    #[serde(rename = "hum_cmd_tpl", skip_serializing_if = "Option::is_none")]
-    pub target_humidity_command_template: Option<String>,
-
-    /// The MQTT topic to publish commands to change the humidifier target humidity state based on a percentage.
-    #[serde(rename = "hum_cmd_t")]
-    pub target_humidity_command_topic: String,
-
-    /// The MQTT topic subscribed to receive humidifier target humidity.
-    #[serde(rename = "hum_stat_t", skip_serializing_if = "Option::is_none")]
-    pub target_humidity_state_topic: Option<String>,
-
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `target_humidity` state.
-    #[serde(rename = "hum_state_tpl", skip_serializing_if = "Option::is_none")]
-    pub target_humidity_state_template: Option<String>,
-
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `mode_command_topic`.
-    #[serde(rename = "mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
-    pub mode_command_template: Option<String>,
-
-    /// The MQTT topic to publish commands to change the `mode` on the humidifier. This attribute ust be configured together with the `modes` attribute.
-    #[serde(rename = "mode_cmd_t", skip_serializing_if = "Option::is_none")]
-    pub mode_command_topic: Option<String>,
-
-    /// The MQTT topic subscribed to receive the humidifier `mode`.
-    #[serde(rename = "mode_stat_t", skip_serializing_if = "Option::is_none")]
-    pub mode_state_topic: Option<String>,
-
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `mode` state.
-    #[serde(rename = "mode_stat_tpl", skip_serializing_if = "Option::is_none")]
-    pub mode_state_template: Option<String>,
-
-    /// List of available modes this humidifier is capable of running at. Common examples include `normal`, `eco`, `away`, `boost`, `comfort`, `home`, `sleep`, `auto` and `baby`. These examples offer built-in translations but other custom modes are allowed as well.  This attribute ust be configured together with the `mode_command_topic` attribute.
-    #[serde(rename = "modes", skip_serializing_if = "Option::is_none")]
-    pub modes: Option<Vec<String>>,
-
     /// Must be `humidifier`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
     #[serde(rename = "platform")]
     pub platform: String,
@@ -177,6 +236,22 @@ pub struct Humidifier {
     /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the state.
     #[serde(rename = "stat_val_tpl", skip_serializing_if = "Option::is_none")]
     pub state_value_template: Option<String>,
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `target_humidity_command_topic`.
+    #[serde(rename = "hum_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    pub target_humidity_command_template: Option<String>,
+
+    /// The MQTT topic to publish commands to change the humidifier target humidity state based on a percentage.
+    #[serde(rename = "hum_cmd_t")]
+    pub target_humidity_command_topic: String,
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `target_humidity` state.
+    #[serde(rename = "hum_state_tpl", skip_serializing_if = "Option::is_none")]
+    pub target_humidity_state_template: Option<String>,
+
+    /// The MQTT topic subscribed to receive humidifier target humidity.
+    #[serde(rename = "hum_stat_t", skip_serializing_if = "Option::is_none")]
+    pub target_humidity_state_topic: Option<String>,
 
     /// An ID that uniquely identifies this humidifier. If two humidifiers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
@@ -227,6 +302,18 @@ impl Humidifier {
         self
     }
 
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`.
+    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
+        self.command_template = Some(command_template.into());
+        self
+    }
+
+    /// The MQTT topic to publish commands to change the humidifier state.
+    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
+        self.command_topic = command_topic.into();
+        self
+    }
+
     /// A template with which the value received on `current_humidity_topic` will be rendered.
     pub fn current_humidity_template<T: Into<String>>(
         mut self,
@@ -242,20 +329,8 @@ impl Humidifier {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the humidifier state.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// The device class of the MQTT device. Must be either `humidifier`, `dehumidifier` or `null`.
-    pub fn device_class<T: Into<String>>(mut self, device_class: T) -> Self {
+    /// The [device class](/integrations/humidifier/#device-class) of the MQTT device. Must be either `humidifier`, `dehumidifier` or `null`.
+    pub fn device_class<T: Into<HumidifierDeviceClass>>(mut self, device_class: T) -> Self {
         self.device_class = Some(device_class.into());
         self
     }
@@ -311,6 +386,36 @@ impl Humidifier {
         self
     }
 
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `mode_command_topic`.
+    pub fn mode_command_template<T: Into<String>>(mut self, mode_command_template: T) -> Self {
+        self.mode_command_template = Some(mode_command_template.into());
+        self
+    }
+
+    /// The MQTT topic to publish commands to change the `mode` on the humidifier. This attribute ust be configured together with the `modes` attribute.
+    pub fn mode_command_topic<T: Into<String>>(mut self, mode_command_topic: T) -> Self {
+        self.mode_command_topic = Some(mode_command_topic.into());
+        self
+    }
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `mode` state.
+    pub fn mode_state_template<T: Into<String>>(mut self, mode_state_template: T) -> Self {
+        self.mode_state_template = Some(mode_state_template.into());
+        self
+    }
+
+    /// The MQTT topic subscribed to receive the humidifier `mode`.
+    pub fn mode_state_topic<T: Into<String>>(mut self, mode_state_topic: T) -> Self {
+        self.mode_state_topic = Some(mode_state_topic.into());
+        self
+    }
+
+    /// List of available modes this humidifier is capable of running at. Common examples include `normal`, `eco`, `away`, `boost`, `comfort`, `home`, `sleep`, `auto` and `baby`. These examples offer built-in translations but other custom modes are allowed as well.  This attribute ust be configured together with the `mode_command_topic` attribute.
+    pub fn modes<T: Into<String>>(mut self, modes: Vec<T>) -> Self {
+        self.modes = Some(modes.into_iter().map(|v| v.into()).collect());
+        self
+    }
+
     /// The name of the humidifier. Can be set to `null` if only the device name is relevant.
     pub fn name<T: Into<String>>(mut self, name: T) -> Self {
         self.name = Some(name.into());
@@ -353,72 +458,6 @@ impl Humidifier {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `target_humidity_command_topic`.
-    pub fn target_humidity_command_template<T: Into<String>>(
-        mut self,
-        target_humidity_command_template: T,
-    ) -> Self {
-        self.target_humidity_command_template = Some(target_humidity_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the humidifier target humidity state based on a percentage.
-    pub fn target_humidity_command_topic<T: Into<String>>(
-        mut self,
-        target_humidity_command_topic: T,
-    ) -> Self {
-        self.target_humidity_command_topic = target_humidity_command_topic.into();
-        self
-    }
-
-    /// The MQTT topic subscribed to receive humidifier target humidity.
-    pub fn target_humidity_state_topic<T: Into<String>>(
-        mut self,
-        target_humidity_state_topic: T,
-    ) -> Self {
-        self.target_humidity_state_topic = Some(target_humidity_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `target_humidity` state.
-    pub fn target_humidity_state_template<T: Into<String>>(
-        mut self,
-        target_humidity_state_template: T,
-    ) -> Self {
-        self.target_humidity_state_template = Some(target_humidity_state_template.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `mode_command_topic`.
-    pub fn mode_command_template<T: Into<String>>(mut self, mode_command_template: T) -> Self {
-        self.mode_command_template = Some(mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the `mode` on the humidifier. This attribute ust be configured together with the `modes` attribute.
-    pub fn mode_command_topic<T: Into<String>>(mut self, mode_command_topic: T) -> Self {
-        self.mode_command_topic = Some(mode_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive the humidifier `mode`.
-    pub fn mode_state_topic<T: Into<String>>(mut self, mode_state_topic: T) -> Self {
-        self.mode_state_topic = Some(mode_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `mode` state.
-    pub fn mode_state_template<T: Into<String>>(mut self, mode_state_template: T) -> Self {
-        self.mode_state_template = Some(mode_state_template.into());
-        self
-    }
-
-    /// List of available modes this humidifier is capable of running at. Common examples include `normal`, `eco`, `away`, `boost`, `comfort`, `home`, `sleep`, `auto` and `baby`. These examples offer built-in translations but other custom modes are allowed as well.  This attribute ust be configured together with the `mode_command_topic` attribute.
-    pub fn modes<T: Into<String>>(mut self, modes: Vec<T>) -> Self {
-        self.modes = Some(modes.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
     /// Must be `humidifier`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
     pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
         self.platform = platform.into();
@@ -449,6 +488,42 @@ impl Humidifier {
         self
     }
 
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `target_humidity_command_topic`.
+    pub fn target_humidity_command_template<T: Into<String>>(
+        mut self,
+        target_humidity_command_template: T,
+    ) -> Self {
+        self.target_humidity_command_template = Some(target_humidity_command_template.into());
+        self
+    }
+
+    /// The MQTT topic to publish commands to change the humidifier target humidity state based on a percentage.
+    pub fn target_humidity_command_topic<T: Into<String>>(
+        mut self,
+        target_humidity_command_topic: T,
+    ) -> Self {
+        self.target_humidity_command_topic = target_humidity_command_topic.into();
+        self
+    }
+
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `target_humidity` state.
+    pub fn target_humidity_state_template<T: Into<String>>(
+        mut self,
+        target_humidity_state_template: T,
+    ) -> Self {
+        self.target_humidity_state_template = Some(target_humidity_state_template.into());
+        self
+    }
+
+    /// The MQTT topic subscribed to receive humidifier target humidity.
+    pub fn target_humidity_state_topic<T: Into<String>>(
+        mut self,
+        target_humidity_state_topic: T,
+    ) -> Self {
+        self.target_humidity_state_topic = Some(target_humidity_state_topic.into());
+        self
+    }
+
     /// An ID that uniquely identifies this humidifier. If two humidifiers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
         self.unique_id = Some(unique_id.into());
@@ -466,10 +541,10 @@ impl Default for Humidifier {
             availability: Default::default(),
             action_template: Default::default(),
             action_topic: Default::default(),
-            current_humidity_template: Default::default(),
-            current_humidity_topic: Default::default(),
             command_template: Default::default(),
             command_topic: Default::default(),
+            current_humidity_template: Default::default(),
+            current_humidity_topic: Default::default(),
             device_class: Default::default(),
             enabled_by_default: Default::default(),
             encoding: Default::default(),
@@ -479,6 +554,11 @@ impl Default for Humidifier {
             json_attributes_topic: Default::default(),
             max_humidity: Default::default(),
             min_humidity: Default::default(),
+            mode_command_template: Default::default(),
+            mode_command_topic: Default::default(),
+            mode_state_template: Default::default(),
+            mode_state_topic: Default::default(),
+            modes: Default::default(),
             name: Default::default(),
             object_id: Default::default(),
             optimistic: Default::default(),
@@ -486,20 +566,15 @@ impl Default for Humidifier {
             payload_on: Default::default(),
             payload_reset_humidity: Default::default(),
             payload_reset_mode: Default::default(),
-            target_humidity_command_template: Default::default(),
-            target_humidity_command_topic: Default::default(),
-            target_humidity_state_topic: Default::default(),
-            target_humidity_state_template: Default::default(),
-            mode_command_template: Default::default(),
-            mode_command_topic: Default::default(),
-            mode_state_topic: Default::default(),
-            mode_state_template: Default::default(),
-            modes: Default::default(),
             platform: "humidifier".to_string(),
             qos: Default::default(),
             retain: Default::default(),
             state_topic: Default::default(),
             state_value_template: Default::default(),
+            target_humidity_command_template: Default::default(),
+            target_humidity_command_topic: Default::default(),
+            target_humidity_state_template: Default::default(),
+            target_humidity_state_topic: Default::default(),
             unique_id: Default::default(),
         }
     }

@@ -15,6 +15,8 @@ use rumqttc::v5::{
 };
 use serde::Serialize;
 
+use crate::mqtt::light::Light;
+use crate::mqtt::notify::Notify;
 pub use rumqttc::v5;
 use serde_json::Value;
 
@@ -111,9 +113,9 @@ pub enum Entity {
     Humidifier(Humidifier),
     Image(Image),
     LawnMower(LawnMower),
-    //Light,
+    Light(Light),
     Lock(Lock),
-    //Notify,
+    Notify(Notify),
     Number(Number),
     Scene(Scene),
     Select(Select),
@@ -144,9 +146,9 @@ impl Entity {
             Entity::Humidifier(_) => "humidifier",
             Entity::Image(_) => "image",
             Entity::LawnMower(_) => "lawn_mower",
-            //Entity::Light(_) => "light",
+            Entity::Light(_) => "light",
             Entity::Lock(_) => "lock",
-            //Entity::Notify(_) => "notify",
+            Entity::Notify(_) => "notify",
             Entity::Number(_) => "number",
             Entity::Scene(_) => "scene",
             Entity::Select(_) => "select",
@@ -179,9 +181,9 @@ impl Entity {
             Entity::Humidifier(humidifier) => serde_json::to_value(humidifier)?,
             Entity::Image(image) => serde_json::to_value(image)?,
             Entity::LawnMower(lawn_mower) => serde_json::to_value(lawn_mower)?,
-            //Entity::Light(light) => serde_json::to_value(light)?,
+            Entity::Light(light) => serde_json::to_value(light)?,
             Entity::Lock(lock) => serde_json::to_value(lock)?,
-            //Entity::Notify(notify) => serde_json::to_value(notify)?,
+            Entity::Notify(notify) => serde_json::to_value(notify)?,
             Entity::Number(number) => serde_json::to_value(number)?,
             Entity::Scene(scene) => serde_json::to_value(scene)?,
             Entity::Select(select) => serde_json::to_value(select)?,

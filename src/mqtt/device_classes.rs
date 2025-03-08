@@ -76,19 +76,27 @@ pub enum NumberDeviceClass {
     #[serde(rename = "aqi")]
     Aqi,
 
-    /// Atmospheric pressure in cbar, bar, hPa, inHg, kPa, mbar, Pa, psi
+    /// Area in m², cm², km², mm², in², ft², yd², mi², ac, ha
+    #[serde(rename = "area")]
+    Area,
+
+    /// Atmospheric pressure in cbar, bar, hPa, mmHg, inHg, kPa, mbar, Pa or psi
     #[serde(rename = "atmospheric_pressure")]
     AtmosphericPressure,
 
-    /// Percentage of battery that is left
+    /// Percentage of battery that is left in %
     #[serde(rename = "battery")]
     Battery,
 
-    /// Carbon Dioxide in CO2 (Smoke)
+    /// Blood glucose concentration in mg/dL, mmol/L
+    #[serde(rename = "blood_glucose_concentration")]
+    BloodGlucoseConcentration,
+
+    /// Carbon Dioxide in CO2 (Smoke) in ppm
     #[serde(rename = "carbon_dioxide")]
     CarbonDioxide,
 
-    /// Carbon Monoxide in CO (Gas CNG/LPG)
+    /// Carbon Monoxide in CO (Gas CNG/LPG) in ppm
     #[serde(rename = "carbon_monoxide")]
     CarbonMonoxide,
 
@@ -96,23 +104,31 @@ pub enum NumberDeviceClass {
     #[serde(rename = "current")]
     Current,
 
-    /// Data rate in bit/s, kbit/s, Mbit/s, Gbit/s, B/s, kB/s, MB/s, GB/s, KiB/s, MiB/s, or GiB/s
+    /// Data rate in bit/s, kbit/s, Mbit/s, Gbit/s, B/s, kB/s, MB/s, GB/s, KiB/s, MiB/s or GiB/s
     #[serde(rename = "data_rate")]
     DataRate,
 
-    /// Data size in bit, kbit, Mbit, Gbit, B, kB, MB, GB, TB, PB, EB, ZB, YB, KiB, MiB, GiB, TiB, PiB, EiB, ZiB, or YiB
+    /// Data size in bit, kbit, Mbit, Gbit, B, kB, MB, GB, TB, PB, EB, ZB, YB, KiB, MiB, GiB, TiB, PiB, EiB, ZiB or YiB
     #[serde(rename = "data_size")]
     DataSize,
 
-    /// Generic distance in km, m, cm, mm, mi, yd, or in
+    /// Generic distance in km, m, cm, mm, mi, nmi, yd, or in
     #[serde(rename = "distance")]
     Distance,
 
-    /// Energy in Wh, kWh, MWh, MJ, or GJ
+    /// Duration in d, h, min, s, or ms
+    #[serde(rename = "duration")]
+    Duration,
+
+    /// Energy in J, kJ, MJ, GJ, mWh, Wh, kWh, MWh, GWh, TWh, cal, kcal, Mcal, or Gcal
     #[serde(rename = "energy")]
     Energy,
 
-    /// Stored energy in Wh, kWh, MWh, MJ, or GJ
+    /// Energy per distance in kWh/100km, mi/kWh or km/kWh.
+    #[serde(rename = "energy_distance")]
+    EnergyDistance,
+
+    /// Stored energy in J, kJ, MJ, GJ, mWh, Wh, kWh, MWh, GWh, TWh, cal, kcal, Mcal, or Gcal
     #[serde(rename = "energy_storage")]
     EnergyStorage,
 
@@ -120,11 +136,11 @@ pub enum NumberDeviceClass {
     #[serde(rename = "frequency")]
     Frequency,
 
-    /// Gasvolume in m³, ft³, or CCF
+    /// Gasvolume in m³, ft³ or CCF
     #[serde(rename = "gas")]
     Gas,
 
-    /// Percentage of humidity in the air
+    /// Percentage of humidity in the air in %
     #[serde(rename = "humidity")]
     Humidity,
 
@@ -136,11 +152,11 @@ pub enum NumberDeviceClass {
     #[serde(rename = "irradiance")]
     Irradiance,
 
-    /// Percentage of water in a substance
+    /// Percentage of water in a substance in %
     #[serde(rename = "moisture")]
     Moisture,
 
-    /// The monetary value
+    /// The monetary value ([ISO 4217](https://en.wikipedia.org/wiki/ISO_4217#Active_codes))
     #[serde(rename = "monetary")]
     Monetary,
 
@@ -168,19 +184,19 @@ pub enum NumberDeviceClass {
     #[serde(rename = "pm1")]
     Pm1,
 
-    /// Concentration of particulate matter less than 10 micrometers in µg/m³
-    #[serde(rename = "pm10")]
-    Pm10,
-
     /// Concentration of particulate matter less than 2.5 micrometers in µg/m³
     #[serde(rename = "pm25")]
     Pm25,
 
-    /// Power factor(unitless), unit may be `None` or %
+    /// Concentration of particulate matter less than 10 micrometers in µg/m³
+    #[serde(rename = "pm10")]
+    Pm10,
+
+    /// Power factor (unitless), unit may be `None` or %
     #[serde(rename = "power_factor")]
     PowerFactor,
 
-    /// Power in W or kW
+    /// Power in mW, W, kW, MW, GW or TW
     #[serde(rename = "power")]
     Power,
 
@@ -188,11 +204,11 @@ pub enum NumberDeviceClass {
     #[serde(rename = "precipitation")]
     Precipitation,
 
-    /// Precipitation intensity in in/d, in/h, mm/d, or mm/h
+    /// Precipitation intensity in in/d, in/h, mm/d or mm/h
     #[serde(rename = "precipitation_intensity")]
     PrecipitationIntensity,
 
-    /// Pressure in Pa, kPa, hPa, bar, cbar, mbar, mmHg, inHg, or psi
+    /// Pressure in Pa, kPa, hPa, bar, cbar, mbar, mmHg, inHg or psi
     #[serde(rename = "pressure")]
     Pressure,
 
@@ -224,7 +240,11 @@ pub enum NumberDeviceClass {
     #[serde(rename = "volatile_organic_compounds")]
     VolatileOrganicCompounds,
 
-    /// Voltage in V, mV
+    /// Ratio of volatile organic compounds in ppm or ppb
+    #[serde(rename = "volatile_organic_compounds_parts")]
+    VolatileOrganicCompoundsParts,
+
+    /// Voltage in V, mV, µV, kV, MV
     #[serde(rename = "voltage")]
     Voltage,
 
@@ -232,7 +252,7 @@ pub enum NumberDeviceClass {
     #[serde(rename = "volume")]
     Volume,
 
-    /// Volume flow rate in m³/h, ft³/min, L/min, gal/min
+    /// Volume flow rate in m³/h, ft³/min, L/min, gal/min, or mL/s
     #[serde(rename = "volume_flow_rate")]
     VolumeFlowRate,
 
@@ -248,7 +268,11 @@ pub enum NumberDeviceClass {
     #[serde(rename = "weight")]
     Weight,
 
-    /// Wind speed in ft/s, km/h, kn, m/s, or mph
+    /// Wind direction in °
+    #[serde(rename = "wind_direction")]
+    WindDirection,
+
+    /// Wind speed in Beaufort, ft/s, km/h, kn, m/s, or mph
     #[serde(rename = "wind_speed")]
     WindSpeed,
 }
@@ -460,6 +484,10 @@ pub enum SensorDeviceClass {
     #[serde(rename = "aqi")]
     Aqi,
 
+    /// Area in m², cm², km², mm², in², ft², yd², mi², ac, ha
+    #[serde(rename = "area")]
+    Area,
+
     /// Atmospheric pressure in cbar, bar, hPa, mmHg, inHg, kPa, mbar, Pa or psi
     #[serde(rename = "atmospheric_pressure")]
     AtmosphericPressure,
@@ -467,6 +495,10 @@ pub enum SensorDeviceClass {
     /// Percentage of battery that is left in %
     #[serde(rename = "battery")]
     Battery,
+
+    /// Blood glucose concentration in mg/dL, mmol/L
+    #[serde(rename = "blood_glucose_concentration")]
+    BloodGlucoseConcentration,
 
     /// Carbon Dioxide in CO2 (Smoke) in ppm
     #[serde(rename = "carbon_dioxide")]
@@ -500,11 +532,15 @@ pub enum SensorDeviceClass {
     #[serde(rename = "duration")]
     Duration,
 
-    /// Energy in J, kJ, MJ, GJ, Wh, kWh, MWh, cal, kcal, Mcal, or Gcal
+    /// Energy in J, kJ, MJ, GJ, mWh, Wh, kWh, MWh, GWh, TWh, cal, kcal, Mcal, or Gcal
     #[serde(rename = "energy")]
     Energy,
 
-    /// Stored energy in J, kJ, MJ, GJ, Wh, kWh, MWh, cal, kcal, Mcal, or Gcal
+    /// Energy per distance in kWh/100km, mi/kWh or km/kWh.
+    #[serde(rename = "energy_distance")]
+    EnergyDistance,
+
+    /// Stored energy in J, kJ, MJ, GJ, mWh, Wh, kWh, MWh, GWh, TWh, cal, kcal, Mcal, or Gcal
     #[serde(rename = "energy_storage")]
     EnergyStorage,
 
@@ -576,7 +612,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "power_factor")]
     PowerFactor,
 
-    /// Power in W or kW
+    /// Power in mW, W, kW, MW, GW or TW
     #[serde(rename = "power")]
     Power,
 
@@ -628,7 +664,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "volatile_organic_compounds_parts")]
     VolatileOrganicCompoundsParts,
 
-    /// Voltage in V, mV
+    /// Voltage in V, mV, µV, kV, MV
     #[serde(rename = "voltage")]
     Voltage,
 
@@ -636,7 +672,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "volume")]
     Volume,
 
-    /// Volume flow rate in m³/h, ft³/min, L/min, gal/min
+    /// Volume flow rate in m³/h, ft³/min, L/min, gal/min, or mL/s
     #[serde(rename = "volume_flow_rate")]
     VolumeFlowRate,
 
@@ -651,6 +687,10 @@ pub enum SensorDeviceClass {
     /// Generic mass in kg, g, mg, µg, oz, lb, or st
     #[serde(rename = "weight")]
     Weight,
+
+    /// Wind direction in °
+    #[serde(rename = "wind_direction")]
+    WindDirection,
 
     /// Wind speed in Beaufort, ft/s, km/h, kn, m/s, or mph
     #[serde(rename = "wind_speed")]

@@ -5,6 +5,83 @@ use crate::Entity;
 pub use rust_decimal::Decimal;
 use serde_derive::Serialize;
 
+/// ---
+/// title: "MQTT water heater"
+/// description: "Instructions on how to integrate MQTT water heater into Home Assistant."
+/// ha_category:
+///   - Water heater
+/// ha_release: 2023.7
+/// ha_iot_class: Local Polling
+/// ha_domain: mqtt
+/// ---
+///
+/// The `mqtt` water heater platform lets you control your MQTT enabled water heater devices.
+///
+/// ## Configuration
+///
+/// To enable this water heater platform in your installation, first add the following to your {% term "`configuration.yaml`" %} file:
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - water_heater:
+///       name: Boiler
+///       mode_command_topic: "basement/boiler/mode/set"
+/// ```
+///
+///
+/// ## Optimistic mode
+///
+/// If a property works in *optimistic mode* (when the corresponding state topic is not set), Home Assistant will assume that any state changes published to the command topics did work and change the internal state of the {% term entity %} immediately after publishing to the command topic. If it does not work in optimistic mode, the internal state of the {% term entity %} is only updated when the requested update is confirmed by the device through the state topic. You can enforce optimistic mode by setting the `optimistic` option to `true`. When set, the internal state will always be updated, even when a state topic is defined.
+///
+/// ## Using templates
+///
+/// For all `*_state_topic`s, a template can be specified that will be used to render the incoming payloads on these topics. Also, a default template that applies to all state topics can be specified as `value_template`. This can be useful if you received payloads are e.g., in JSON format. Since in JSON, a quoted string (e.g., `"foo"`) is just a string, this can also be used for unquoting.
+///
+/// Say you receive the operation mode `"off"` via your `mode_state_topic`, but the mode is actually called just `off`, here's what you could do:
+///
+///
+/// ```yaml
+/// mqtt:
+///   - water_heater:
+///       name: Boiler
+///       modes:
+///         - "off"
+///         - "eco"
+///         - "performance"
+///       mode_command_topic: "basement/boiler/mode/set"
+///       mode_state_topic: "basement/boiler/mode/state"
+///       mode_state_template: "{{ value_json }}"
+/// ```
+///
+///
+/// This will parse the incoming `"off"` as JSON, resulting in `off`. Obviously, in this case you could also just set `value_template: {% raw %}"{{ value_json }}"{% endraw %}`.
+///
+/// Similarly for `*_command_topic`s, a template can be specified to render the outgoing payloads on these topics.
+///
+/// ## Example
+///
+/// A full configuration example looks like the one below.
+///
+///
+/// ```yaml
+/// # Full example configuration.yaml entry
+/// mqtt:
+///   - water_heater:
+///       name: Boiler
+///       modes:
+///         - "off"
+///         - "eco"
+///         - "performance"
+///       mode_state_topic: "basement/boiler/mode"
+///       mode_command_topic: "basement/boiler/mode/set"
+///       mode_command_template: "{{ value if value=="off" else "on" }}"
+///       temperature_state_topic: "basement/boiler/temperature"
+///       temperature_command_topic: "basement/boiler/temperature/set"
+///       current_temperature_topic: "basement/boiler/current_temperature"
+///       precision: 1.0
+/// ```
+///
 ///
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct WaterHeater {
@@ -49,13 +126,13 @@ pub struct WaterHeater {
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
     pub entity_picture: Option<String>,
 
-    /// Set the initial target temperature. The default value depends on the temperature unit, and will be 43.3°C or 110°F.
-    #[serde(rename = "init", skip_serializing_if = "Option::is_none")]
-    pub initial: Option<i32>,
-
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
+
+    /// Set the initial target temperature. The default value depends on the temperature unit, and will be 43.3°C or 110°F.
+    #[serde(rename = "init", skip_serializing_if = "Option::is_none")]
+    pub initial: Option<i32>,
 
     /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
@@ -240,15 +317,15 @@ impl WaterHeater {
         self
     }
 
-    /// Set the initial target temperature. The default value depends on the temperature unit, and will be 43.3°C or 110°F.
-    pub fn initial(mut self, initial: i32) -> Self {
-        self.initial = Some(initial);
-        self
-    }
-
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
         self.icon = Some(icon.into());
+        self
+    }
+
+    /// Set the initial target temperature. The default value depends on the temperature unit, and will be 43.3°C or 110°F.
+    pub fn initial(mut self, initial: i32) -> Self {
+        self.initial = Some(initial);
         self
     }
 
@@ -440,8 +517,8 @@ impl Default for WaterHeater {
             enabled_by_default: Default::default(),
             encoding: Default::default(),
             entity_picture: Default::default(),
-            initial: Default::default(),
             icon: Default::default(),
+            initial: Default::default(),
             json_attributes_template: Default::default(),
             json_attributes_topic: Default::default(),
             max_temp: Default::default(),

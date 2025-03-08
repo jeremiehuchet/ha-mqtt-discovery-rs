@@ -3,6 +3,54 @@ use super::common::{Availability, Device, EntityCategory, Origin};
 use crate::Entity;
 use serde_derive::Serialize;
 
+/// ---
+/// title: "MQTT lawn mower"
+/// description: "Instructions on how to integrate MQTT lawn mowers into Home Assistant."
+/// ha_category:
+///   - Lawn mower
+/// ha_release: 2023.9
+/// ha_iot_class: Configurable
+/// ha_domain: mqtt
+/// ---
+///
+/// The `mqtt` `lawn_mower` platform allows controlling a lawn mower over MQTT.
+///
+/// ## Configuration
+///
+/// To enable MQTT lawn mower in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - lawn_mower:
+///       command_topic: topic
+///       name: "Test Lawn Mower"
+/// ```
+///
+///
+/// ⚠ Important\
+/// Make sure that your topic matches exactly. `some-topic/` and `some-topic` are different topics.
+///
+/// ## Example
+///
+/// The example below shows how to use a single command topic with a command template.
+///
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - lawn_mower:
+///       name: "Lawn Mower Plus"
+///       activity_state_topic: "lawn_mower_plus/state"
+///       activity_value_template: "{{ value_json.activity }}"
+///       pause_command_topic: "lawn_mower_plus/set"
+///       pause_command_template: '{"activity": "{{ value }}"}'
+///       dock_command_topic: "lawn_mower_plus/set"
+///       dock_command_template: '{"activity": "{{ value }}"}'
+///       start_mowing_command_topic: "lawn_mower_plus/set"
+///       start_mowing_command_template: '{"activity": "{{ value }}"}'
+/// ```
+///
 ///
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct LawnMower {
@@ -110,12 +158,9 @@ pub struct LawnMower {
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
     pub qos: Option<Qos>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
-    #[serde(
-        rename = "start_mowing_template",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub start_mowing_template: Option<String>,
+    /// If the published message should have the retain flag on or not.
+    #[serde(rename = "ret", skip_serializing_if = "Option::is_none")]
+    pub retain: Option<bool>,
 
     /// The MQTT topic that publishes commands when the `lawn_mower.start_mowing` action is performed. The value `start_mowing` is published when the action used. Use a `start_mowing_command_template` to publish a custom format.
     #[serde(
@@ -124,9 +169,12 @@ pub struct LawnMower {
     )]
     pub start_mowing_command_topic: Option<String>,
 
-    /// If the published message should have the retain flag on or not.
-    #[serde(rename = "ret", skip_serializing_if = "Option::is_none")]
-    pub retain: Option<bool>,
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
+    #[serde(
+        rename = "start_mowing_template",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub start_mowing_template: Option<String>,
 
     /// An ID that uniquely identifies this lawn mower. If two lawn mowers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
@@ -270,9 +318,9 @@ impl LawnMower {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
-    pub fn start_mowing_template<T: Into<String>>(mut self, start_mowing_template: T) -> Self {
-        self.start_mowing_template = Some(start_mowing_template.into());
+    /// If the published message should have the retain flag on or not.
+    pub fn retain(mut self, retain: bool) -> Self {
+        self.retain = Some(retain);
         self
     }
 
@@ -285,9 +333,9 @@ impl LawnMower {
         self
     }
 
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
+    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
+    pub fn start_mowing_template<T: Into<String>>(mut self, start_mowing_template: T) -> Self {
+        self.start_mowing_template = Some(start_mowing_template.into());
         self
     }
 
@@ -323,9 +371,9 @@ impl Default for LawnMower {
             pause_command_topic: Default::default(),
             platform: "lawn_mower".to_string(),
             qos: Default::default(),
-            start_mowing_template: Default::default(),
-            start_mowing_command_topic: Default::default(),
             retain: Default::default(),
+            start_mowing_command_topic: Default::default(),
+            start_mowing_template: Default::default(),
             unique_id: Default::default(),
         }
     }
