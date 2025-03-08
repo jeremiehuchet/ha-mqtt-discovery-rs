@@ -29,6 +29,6 @@
 
   scripts.generate-types.exec = ''
     bun run generator/src/index.ts
-    find src -type f -exec rustfmt --edition 2021 {} \+
+    find src -type f -exec rustfmt --edition 2024 {} \+
   '';
 }

@@ -1,6 +1,6 @@
 #![recursion_limit = "256"]
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use mqtt::{
     alarm_control_panel::AlarmControlPanel, binary_sensor::BinarySensor, button::Button,
     camera::Camera, climate::Climate, cover::Cover, device_tracker::DeviceTracker,
@@ -10,8 +10,8 @@ use mqtt::{
     vacuum::Vacuum, valve::Valve, water_heater::WaterHeater,
 };
 use rumqttc::v5::{
-    mqttbytes::{v5::PublishProperties, QoS::AtLeastOnce},
     AsyncClient,
+    mqttbytes::{QoS::AtLeastOnce, v5::PublishProperties},
 };
 use serde::Serialize;
 

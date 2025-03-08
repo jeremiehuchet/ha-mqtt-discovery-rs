@@ -1,5 +1,6 @@
 use assert_json_diff::assert_json_eq;
 use ha_mqtt_discovery::{
+    Entity, HomeAssistantMqtt,
     mqtt::{
         binary_sensor::BinarySensor,
         common::{Availability, Device, DeviceConnection, Origin, SensorStateClass},
@@ -8,19 +9,18 @@ use ha_mqtt_discovery::{
         sensor::Sensor,
         units::{TempUnit::Celsius, Unit},
     },
-    Entity, HomeAssistantMqtt,
 };
 use rumqttc::v5::{
-    mqttbytes::{
-        v5::{Packet, Publish},
-        QoS::ExactlyOnce,
-    },
     AsyncClient,
     Event::Incoming,
     MqttOptions,
+    mqttbytes::{
+        QoS::ExactlyOnce,
+        v5::{Packet, Publish},
+    },
 };
 use rust_decimal_macros::dec;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::time::Duration;
 use testcontainers_modules::{mosquitto, testcontainers::runners::AsyncRunner};
 use tokio::task;
