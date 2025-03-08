@@ -1,0 +1,240 @@
+availability:
+  description: A list of MQTT topics subscribed to receive availability (online/offline)
+    updates. Must not be used together with `availability_topic`.
+  keys:
+    payload_available:
+      default: online
+      description: The payload that represents the available state.
+      required: false
+      type: string
+    payload_not_available:
+      default: offline
+      description: The payload that represents the unavailable state.
+      required: false
+      type: string
+    topic:
+      description: An MQTT topic subscribed to receive availability (online/offline)
+        updates.
+      required: true
+      type: string
+    value_template:
+      description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+        to extract device's availability from the `topic`. To determine the devices's
+        availability result of this template will be compared to `payload_available`
+        and `payload_not_available`.
+      required: false
+      type: template
+  required: false
+  type: list
+availability_mode:
+  default: latest
+  description: When `availability` is configured, this controls the conditions needed
+    to set the entity to `available`. Valid entries are `all`, `any`, and `latest`.
+    If set to `all`, `payload_available` must be received on all configured availability
+    topics before the entity is marked as online. If set to `any`, `payload_available`
+    must be received on at least one configured availability topic before the entity
+    is marked as online. If set to `latest`, the last `payload_available` or `payload_not_available`
+    received on any configured availability topic controls the availability.
+  required: false
+  type: string
+availability_template:
+  description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+    to extract device's availability from the `availability_topic`. To determine the
+    devices's availability result of this template will be compared to `payload_available`
+    and `payload_not_available`.
+  required: false
+  type: template
+availability_topic:
+  description: The MQTT topic subscribed to receive availability (online/offline)
+    updates. Must not be used together with `availability`.
+  required: false
+  type: string
+command_topic:
+  description: The MQTT topic to publish `payload_install` to start installing process.
+  required: false
+  type: string
+device:
+  description: Information about the device this Update is a part of to tie it into
+    the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html).
+    Only works when [`unique_id`](#unique_id) is set. At least one of identifiers
+    or connections must be present to identify the device.
+  keys:
+    configuration_url:
+      description: A link to the webpage that can manage the configuration of this
+        device. Can be either an `http://`, `https://` or an internal `homeassistant://`
+        URL.
+      required: false
+      type: string
+    connections:
+      description: 'A list of connections of the device to the outside world as a
+        list of tuples `[connection_type, connection_identifier]`. For example the
+        MAC address of a network interface: `"connections": [["mac", "02:5b:26:a8:dc:12"]]`.'
+      required: false
+      type: list
+    hw_version:
+      description: The hardware version of the device.
+      required: false
+      type: string
+    identifiers:
+      description: A list of IDs that uniquely identify the device. For example a
+        serial number.
+      required: false
+      type:
+      - list
+      - string
+    manufacturer:
+      description: The manufacturer of the device.
+      required: false
+      type: string
+    model:
+      description: The model of the device.
+      required: false
+      type: string
+    model_id:
+      description: The model identifier of the device.
+      required: false
+      type: string
+    name:
+      description: The name of the device.
+      required: false
+      type: string
+    serial_number:
+      description: The serial number of the device.
+      required: false
+      type: string
+    suggested_area:
+      description: Suggest an area if the device isn’t in one yet.
+      required: false
+      type: string
+    sw_version:
+      description: The firmware version of the device.
+      required: false
+      type: string
+    via_device:
+      description: Identifier of a device that routes messages between this device
+        and Home Assistant. Examples of such devices are hubs, or parent devices of
+        a sub-device. This is used to show device topology in Home Assistant.
+      required: false
+      type: string
+  required: false
+  type: map
+device_class:
+  description: The [type/class](/integrations/update/#device-classes) of the update
+    to set the icon in the frontend. The `device_class` can be `null`.
+  required: false
+  type: device_class
+display_precision:
+  default: 0
+  description: Number of decimal digits for display of update progress.
+  required: false
+  type: integer
+enabled_by_default:
+  default: true
+  description: Flag which defines if the entity should be enabled when first added.
+  required: false
+  type: boolean
+encoding:
+  default: utf-8
+  description: The encoding of the payloads received and published messages. Set to
+    `""` to disable decoding of incoming payload.
+  required: false
+  type: string
+entity_category:
+  description: The [category](https://developers.home-assistant.io/docs/core/entity#generic-properties)
+    of the entity.
+  required: false
+  type: string
+entity_picture:
+  description: Picture URL for the entity.
+  required: false
+  type: string
+icon:
+  description: '[Icon](/docs/configuration/customizing-devices/#icon) for the entity.'
+  required: false
+  type: icon
+json_attributes_template:
+  description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+    to extract the JSON dictionary from messages received on the `json_attributes_topic`.
+  required: false
+  type: template
+json_attributes_topic:
+  description: The MQTT topic subscribed to receive a JSON dictionary payload and
+    then set as entity attributes. Implies `force_update` of the current select state
+    when a message is received on this topic.
+  required: false
+  type: string
+latest_version_template:
+  description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+    to extract the latest version value. Use `state_topic` with a `value_template`
+    if all update state values can be extracted from a single JSON payload.
+  required: false
+  type: template
+latest_version_topic:
+  description: The MQTT topic subscribed to receive an update of the latest version.
+    Use `state_topic` with a `value_template` if all update state values can be extracted
+    from a single JSON payload.
+  required: false
+  type: string
+name:
+  description: The name of the Update. Can be set to `null` if only the device name
+    is relevant.
+  required: false
+  type: string
+object_id:
+  description: Used instead of `name` for automatic generation of `entity_id`
+  required: false
+  type: string
+payload_install:
+  description: The MQTT payload to start installing process.
+  required: false
+  type: string
+platform:
+  description: Must be `update`. Only allowed and required in [MQTT auto discovery
+    device messages](/integrations/mqtt/#device-discovery-payload).
+  required: true
+  type: string
+qos:
+  default: 0
+  description: The maximum QoS level to be used when receiving and publishing messages.
+  required: false
+  type: integer
+release_summary:
+  description: Summary of the release notes or changelog. This is suitable a brief
+    update description of max 255 characters.
+  required: false
+  type: string
+release_url:
+  description: URL to the full release notes of the latest version available.
+  required: false
+  type: string
+retain:
+  default: false
+  description: If the published message should have the retain flag on or not.
+  required: false
+  type: boolean
+state_topic:
+  description: 'The MQTT topic subscribed to receive state updates. The state update
+    may be either JSON or a simple string with `installed_version` value. When a JSON
+    payload is detected, the state value of the JSON payload should supply the `installed_version`
+    and can optionally supply: `latest_version`, `title`, `release_summary`, `release_url`,
+    and an `entity_picture` URL. To allow progress monitoring `in_progress` (a boolean
+    to indicate an update is in progress), or `update_percentage` (a float value to
+    indicate the progress percentage) may be part of the JSON message.'
+  required: false
+  type: string
+title:
+  description: Title of the software, or firmware update. This helps to differentiate
+    between the device or entity name versus the title of the software installed.
+  required: false
+  type: string
+unique_id:
+  description: An ID that uniquely identifies this Update. If two Updates have the
+    same unique ID Home Assistant will raise an exception.
+  required: false
+  type: string
+value_template:
+  description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+    to extract the `installed_version` state value or to render to a valid JSON payload
+    on from the payload received on `state_topic`.
+  required: false
+  type: template
