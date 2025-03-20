@@ -1,35 +1,62 @@
+use derive_more::From;
 use serde_derive::Serialize;
 
 /// Units of measurement
 #[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(From, Clone, Debug, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum Unit {
+    #[from(PowerUnit)]
     Power(PowerUnit),
+    #[from(VoltUnit)]
     Volt(VoltUnit),
+    #[from(EnergyUnit)]
     Energy(EnergyUnit),
+    #[from(ElectricalUnit)]
     Electrical(ElectricalUnit),
+    #[from(AngleUnit)]
     Angle(AngleUnit),
+    #[from(CurrencyUnit)]
     Currency(CurrencyUnit),
+    #[from(TempUnit)]
     Temperature(TempUnit),
+    #[from(TimeUnit)]
     Time(TimeUnit),
+    #[from(LengthUnit)]
     Length(LengthUnit),
+    #[from(FrequencyUnit)]
     Frequency(FrequencyUnit),
+    #[from(PressureUnit)]
     Pressure(PressureUnit),
+    #[from(VolumeUnit)]
     Volume(VolumeUnit),
+    #[from(VolumeFlowRateUnit)]
     VolumeFlowRate(VolumeFlowRateUnit),
+    #[from(AreaUnit)]
     Area(AreaUnit),
+    #[from(MassUnit)]
     Mass(MassUnit),
+    #[from(ConductivityUnit)]
     Conductivity(ConductivityUnit),
+    #[from(LightUnit)]
     Light(LightUnit),
+    #[from(UvUnit)]
     Uv(UvUnit),
+    #[from(PercentageUnit)]
     Percentage(PercentageUnit),
+    #[from(IrradiationUnit)]
     Irradiation(IrradiationUnit),
+    #[from(PrecipitationUnit)]
     Precipitation(PrecipitationUnit),
+    #[from(ConcentrationUnit)]
     Concentration(ConcentrationUnit),
+    #[from(SpeedUnit)]
     Speed(SpeedUnit),
+    #[from(SignalStrengthUnit)]
     SignalStrength(SignalStrengthUnit),
+    #[from(DataUnit)]
     Data(DataUnit),
+    #[from(DataRateUnit)]
     DataRateUnit(DataRateUnit),
 }
 
