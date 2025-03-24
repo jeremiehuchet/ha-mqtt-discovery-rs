@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0"
+derive_more = {version = "2.0.1", features = ["from"]}
 rumqttc = "0.24"
 rust_decimal = {version = "1.35", features = ["serde-float"]}
 serde = "1.0"
