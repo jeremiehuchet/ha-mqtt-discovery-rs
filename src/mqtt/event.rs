@@ -143,7 +143,7 @@ pub struct Event {
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -175,7 +175,7 @@ pub struct Event {
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
     pub unique_id: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the value and render it to a valid JSON event payload. If the template throws an error, the current state will be used instead.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value and render it to a valid JSON event payload. If the template throws an error, the current state will be used instead.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
     pub value_template: Option<String>,
 }
@@ -248,7 +248,7 @@ impl Event {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -299,7 +299,7 @@ impl Event {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the value and render it to a valid JSON event payload. If the template throws an error, the current state will be used instead.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value and render it to a valid JSON event payload. If the template throws an error, the current state will be used instead.
     pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
         self.value_template = Some(value_template.into());
         self

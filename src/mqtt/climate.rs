@@ -193,7 +193,7 @@ pub struct Climate {
     #[serde(rename = "init", skip_serializing_if = "Option::is_none")]
     pub initial: Option<Decimal>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -275,7 +275,7 @@ pub struct Climate {
     #[serde(rename = "precision", skip_serializing_if = "Option::is_none")]
     pub precision: Option<Decimal>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `preset_mode_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.
     #[serde(rename = "pr_mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub preset_mode_command_template: Option<String>,
 
@@ -287,7 +287,7 @@ pub struct Climate {
     #[serde(rename = "pr_mode_stat_t", skip_serializing_if = "Option::is_none")]
     pub preset_mode_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
     #[serde(rename = "pr_mode_val_tpl", skip_serializing_if = "Option::is_none")]
     pub preset_mode_value_template: Option<String>,
 
@@ -361,7 +361,7 @@ pub struct Climate {
     #[serde(rename = "swing_modes", skip_serializing_if = "Option::is_none")]
     pub swing_modes: Option<Vec<String>>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `target_humidity_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `target_humidity_command_topic`.
     #[serde(rename = "hum_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub target_humidity_command_template: Option<String>,
 
@@ -369,7 +369,7 @@ pub struct Climate {
     #[serde(rename = "hum_cmd_t", skip_serializing_if = "Option::is_none")]
     pub target_humidity_command_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the climate `target_humidity` state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the climate `target_humidity` state.
     #[serde(rename = "hum_state_tpl", skip_serializing_if = "Option::is_none")]
     pub target_humidity_state_template: Option<String>,
 
@@ -582,7 +582,7 @@ impl Climate {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -699,7 +699,7 @@ impl Climate {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `preset_mode_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.
     pub fn preset_mode_command_template<T: Into<String>>(
         mut self,
         preset_mode_command_template: T,
@@ -723,7 +723,7 @@ impl Climate {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
     pub fn preset_mode_value_template<T: Into<String>>(
         mut self,
         preset_mode_value_template: T,
@@ -841,7 +841,7 @@ impl Climate {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `target_humidity_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `target_humidity_command_topic`.
     pub fn target_humidity_command_template<T: Into<String>>(
         mut self,
         target_humidity_command_template: T,
@@ -859,7 +859,7 @@ impl Climate {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the climate `target_humidity` state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the climate `target_humidity` state.
     pub fn target_humidity_state_template<T: Into<String>>(
         mut self,
         target_humidity_state_template: T,

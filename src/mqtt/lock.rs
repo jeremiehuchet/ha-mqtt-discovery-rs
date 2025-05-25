@@ -107,7 +107,7 @@ pub struct Lock {
     #[serde(rename = "code_format", skip_serializing_if = "Option::is_none")]
     pub code_format: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`. The lock command template accepts the parameters `value` and `code`. The `value` parameter will contain the configured value for either `payload_open`, `payload_lock` or `payload_unlock`. The `code` parameter is set during the action to `open`, `lock` or `unlock` the MQTT lock and will be set `None` if no code was passed.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`. The lock command template accepts the parameters `value` and `code`. The `value` parameter will contain the configured value for either `payload_open`, `payload_lock` or `payload_unlock`. The `code` parameter is set during the action to `open`, `lock` or `unlock` the MQTT lock and will be set `None` if no code was passed.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub command_template: Option<String>,
 
@@ -131,7 +131,7 @@ pub struct Lock {
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -207,7 +207,7 @@ pub struct Lock {
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
     pub unique_id: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a state value from the payload.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a state value from the payload.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
     pub value_template: Option<String>,
 }
@@ -250,7 +250,7 @@ impl Lock {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`. The lock command template accepts the parameters `value` and `code`. The `value` parameter will contain the configured value for either `payload_open`, `payload_lock` or `payload_unlock`. The `code` parameter is set during the action to `open`, `lock` or `unlock` the MQTT lock and will be set `None` if no code was passed.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`. The lock command template accepts the parameters `value` and `code`. The `value` parameter will contain the configured value for either `payload_open`, `payload_lock` or `payload_unlock`. The `code` parameter is set during the action to `open`, `lock` or `unlock` the MQTT lock and will be set `None` if no code was passed.
     pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
         self.command_template = Some(command_template.into());
         self
@@ -286,7 +286,7 @@ impl Lock {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -403,7 +403,7 @@ impl Lock {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a state value from the payload.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a state value from the payload.
     pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
         self.value_template = Some(value_template.into());
         self

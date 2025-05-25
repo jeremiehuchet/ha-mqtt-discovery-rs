@@ -130,7 +130,7 @@ pub struct DeviceTrigger {
     #[serde(rename = "type")]
     pub r#type: String,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
     pub value_template: Option<String>,
 }
@@ -209,7 +209,7 @@ impl DeviceTrigger {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
         self.value_template = Some(value_template.into());
         self

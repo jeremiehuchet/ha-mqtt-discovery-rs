@@ -182,7 +182,7 @@ pub struct Vacuum {
     #[serde(rename = "fanspd_lst", skip_serializing_if = "Option::is_none")]
     pub fan_speed_list: Option<Vec<String>>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -305,7 +305,7 @@ impl Vacuum {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,

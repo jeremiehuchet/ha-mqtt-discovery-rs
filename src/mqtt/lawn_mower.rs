@@ -82,14 +82,14 @@ pub struct LawnMower {
     )]
     pub activity_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     #[serde(
         rename = "activity_value_template",
         skip_serializing_if = "Option::is_none"
     )]
     pub activity_value_template: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `dock_command_topic`. The `value` parameter in the template will be set to `dock`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `dock_command_topic`. The `value` parameter in the template will be set to `dock`.
     #[serde(
         rename = "dock_command_template",
         skip_serializing_if = "Option::is_none"
@@ -116,7 +116,7 @@ pub struct LawnMower {
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -136,7 +136,7 @@ pub struct LawnMower {
     #[serde(rename = "opt", skip_serializing_if = "Option::is_none")]
     pub optimistic: Option<bool>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `pause_command_topic`. The `value` parameter in the template will be set to `pause`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `pause_command_topic`. The `value` parameter in the template will be set to `pause`.
     #[serde(
         rename = "pause_command_template",
         skip_serializing_if = "Option::is_none"
@@ -169,7 +169,7 @@ pub struct LawnMower {
     )]
     pub start_mowing_command_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
     #[serde(
         rename = "start_mowing_template",
         skip_serializing_if = "Option::is_none"
@@ -219,13 +219,13 @@ impl LawnMower {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     pub fn activity_value_template<T: Into<String>>(mut self, activity_value_template: T) -> Self {
         self.activity_value_template = Some(activity_value_template.into());
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `dock_command_topic`. The `value` parameter in the template will be set to `dock`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `dock_command_topic`. The `value` parameter in the template will be set to `dock`.
     pub fn dock_command_template<T: Into<String>>(mut self, dock_command_template: T) -> Self {
         self.dock_command_template = Some(dock_command_template.into());
         self
@@ -261,7 +261,7 @@ impl LawnMower {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -294,7 +294,7 @@ impl LawnMower {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `pause_command_topic`. The `value` parameter in the template will be set to `pause`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `pause_command_topic`. The `value` parameter in the template will be set to `pause`.
     pub fn pause_command_template<T: Into<String>>(mut self, pause_command_template: T) -> Self {
         self.pause_command_template = Some(pause_command_template.into());
         self
@@ -333,7 +333,7 @@ impl LawnMower {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
     pub fn start_mowing_template<T: Into<String>>(mut self, start_mowing_template: T) -> Self {
         self.start_mowing_template = Some(start_mowing_template.into());
         self

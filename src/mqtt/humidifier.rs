@@ -111,7 +111,7 @@ pub struct Humidifier {
     #[serde(rename = "act_t", skip_serializing_if = "Option::is_none")]
     pub action_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub command_template: Option<String>,
 
@@ -153,7 +153,7 @@ pub struct Humidifier {
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -169,7 +169,7 @@ pub struct Humidifier {
     #[serde(rename = "min_hum", skip_serializing_if = "Option::is_none")]
     pub min_humidity: Option<Decimal>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `mode_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `mode_command_topic`.
     #[serde(rename = "mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub mode_command_template: Option<String>,
 
@@ -177,7 +177,7 @@ pub struct Humidifier {
     #[serde(rename = "mode_cmd_t", skip_serializing_if = "Option::is_none")]
     pub mode_command_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `mode` state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the humidifier `mode` state.
     #[serde(rename = "mode_stat_tpl", skip_serializing_if = "Option::is_none")]
     pub mode_state_template: Option<String>,
 
@@ -233,11 +233,11 @@ pub struct Humidifier {
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
     pub state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the state.
     #[serde(rename = "stat_val_tpl", skip_serializing_if = "Option::is_none")]
     pub state_value_template: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `target_humidity_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `target_humidity_command_topic`.
     #[serde(rename = "hum_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub target_humidity_command_template: Option<String>,
 
@@ -245,7 +245,7 @@ pub struct Humidifier {
     #[serde(rename = "hum_cmd_t")]
     pub target_humidity_command_topic: String,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `target_humidity` state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the humidifier `target_humidity` state.
     #[serde(rename = "hum_state_tpl", skip_serializing_if = "Option::is_none")]
     pub target_humidity_state_template: Option<String>,
 
@@ -302,7 +302,7 @@ impl Humidifier {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
         self.command_template = Some(command_template.into());
         self
@@ -359,7 +359,7 @@ impl Humidifier {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -386,7 +386,7 @@ impl Humidifier {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `mode_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `mode_command_topic`.
     pub fn mode_command_template<T: Into<String>>(mut self, mode_command_template: T) -> Self {
         self.mode_command_template = Some(mode_command_template.into());
         self
@@ -398,7 +398,7 @@ impl Humidifier {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `mode` state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the humidifier `mode` state.
     pub fn mode_state_template<T: Into<String>>(mut self, mode_state_template: T) -> Self {
         self.mode_state_template = Some(mode_state_template.into());
         self
@@ -482,13 +482,13 @@ impl Humidifier {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the state.
     pub fn state_value_template<T: Into<String>>(mut self, state_value_template: T) -> Self {
         self.state_value_template = Some(state_value_template.into());
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `target_humidity_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `target_humidity_command_topic`.
     pub fn target_humidity_command_template<T: Into<String>>(
         mut self,
         target_humidity_command_template: T,
@@ -506,7 +506,7 @@ impl Humidifier {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value for the humidifier `target_humidity` state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the humidifier `target_humidity` state.
     pub fn target_humidity_state_template<T: Into<String>>(
         mut self,
         target_humidity_state_template: T,

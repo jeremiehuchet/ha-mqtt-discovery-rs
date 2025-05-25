@@ -18,7 +18,7 @@ availability:
       required: true
       type: string
     value_template:
-      description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+      description: Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt)
         to extract device's availability from the `topic`. To determine the devices's
         availability result of this template will be compared to `payload_available`
         and `payload_not_available`.
@@ -38,7 +38,7 @@ availability_mode:
   required: false
   type: string
 availability_template:
-  description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+  description: Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt)
     to extract device's availability from the `availability_topic`. To determine the
     devices's availability result of this template will be compared to `payload_available`
     and `payload_not_available`.
@@ -152,7 +152,7 @@ icon:
   required: false
   type: icon
 json_attributes_template:
-  description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+  description: Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt)
     to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration)
     documentation.
@@ -204,6 +204,11 @@ payload_stop:
   description: The command payload that stops the cover.
   required: false
   type: string
+payload_stop_tilt:
+  default: stop
+  description: The command payload that stops the tilt.
+  required: false
+  type: string
 platform:
   description: Must be `cover`. Only allowed and required in [MQTT auto discovery
     device messages](/integrations/mqtt/#device-discovery-payload).
@@ -220,7 +225,7 @@ position_open:
   required: false
   type: integer
 position_template:
-  description: 'Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+  description: 'Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt)
     that can be used to extract the payload for the `position_topic` topic. Within
     the template the following variables are available: `entity_id`, `position_open`;
     `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference
@@ -243,7 +248,7 @@ retain:
   required: false
   type: boolean
 set_position_template:
-  description: 'Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+  description: 'Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt)
     to define the position to be sent to the `set_position_topic` topic. Incoming
     position value is available for use in the template `{% raw %}{{ position }}{%
     endraw %}`. Within the template the following variables are available: `entity_id`,
@@ -299,7 +304,7 @@ tilt_closed_value:
   required: false
   type: integer
 tilt_command_template:
-  description: 'Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+  description: 'Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt)
     that can be used to extract the payload for the `tilt_command_topic` topic. Within
     the template the following variables are available: `entity_id`, `tilt_position`,
     the target tilt position in percent; `position_open`; `position_closed`; `tilt_min`;
@@ -332,7 +337,7 @@ tilt_optimistic:
   required: false
   type: boolean
 tilt_status_template:
-  description: 'Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+  description: 'Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt)
     that can be used to extract the payload for the `tilt_status_topic` topic. Within
     the template the following variables are available: `entity_id`, `position_open`;
     `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference
@@ -351,7 +356,7 @@ unique_id:
   required: false
   type: string
 value_template:
-  description: Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration)
+  description: Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt)
     that can be used to extract the payload for the `state_topic` topic.
   required: false
   type: template

@@ -493,7 +493,7 @@ pub struct Light {
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
     pub entity_category: Option<EntityCategory>,
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `brightness_command_topic`. Available variables: `value`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `brightness_command_topic`. Available variables: `value`.
     #[serde(rename = "bri_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub brightness_command_template: Option<String>,
 
@@ -509,7 +509,7 @@ pub struct Light {
     #[serde(rename = "bri_stat_t", skip_serializing_if = "Option::is_none")]
     pub brightness_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the brightness value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the brightness value.
     #[serde(rename = "bri_val_tpl", skip_serializing_if = "Option::is_none")]
     pub brightness_value_template: Option<String>,
 
@@ -517,11 +517,11 @@ pub struct Light {
     #[serde(rename = "clrm_stat_t", skip_serializing_if = "Option::is_none")]
     pub color_mode_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the color mode.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the color mode.
     #[serde(rename = "clrm_val_tpl", skip_serializing_if = "Option::is_none")]
     pub color_mode_value_template: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `color_temp_command_topic`. Available variables: `value`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `color_temp_command_topic`. Available variables: `value`.
     #[serde(rename = "clr_temp_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub color_temp_command_template: Option<String>,
 
@@ -537,7 +537,7 @@ pub struct Light {
     #[serde(rename = "clr_temp_stat_t", skip_serializing_if = "Option::is_none")]
     pub color_temp_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the color temperature value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the color temperature value.
     #[serde(rename = "clr_temp_val_tpl", skip_serializing_if = "Option::is_none")]
     pub color_temp_value_template: Option<String>,
 
@@ -545,7 +545,7 @@ pub struct Light {
     #[serde(rename = "cmd_t")]
     pub command_topic: String,
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `effect_command_topic`. Available variables: `value`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `effect_command_topic`. Available variables: `value`.
     #[serde(rename = "fx_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub effect_command_template: Option<String>,
 
@@ -561,7 +561,7 @@ pub struct Light {
     #[serde(rename = "fx_stat_t", skip_serializing_if = "Option::is_none")]
     pub effect_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the effect value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the effect value.
     #[serde(rename = "fx_val_tpl", skip_serializing_if = "Option::is_none")]
     pub effect_value_template: Option<String>,
 
@@ -577,7 +577,7 @@ pub struct Light {
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
     pub entity_picture: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `hs_command_topic`. Available variables: `hue` and `sat`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `hs_command_topic`. Available variables: `hue` and `sat`.
     #[serde(rename = "hs_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub hs_command_template: Option<String>,
 
@@ -589,7 +589,7 @@ pub struct Light {
     #[serde(rename = "hs_stat_t", skip_serializing_if = "Option::is_none")]
     pub hs_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the HS value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the HS value.
     #[serde(rename = "hs_val_tpl", skip_serializing_if = "Option::is_none")]
     pub hs_value_template: Option<String>,
 
@@ -597,7 +597,7 @@ pub struct Light {
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -637,11 +637,11 @@ pub struct Light {
     #[serde(rename = "opt", skip_serializing_if = "Option::is_none")]
     pub optimistic: Option<bool>,
 
-    /// The payload that represents disabled state.
+    /// The payload that represents the off state.
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
     pub payload_off: Option<String>,
 
-    /// The payload that represents enabled state.
+    /// The payload that represents the on state.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
     pub payload_on: Option<String>,
 
@@ -657,7 +657,7 @@ pub struct Light {
     #[serde(rename = "ret", skip_serializing_if = "Option::is_none")]
     pub retain: Option<bool>,
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `rgb_command_topic`. Available variables: `red`, `green` and `blue`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgb_command_topic`. Available variables: `red`, `green` and `blue`.
     #[serde(rename = "rgb_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub rgb_command_template: Option<String>,
 
@@ -669,11 +669,11 @@ pub struct Light {
     #[serde(rename = "rgb_stat_t", skip_serializing_if = "Option::is_none")]
     pub rgb_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the RGB value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGB value.
     #[serde(rename = "rgb_val_tpl", skip_serializing_if = "Option::is_none")]
     pub rgb_value_template: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `rgbw_command_topic`. Available variables: `red`, `green`, `blue` and `white`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgbw_command_topic`. Available variables: `red`, `green`, `blue` and `white`.
     #[serde(rename = "rgbw_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub rgbw_command_template: Option<String>,
 
@@ -685,11 +685,11 @@ pub struct Light {
     #[serde(rename = "rgbw_stat_t", skip_serializing_if = "Option::is_none")]
     pub rgbw_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the RGBW value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGBW value.
     #[serde(rename = "rgbw_val_tpl", skip_serializing_if = "Option::is_none")]
     pub rgbw_value_template: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `rgbww_command_topic`. Available variables: `red`, `green`, `blue`, `cold_white` and `warm_white`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgbww_command_topic`. Available variables: `red`, `green`, `blue`, `cold_white` and `warm_white`.
     #[serde(rename = "rgbww_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub rgbww_command_template: Option<String>,
 
@@ -701,11 +701,11 @@ pub struct Light {
     #[serde(rename = "rgbww_stat_t", skip_serializing_if = "Option::is_none")]
     pub rgbww_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the RGBWW value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGBWW value.
     #[serde(rename = "rgbww_val_tpl", skip_serializing_if = "Option::is_none")]
     pub rgbww_value_template: Option<String>,
 
-    /// The schema to use. Must be `default` or omitted to select the default schema.
+    /// The schema to use. Must be `basic` or omitted to select the default schema.
     #[serde(rename = "schema", skip_serializing_if = "Option::is_none")]
     pub schema: Option<String>,
 
@@ -713,7 +713,7 @@ pub struct Light {
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
     pub state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the state value. The template should return the `payload_on` and `payload_off` values, so if your light uses `power on` to turn on, your `state_value_template` string should return `power on` when the switch is on. For example, if the message is just `on`, your `state_value_template` should be `power {{ value }}`. When your `payload_on = 27` and `payload_off = 'off'`, then this template might be `'off' if value_json.my_custom_brightness_field <= 0 else 27`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the state value. The template should return the values defined by `payload_on` (defaults to "ON") and `payload_off` (defaults to "OFF") settings, or "None".
     #[serde(rename = "stat_val_tpl", skip_serializing_if = "Option::is_none")]
     pub state_value_template: Option<String>,
 
@@ -729,7 +729,7 @@ pub struct Light {
     #[serde(rename = "whit_scl", skip_serializing_if = "Option::is_none")]
     pub white_scale: Option<i32>,
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `xy_command_topic`. Available variables: `x` and `y`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `xy_command_topic`. Available variables: `x` and `y`.
     #[serde(rename = "xy_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub xy_command_template: Option<String>,
 
@@ -741,7 +741,7 @@ pub struct Light {
     #[serde(rename = "xy_stat_t", skip_serializing_if = "Option::is_none")]
     pub xy_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the XY value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the XY value.
     #[serde(rename = "xy_val_tpl", skip_serializing_if = "Option::is_none")]
     pub xy_value_template: Option<String>,
 }
@@ -778,7 +778,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `brightness_command_topic`. Available variables: `value`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `brightness_command_topic`. Available variables: `value`.
     pub fn brightness_command_template<T: Into<String>>(
         mut self,
         brightness_command_template: T,
@@ -808,7 +808,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the brightness value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the brightness value.
     pub fn brightness_value_template<T: Into<String>>(
         mut self,
         brightness_value_template: T,
@@ -823,7 +823,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the color mode.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the color mode.
     pub fn color_mode_value_template<T: Into<String>>(
         mut self,
         color_mode_value_template: T,
@@ -832,7 +832,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `color_temp_command_topic`. Available variables: `value`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `color_temp_command_topic`. Available variables: `value`.
     pub fn color_temp_command_template<T: Into<String>>(
         mut self,
         color_temp_command_template: T,
@@ -862,7 +862,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the color temperature value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the color temperature value.
     pub fn color_temp_value_template<T: Into<String>>(
         mut self,
         color_temp_value_template: T,
@@ -877,7 +877,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `effect_command_topic`. Available variables: `value`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `effect_command_topic`. Available variables: `value`.
     pub fn effect_command_template<T: Into<String>>(mut self, effect_command_template: T) -> Self {
         self.effect_command_template = Some(effect_command_template.into());
         self
@@ -901,7 +901,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the effect value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the effect value.
     pub fn effect_value_template<T: Into<String>>(mut self, effect_value_template: T) -> Self {
         self.effect_value_template = Some(effect_value_template.into());
         self
@@ -925,7 +925,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `hs_command_topic`. Available variables: `hue` and `sat`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `hs_command_topic`. Available variables: `hue` and `sat`.
     pub fn hs_command_template<T: Into<String>>(mut self, hs_command_template: T) -> Self {
         self.hs_command_template = Some(hs_command_template.into());
         self
@@ -943,7 +943,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the HS value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the HS value.
     pub fn hs_value_template<T: Into<String>>(mut self, hs_value_template: T) -> Self {
         self.hs_value_template = Some(hs_value_template.into());
         self
@@ -955,7 +955,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -1018,13 +1018,13 @@ impl Light {
         self
     }
 
-    /// The payload that represents disabled state.
+    /// The payload that represents the off state.
     pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
         self.payload_off = Some(payload_off.into());
         self
     }
 
-    /// The payload that represents enabled state.
+    /// The payload that represents the on state.
     pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
         self.payload_on = Some(payload_on.into());
         self
@@ -1048,7 +1048,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `rgb_command_topic`. Available variables: `red`, `green` and `blue`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgb_command_topic`. Available variables: `red`, `green` and `blue`.
     pub fn rgb_command_template<T: Into<String>>(mut self, rgb_command_template: T) -> Self {
         self.rgb_command_template = Some(rgb_command_template.into());
         self
@@ -1066,13 +1066,13 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the RGB value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGB value.
     pub fn rgb_value_template<T: Into<String>>(mut self, rgb_value_template: T) -> Self {
         self.rgb_value_template = Some(rgb_value_template.into());
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `rgbw_command_topic`. Available variables: `red`, `green`, `blue` and `white`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgbw_command_topic`. Available variables: `red`, `green`, `blue` and `white`.
     pub fn rgbw_command_template<T: Into<String>>(mut self, rgbw_command_template: T) -> Self {
         self.rgbw_command_template = Some(rgbw_command_template.into());
         self
@@ -1090,13 +1090,13 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the RGBW value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGBW value.
     pub fn rgbw_value_template<T: Into<String>>(mut self, rgbw_value_template: T) -> Self {
         self.rgbw_value_template = Some(rgbw_value_template.into());
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `rgbww_command_topic`. Available variables: `red`, `green`, `blue`, `cold_white` and `warm_white`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgbww_command_topic`. Available variables: `red`, `green`, `blue`, `cold_white` and `warm_white`.
     pub fn rgbww_command_template<T: Into<String>>(mut self, rgbww_command_template: T) -> Self {
         self.rgbww_command_template = Some(rgbww_command_template.into());
         self
@@ -1114,13 +1114,13 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the RGBWW value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGBWW value.
     pub fn rgbww_value_template<T: Into<String>>(mut self, rgbww_value_template: T) -> Self {
         self.rgbww_value_template = Some(rgbww_value_template.into());
         self
     }
 
-    /// The schema to use. Must be `default` or omitted to select the default schema.
+    /// The schema to use. Must be `basic` or omitted to select the default schema.
     pub fn schema<T: Into<String>>(mut self, schema: T) -> Self {
         self.schema = Some(schema.into());
         self
@@ -1132,7 +1132,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the state value. The template should return the `payload_on` and `payload_off` values, so if your light uses `power on` to turn on, your `state_value_template` string should return `power on` when the switch is on. For example, if the message is just `on`, your `state_value_template` should be `power {{ value }}`. When your `payload_on = 27` and `payload_off = 'off'`, then this template might be `'off' if value_json.my_custom_brightness_field <= 0 else 27`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the state value. The template should return the values defined by `payload_on` (defaults to "ON") and `payload_off` (defaults to "OFF") settings, or "None".
     pub fn state_value_template<T: Into<String>>(mut self, state_value_template: T) -> Self {
         self.state_value_template = Some(state_value_template.into());
         self
@@ -1156,7 +1156,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/) to compose message which will be sent to `xy_command_topic`. Available variables: `x` and `y`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `xy_command_topic`. Available variables: `x` and `y`.
     pub fn xy_command_template<T: Into<String>>(mut self, xy_command_template: T) -> Self {
         self.xy_command_template = Some(xy_command_template.into());
         self
@@ -1174,7 +1174,7 @@ impl Light {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the XY value.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the XY value.
     pub fn xy_value_template<T: Into<String>>(mut self, xy_value_template: T) -> Self {
         self.xy_value_template = Some(xy_value_template.into());
         self

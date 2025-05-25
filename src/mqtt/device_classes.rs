@@ -53,7 +53,7 @@ pub enum CoverDeviceClass {
     #[serde(rename = "shade")]
     Shade,
 
-    /// Control of shutters, which are linked slats that swing out/in to covering an opening or may be tilted to partially cover an opening, such as indoor or exterior window shutters.
+    /// Control of shutters. Shutters are linked slats that can be raised or lowered to cover an opening, such as window or door roller shutters. Some shutters (for example, some indoor or exterior window shutters) swing out/in to cover an opening or may be tilted to provide partial cover.
     #[serde(rename = "shutter")]
     Shutter,
 
@@ -116,7 +116,7 @@ pub enum NumberDeviceClass {
     #[serde(rename = "distance")]
     Distance,
 
-    /// Duration in d, h, min, s, or ms
+    /// Duration in d, h, min, s, ms, or µs
     #[serde(rename = "duration")]
     Duration,
 
@@ -212,7 +212,7 @@ pub enum NumberDeviceClass {
     #[serde(rename = "pressure")]
     Pressure,
 
-    /// Reactive power in var
+    /// Reactive power in var or kvar
     #[serde(rename = "reactive_power")]
     ReactivePower,
 
@@ -528,7 +528,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "distance")]
     Distance,
 
-    /// Duration in d, h, min, s, or ms
+    /// Duration in d, h, min, s, ms, or µs
     #[serde(rename = "duration")]
     Duration,
 
@@ -628,7 +628,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "pressure")]
     Pressure,
 
-    /// Reactive power in var
+    /// Reactive power in var or kvar
     #[serde(rename = "reactive_power")]
     ReactivePower,
 
@@ -672,7 +672,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "volume")]
     Volume,
 
-    /// Volume flow rate in m³/h, ft³/min, L/min, gal/min, or mL/s
+    /// Volume flow rate in m³/h, m³/s, ft³/min, L/h, L/min, L/s, gal/min, or mL/s
     #[serde(rename = "volume_flow_rate")]
     VolumeFlowRate,
 

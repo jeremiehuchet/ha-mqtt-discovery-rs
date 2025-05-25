@@ -38,7 +38,7 @@ use serde_derive::Serialize;
 /// # Example configuration.yaml entry
 /// mqtt:
 ///   - cover:
-///       command_topic: "home-assistant/cover/set"
+///       command_topic: "living-room-cover/set"
 /// ```
 ///
 ///
@@ -62,10 +62,10 @@ use serde_derive::Serialize;
 /// mqtt:
 ///   - cover:
 ///       name: "MQTT Cover"
-///       command_topic: "home-assistant/cover/set"
-///       state_topic: "home-assistant/cover/state"
+///       command_topic: "living-room-cover/set"
+///       state_topic: "living-room-cover/state"
 ///       availability:
-///         - topic: "home-assistant/cover/availability"
+///         - topic: "living-room-cover/availability"
 ///       qos: 0
 ///       retain: true
 ///       payload_open: "OPEN"
@@ -92,11 +92,11 @@ use serde_derive::Serialize;
 /// mqtt:
 ///   - cover:
 ///       name: "MQTT Cover"
-///       command_topic: "home-assistant/cover/set"
-///       position_topic: "home-assistant/cover/position"
+///       command_topic: "living-room-cover/set"
+///       position_topic: "living-room-cover/position"
 ///       availability:
-///         - topic: "home-assistant/cover/availability"
-///       set_position_topic: "home-assistant/cover/set_position"
+///         - topic: "living-room-cover/availability"
+///       set_position_topic: "living-room-cover/set_position"
 ///       qos: 0
 ///       retain: true
 ///       payload_open: "OPEN"
@@ -121,11 +121,11 @@ use serde_derive::Serialize;
 /// mqtt:
 ///   - cover:
 ///       name: "MQTT Cover"
-///       command_topic: "home-assistant/cover/set"
-///       state_topic: "home-assistant/cover/state"
-///       position_topic: "home-assistant/cover/position"
+///       command_topic: "living-room-cover/set"
+///       state_topic: "living-room-cover/state"
+///       position_topic: "living-room-cover/position"
 ///       availability:
-///         - topic: "home-assistant/cover/availability"
+///         - topic: "living-room-cover/availability"
 ///       qos: 0
 ///       retain: true
 ///       payload_open: "OPEN"
@@ -140,8 +140,8 @@ use serde_derive::Serialize;
 ///       optimistic: false
 ///       value_template: "{{ value.x }}"
 ///       position_template: "{{ value.y }}"
-///       tilt_command_topic: "home-assistant/cover/tilt"
-///       tilt_status_topic: "home-assistant/cover/tilt-state"
+///       tilt_command_topic: "living-room-cover/tilt"
+///       tilt_status_topic: "living-room-cover/tilt-state"
 ///       tilt_status_template: "{{ value_json["PWM"]["PWM1"] }}"
 ///       tilt_min: 0
 ///       tilt_max: 180
@@ -160,11 +160,11 @@ use serde_derive::Serialize;
 /// mqtt:
 ///   - cover:
 ///       name: "MQTT Cover"
-///       command_topic: "home-assistant/cover/set"
-///       state_topic: "home-assistant/cover/state"
-///       position_topic: "home-assistant/cover/position"
+///       command_topic: "living-room-cover/set"
+///       state_topic: "living-room-cover/state"
+///       position_topic: "living-room-cover/position"
 ///       availability:
-///         - topic: "home-assistant/cover/availability"
+///         - topic: "living-room-cover/availability"
 ///       qos: 0
 ///       retain: true
 ///       payload_open: "OPEN"
@@ -223,10 +223,10 @@ use serde_derive::Serialize;
 /// mqtt:
 ///   - cover:
 ///       name: "MQTT Cover"
-///       command_topic: "home-assistant/cover/set"
-///       state_topic: "home-assistant/cover/state"
-///       position_topic: "home-assistant/cover/position"
-///       set_position_topic: "home-assistant/cover/position/set"
+///       command_topic: "living-room-cover/set"
+///       state_topic: "living-room-cover/state"
+///       position_topic: "living-room-cover/position"
+///       set_position_topic: "living-room-cover/position/set"
 ///       payload_open:  "open"
 ///       payload_close: "close"
 ///       payload_stop:  "stop"
@@ -267,11 +267,11 @@ use serde_derive::Serialize;
 /// mqtt:
 ///   - cover:
 ///       name: "MQTT Cover"
-///       command_topic: "home-assistant/cover/set"
-///       state_topic: "home-assistant/cover/state"
-///       position_topic: "home-assistant/cover/position"
-///       set_position_topic: "home-assistant/cover/position/set"
-///       tilt_command_topic: "home-assistant/cover/position/set" # same as `set_position_topic`
+///       command_topic: "living-room-cover/set"
+///       state_topic: "living-room-cover/state"
+///       position_topic: "living-room-cover/position"
+///       set_position_topic: "living-room-cover/position/set"
+///       tilt_command_topic: "living-room-cover/position/set" # same as `set_position_topic`
 ///       qos: 1
 ///       retain: false
 ///       payload_open:  "open"
@@ -322,7 +322,7 @@ use serde_derive::Serialize;
 /// To test, you can use the command line tool `mosquitto_pub` shipped with `mosquitto` or the `mosquitto-clients` package to send MQTT messages. This allows you to operate your cover manually:
 ///
 /// ```bash
-/// mosquitto_pub -h 127.0.0.1 -t home-assistant/cover/set -m "CLOSE"
+/// mosquitto_pub -h 127.0.0.1 -t living-room-cover/set -m "CLOSE"
 /// ```
 ///
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -372,7 +372,7 @@ pub struct Cover {
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -404,6 +404,10 @@ pub struct Cover {
     #[serde(rename = "pl_stop", skip_serializing_if = "Option::is_none")]
     pub payload_stop: Option<String>,
 
+    /// The command payload that stops the tilt.
+    #[serde(rename = "payload_stop_tilt", skip_serializing_if = "Option::is_none")]
+    pub payload_stop_tilt: Option<String>,
+
     /// Must be `cover`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
     #[serde(rename = "platform")]
     pub platform: String,
@@ -416,7 +420,7 @@ pub struct Cover {
     #[serde(rename = "pos_open", skip_serializing_if = "Option::is_none")]
     pub position_open: Option<i32>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) that can be used to extract the payload for the `position_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `position_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     #[serde(rename = "pos_tpl", skip_serializing_if = "Option::is_none")]
     pub position_template: Option<String>,
 
@@ -432,7 +436,7 @@ pub struct Cover {
     #[serde(rename = "ret", skip_serializing_if = "Option::is_none")]
     pub retain: Option<bool>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to define the position to be sent to the `set_position_topic` topic. Incoming position value is available for use in the template `{% raw %}{{ position }}{% endraw %}`. Within the template the following variables are available: `entity_id`, `position`, the target position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to define the position to be sent to the `set_position_topic` topic. Incoming position value is available for use in the template `{% raw %}{{ position }}{% endraw %}`. Within the template the following variables are available: `entity_id`, `position`, the target position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     #[serde(rename = "set_pos_tpl", skip_serializing_if = "Option::is_none")]
     pub set_position_template: Option<String>,
 
@@ -468,7 +472,7 @@ pub struct Cover {
     #[serde(rename = "tilt_clsd_val", skip_serializing_if = "Option::is_none")]
     pub tilt_closed_value: Option<i32>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) that can be used to extract the payload for the `tilt_command_topic` topic. Within the template the following variables are available: `entity_id`, `tilt_position`, the target tilt position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) that can be used to extract the payload for the `tilt_command_topic` topic. Within the template the following variables are available: `entity_id`, `tilt_position`, the target tilt position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     #[serde(rename = "tilt_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub tilt_command_template: Option<String>,
 
@@ -492,7 +496,7 @@ pub struct Cover {
     #[serde(rename = "tilt_opt", skip_serializing_if = "Option::is_none")]
     pub tilt_optimistic: Option<bool>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) that can be used to extract the payload for the `tilt_status_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `tilt_status_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     #[serde(rename = "tilt_status_tpl", skip_serializing_if = "Option::is_none")]
     pub tilt_status_template: Option<String>,
 
@@ -504,7 +508,7 @@ pub struct Cover {
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
     pub unique_id: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) that can be used to extract the payload for the `state_topic` topic.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `state_topic` topic.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
     pub value_template: Option<String>,
 }
@@ -577,7 +581,7 @@ impl Cover {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -628,6 +632,12 @@ impl Cover {
         self
     }
 
+    /// The command payload that stops the tilt.
+    pub fn payload_stop_tilt<T: Into<String>>(mut self, payload_stop_tilt: T) -> Self {
+        self.payload_stop_tilt = Some(payload_stop_tilt.into());
+        self
+    }
+
     /// Must be `cover`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
     pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
         self.platform = platform.into();
@@ -646,7 +656,7 @@ impl Cover {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) that can be used to extract the payload for the `position_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `position_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     pub fn position_template<T: Into<String>>(mut self, position_template: T) -> Self {
         self.position_template = Some(position_template.into());
         self
@@ -670,7 +680,7 @@ impl Cover {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to define the position to be sent to the `set_position_topic` topic. Incoming position value is available for use in the template `{% raw %}{{ position }}{% endraw %}`. Within the template the following variables are available: `entity_id`, `position`, the target position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to define the position to be sent to the `set_position_topic` topic. Incoming position value is available for use in the template `{% raw %}{{ position }}{% endraw %}`. Within the template the following variables are available: `entity_id`, `position`, the target position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     pub fn set_position_template<T: Into<String>>(mut self, set_position_template: T) -> Self {
         self.set_position_template = Some(set_position_template.into());
         self
@@ -724,7 +734,7 @@ impl Cover {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) that can be used to extract the payload for the `tilt_command_topic` topic. Within the template the following variables are available: `entity_id`, `tilt_position`, the target tilt position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) that can be used to extract the payload for the `tilt_command_topic` topic. Within the template the following variables are available: `entity_id`, `tilt_position`, the target tilt position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     pub fn tilt_command_template<T: Into<String>>(mut self, tilt_command_template: T) -> Self {
         self.tilt_command_template = Some(tilt_command_template.into());
         self
@@ -760,7 +770,7 @@ impl Cover {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) that can be used to extract the payload for the `tilt_status_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `tilt_status_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     pub fn tilt_status_template<T: Into<String>>(mut self, tilt_status_template: T) -> Self {
         self.tilt_status_template = Some(tilt_status_template.into());
         self
@@ -778,7 +788,7 @@ impl Cover {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) that can be used to extract the payload for the `state_topic` topic.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `state_topic` topic.
     pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
         self.value_template = Some(value_template.into());
         self
@@ -807,6 +817,7 @@ impl Default for Cover {
             payload_close: Default::default(),
             payload_open: Default::default(),
             payload_stop: Default::default(),
+            payload_stop_tilt: Default::default(),
             platform: "cover".to_string(),
             position_closed: Default::default(),
             position_open: Default::default(),

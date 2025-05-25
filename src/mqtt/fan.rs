@@ -143,7 +143,7 @@ pub struct Fan {
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
     pub entity_category: Option<EntityCategory>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub command_template: Option<String>,
 
@@ -151,7 +151,7 @@ pub struct Fan {
     #[serde(rename = "cmd_t")]
     pub command_topic: String,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `direction_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `direction_command_topic`.
     #[serde(rename = "dir_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub direction_command_template: Option<String>,
 
@@ -163,7 +163,7 @@ pub struct Fan {
     #[serde(rename = "dir_stat_t", skip_serializing_if = "Option::is_none")]
     pub direction_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the direction.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the direction.
     #[serde(rename = "dir_val_tpl", skip_serializing_if = "Option::is_none")]
     pub direction_value_template: Option<String>,
 
@@ -183,7 +183,7 @@ pub struct Fan {
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
     pub json_attributes_template: Option<String>,
 
@@ -203,7 +203,7 @@ pub struct Fan {
     #[serde(rename = "opt", skip_serializing_if = "Option::is_none")]
     pub optimistic: Option<bool>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `oscillation_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `oscillation_command_topic`.
     #[serde(rename = "osc_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub oscillation_command_template: Option<String>,
 
@@ -215,7 +215,7 @@ pub struct Fan {
     #[serde(rename = "osc_stat_t", skip_serializing_if = "Option::is_none")]
     pub oscillation_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the oscillation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the oscillation.
     #[serde(rename = "osc_val_tpl", skip_serializing_if = "Option::is_none")]
     pub oscillation_value_template: Option<String>,
 
@@ -243,7 +243,7 @@ pub struct Fan {
     #[serde(rename = "pl_rst_pr_mode", skip_serializing_if = "Option::is_none")]
     pub payload_reset_preset_mode: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `percentage_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `percentage_command_topic`.
     #[serde(rename = "pct_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub percentage_command_template: Option<String>,
 
@@ -255,7 +255,7 @@ pub struct Fan {
     #[serde(rename = "pct_stat_t", skip_serializing_if = "Option::is_none")]
     pub percentage_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the `percentage` value from the payload received on `percentage_state_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `percentage` value from the payload received on `percentage_state_topic`.
     #[serde(rename = "pct_val_tpl", skip_serializing_if = "Option::is_none")]
     pub percentage_value_template: Option<String>,
 
@@ -263,7 +263,7 @@ pub struct Fan {
     #[serde(rename = "platform")]
     pub platform: String,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `preset_mode_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.
     #[serde(rename = "pr_mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub preset_mode_command_template: Option<String>,
 
@@ -275,7 +275,7 @@ pub struct Fan {
     #[serde(rename = "pr_mode_stat_t", skip_serializing_if = "Option::is_none")]
     pub preset_mode_state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
     #[serde(rename = "pr_mode_val_tpl", skip_serializing_if = "Option::is_none")]
     pub preset_mode_value_template: Option<String>,
 
@@ -303,7 +303,7 @@ pub struct Fan {
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
     pub state_topic: Option<String>,
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the state.
     #[serde(rename = "stat_val_tpl", skip_serializing_if = "Option::is_none")]
     pub state_value_template: Option<String>,
 
@@ -344,7 +344,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
         self.command_template = Some(command_template.into());
         self
@@ -356,7 +356,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `direction_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `direction_command_topic`.
     pub fn direction_command_template<T: Into<String>>(
         mut self,
         direction_command_template: T,
@@ -377,7 +377,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the direction.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the direction.
     pub fn direction_value_template<T: Into<String>>(
         mut self,
         direction_value_template: T,
@@ -410,7 +410,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     pub fn json_attributes_template<T: Into<String>>(
         mut self,
         json_attributes_template: T,
@@ -443,7 +443,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `oscillation_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `oscillation_command_topic`.
     pub fn oscillation_command_template<T: Into<String>>(
         mut self,
         oscillation_command_template: T,
@@ -467,7 +467,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the oscillation.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the oscillation.
     pub fn oscillation_value_template<T: Into<String>>(
         mut self,
         oscillation_value_template: T,
@@ -518,7 +518,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `percentage_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `percentage_command_topic`.
     pub fn percentage_command_template<T: Into<String>>(
         mut self,
         percentage_command_template: T,
@@ -542,7 +542,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the `percentage` value from the payload received on `percentage_state_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `percentage` value from the payload received on `percentage_state_topic`.
     pub fn percentage_value_template<T: Into<String>>(
         mut self,
         percentage_value_template: T,
@@ -557,7 +557,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to generate the payload to send to `preset_mode_command_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.
     pub fn preset_mode_command_template<T: Into<String>>(
         mut self,
         preset_mode_command_template: T,
@@ -581,7 +581,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
     pub fn preset_mode_value_template<T: Into<String>>(
         mut self,
         preset_mode_value_template: T,
@@ -626,7 +626,7 @@ impl Fan {
         self
     }
 
-    /// Defines a [template](/docs/configuration/templating/#using-templates-with-the-mqtt-integration) to extract a value from the state.
+    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the state.
     pub fn state_value_template<T: Into<String>>(mut self, state_value_template: T) -> Self {
         self.state_value_template = Some(state_value_template.into());
         self
