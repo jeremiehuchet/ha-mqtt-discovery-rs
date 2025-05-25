@@ -5,104 +5,192 @@ use serde_derive::Serialize;
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum Unit {
+    ApparentPower(ApparentPowerUnit),
     Power(PowerUnit),
-    Volt(VoltUnit),
+    ReactivePower(ReactivePowerUnit),
     Energy(EnergyUnit),
-    Electrical(ElectricalUnit),
-    Angle(AngleUnit),
-    Currency(CurrencyUnit),
-    Temperature(TempUnit),
+    EnergyDistance(EnergyDistanceUnit),
+    ElectricCurrent(ElectricCurrentUnit),
+    ElectricPotential(ElectricPotentialUnit),
+    Temperature(TemperatureUnit),
     Time(TimeUnit),
     Length(LengthUnit),
     Frequency(FrequencyUnit),
     Pressure(PressureUnit),
+    SoundPressure(SoundPressureUnit),
     Volume(VolumeUnit),
     VolumeFlowRate(VolumeFlowRateUnit),
-    Area(AreaUnit),
     Mass(MassUnit),
-    Conductivity(ConductivityUnit),
-    Light(LightUnit),
-    Uv(UvUnit),
-    Percentage(PercentageUnit),
-    Irradiation(IrradiationUnit),
-    Precipitation(PrecipitationUnit),
-    Concentration(ConcentrationUnit),
+    Irradiance(IrradianceUnit),
+    PrecipitationDepth(PrecipitationDepthUnit),
+    BloodGlucoseConcentration(BloodGlucoseConcentrationUnit),
     Speed(SpeedUnit),
-    SignalStrength(SignalStrengthUnit),
-    Data(DataUnit),
-    DataRateUnit(DataRateUnit),
+    Information(InformationUnit),
+    DataRate(DataRateUnit),
 }
 
-/// Power units
+/// ApparentPower units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum PowerUnit {
-    #[serde(rename = "W")]
-    Watt,
-    #[serde(rename = "kW")]
-    KiloWatt,
-}
-
-/// Volt unit
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum VoltUnit {
-    #[serde(rename = "V")]
-    Volt,
-}
-
-/// Energy units
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum EnergyUnit {
-    #[serde(rename = "Wh")]
-    WattHour,
-    #[serde(rename = "kWh")]
-    KiloWattHour,
-}
-
-/// Electrical units
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum ElectricalUnit {
-    #[serde(rename = "A")]
-    CurrentAmpere,
+pub enum ApparentPowerUnit {
     #[serde(rename = "VA")]
     VoltAmpere,
 }
 
-/// Angle units
+impl Into<Unit> for ApparentPowerUnit {
+    fn into(self) -> Unit {
+        Unit::ApparentPower(self)
+    }
+}
+/// Power units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum AngleUnit {
-    #[serde(rename = "°")]
-    Degree,
+pub enum PowerUnit {
+    #[serde(rename = "mW")]
+    MilliWatt,
+    #[serde(rename = "W")]
+    Watt,
+    #[serde(rename = "kW")]
+    KiloWatt,
+    #[serde(rename = "MW")]
+    MegaWatt,
+    #[serde(rename = "GW")]
+    GigaWatt,
+    #[serde(rename = "TW")]
+    TeraWatt,
+    #[serde(rename = "BTU/h")]
+    BtuPerHour,
 }
 
-/// Currency units
+impl Into<Unit> for PowerUnit {
+    fn into(self) -> Unit {
+        Unit::Power(self)
+    }
+}
+/// ReactivePower units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum CurrencyUnit {
-    #[serde(rename = "€")]
-    Euro,
-    #[serde(rename = "$")]
-    Dollar,
-    #[serde(rename = "¢")]
-    Cent,
+pub enum ReactivePowerUnit {
+    #[serde(rename = "var")]
+    VoltAmpereReactive,
+    #[serde(rename = "kvar")]
+    KiloVoltAmpereReactive,
 }
 
+impl Into<Unit> for ReactivePowerUnit {
+    fn into(self) -> Unit {
+        Unit::ReactivePower(self)
+    }
+}
+/// Energy units
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub enum EnergyUnit {
+    #[serde(rename = "J")]
+    Joule,
+    #[serde(rename = "kJ")]
+    KiloJoule,
+    #[serde(rename = "MJ")]
+    MegaJoule,
+    #[serde(rename = "GJ")]
+    GigaJoule,
+    #[serde(rename = "mWh")]
+    MilliwattHour,
+    #[serde(rename = "Wh")]
+    WattHour,
+    #[serde(rename = "kWh")]
+    KiloWattHour,
+    #[serde(rename = "MWh")]
+    MegaWattHour,
+    #[serde(rename = "GWh")]
+    GigaWattHour,
+    #[serde(rename = "TWh")]
+    TeraWattHour,
+    #[serde(rename = "cal")]
+    Calorie,
+    #[serde(rename = "kcal")]
+    KiloCalorie,
+    #[serde(rename = "Mcal")]
+    MegaCalorie,
+    #[serde(rename = "Gcal")]
+    GigaCalorie,
+}
+
+impl Into<Unit> for EnergyUnit {
+    fn into(self) -> Unit {
+        Unit::Energy(self)
+    }
+}
+/// EnergyDistance units
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub enum EnergyDistanceUnit {
+    #[serde(rename = "kWh/100km")]
+    KiloWattHourPer100Km,
+    #[serde(rename = "mi/kWh")]
+    MilesPerKiloWattHour,
+    #[serde(rename = "km/kWh")]
+    KmPerKiloWattHour,
+}
+
+impl Into<Unit> for EnergyDistanceUnit {
+    fn into(self) -> Unit {
+        Unit::EnergyDistance(self)
+    }
+}
+/// ElectricCurrent units
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub enum ElectricCurrentUnit {
+    #[serde(rename = "mA")]
+    Milliampere,
+    #[serde(rename = "A")]
+    Ampere,
+}
+
+impl Into<Unit> for ElectricCurrentUnit {
+    fn into(self) -> Unit {
+        Unit::ElectricCurrent(self)
+    }
+}
+/// ElectricPotential units
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub enum ElectricPotentialUnit {
+    #[serde(rename = "µV")]
+    Microvolt,
+    #[serde(rename = "mV")]
+    Millivolt,
+    #[serde(rename = "V")]
+    Volt,
+    #[serde(rename = "kV")]
+    Kilovolt,
+    #[serde(rename = "MV")]
+    Megavolt,
+}
+
+impl Into<Unit> for ElectricPotentialUnit {
+    fn into(self) -> Unit {
+        Unit::ElectricPotential(self)
+    }
+}
 /// Temperature units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum TempUnit {
+pub enum TemperatureUnit {
     #[serde(rename = "°C")]
     Celsius,
     #[serde(rename = "°F")]
-    TempFahrenheit,
+    Fahrenheit,
     #[serde(rename = "K")]
-    TempKelvin,
+    Kelvin,
 }
 
+impl Into<Unit> for TemperatureUnit {
+    fn into(self) -> Unit {
+        Unit::Temperature(self)
+    }
+}
 /// Time units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -127,6 +215,11 @@ pub enum TimeUnit {
     Years,
 }
 
+impl Into<Unit> for TimeUnit {
+    fn into(self) -> Unit {
+        Unit::Time(self)
+    }
+}
 /// Length units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -139,27 +232,42 @@ pub enum LengthUnit {
     Meters,
     #[serde(rename = "km")]
     Kilometers,
-
     #[serde(rename = "in")]
     Inches,
     #[serde(rename = "ft")]
     Feet,
     #[serde(rename = "yd")]
-    Yard,
+    Yards,
     #[serde(rename = "mi")]
     Miles,
+    #[serde(rename = "nmi")]
+    NauticalMiles,
 }
 
+impl Into<Unit> for LengthUnit {
+    fn into(self) -> Unit {
+        Unit::Length(self)
+    }
+}
 /// Frequency units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum FrequencyUnit {
     #[serde(rename = "Hz")]
     Hertz,
+    #[serde(rename = "kHz")]
+    Kilohertz,
+    #[serde(rename = "MHz")]
+    Megahertz,
     #[serde(rename = "GHz")]
-    GigaHertz,
+    Gigahertz,
 }
 
+impl Into<Unit> for FrequencyUnit {
+    fn into(self) -> Unit {
+        Unit::Frequency(self)
+    }
+}
 /// Pressure units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -167,53 +275,95 @@ pub enum PressureUnit {
     #[serde(rename = "Pa")]
     Pa,
     #[serde(rename = "hPa")]
-    HPa,
+    Hpa,
+    #[serde(rename = "kPa")]
+    Kpa,
     #[serde(rename = "bar")]
     Bar,
+    #[serde(rename = "cbar")]
+    Cbar,
     #[serde(rename = "mbar")]
-    MBar,
+    Mbar,
+    #[serde(rename = "mmHg")]
+    Mmhg,
     #[serde(rename = "inHg")]
-    InHg,
+    Inhg,
     #[serde(rename = "psi")]
     Psi,
 }
 
+impl Into<Unit> for PressureUnit {
+    fn into(self) -> Unit {
+        Unit::Pressure(self)
+    }
+}
+/// SoundPressure units
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub enum SoundPressureUnit {
+    #[serde(rename = "dB")]
+    Decibel,
+    #[serde(rename = "dBA")]
+    WeightedDecibelA,
+}
+
+impl Into<Unit> for SoundPressureUnit {
+    fn into(self) -> Unit {
+        Unit::SoundPressure(self)
+    }
+}
 /// Volume units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum VolumeUnit {
+    #[serde(rename = "ft³")]
+    CubicFeet,
+    #[serde(rename = "CCF")]
+    CentumCubicFeet,
+    #[serde(rename = "m³")]
+    CubicMeters,
     #[serde(rename = "L")]
     Liters,
     #[serde(rename = "mL")]
     Milliliters,
-    #[serde(rename = "m³")]
-    CubicMeters,
-    #[serde(rename = "ft³")]
-    CubicFeet,
-
     #[serde(rename = "gal")]
     Gallons,
     #[serde(rename = "fl. oz.")]
-    FluidOunce,
+    FluidOunces,
 }
 
-/// Volume Flow Rate units
+impl Into<Unit> for VolumeUnit {
+    fn into(self) -> Unit {
+        Unit::Volume(self)
+    }
+}
+/// VolumeFlowRate units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum VolumeFlowRateUnit {
     #[serde(rename = "m³/h")]
     CubicMetersPerHour,
-    #[serde(rename = "ft³/m")]
+    #[serde(rename = "m³/s")]
+    CubicMetersPerSecond,
+    #[serde(rename = "ft³/min")]
     CubicFeetPerMinute,
-}
-/// Area units
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum AreaUnit {
-    #[serde(rename = "m²")]
-    SquareMeters,
+    #[serde(rename = "L/h")]
+    LitersPerHour,
+    #[serde(rename = "L/min")]
+    LitersPerMinute,
+    #[serde(rename = "L/s")]
+    LitersPerSecond,
+    #[serde(rename = "gal/min")]
+    GallonsPerMinute,
+    #[serde(rename = "mL/s")]
+    MillilitersPerSecond,
 }
 
+impl Into<Unit> for VolumeFlowRateUnit {
+    fn into(self) -> Unit {
+        Unit::VolumeFlowRate(self)
+    }
+}
 /// Mass units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -226,109 +376,97 @@ pub enum MassUnit {
     Milligrams,
     #[serde(rename = "µg")]
     Micrograms,
-
     #[serde(rename = "oz")]
     Ounces,
     #[serde(rename = "lb")]
     Pounds,
+    #[serde(rename = "st")]
+    Stones,
 }
 
-/// Conductivity units
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum ConductivityUnit {
-    #[serde(rename = "µS/cm")]
-    Conductivity,
+impl Into<Unit> for MassUnit {
+    fn into(self) -> Unit {
+        Unit::Mass(self)
+    }
 }
-
-/// Light units
+/// Irradiance units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum LightUnit {
-    #[serde(rename = "lx")]
-    Lux,
-}
-
-/// UV Index units
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum UvUnit {
-    #[serde(rename = "UV index")]
-    UvIndex,
-}
-
-/// Percentage units
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum PercentageUnit {
-    #[serde(rename = "%")]
-    Percentage,
-}
-
-/// Irradiation units
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum IrradiationUnit {
+pub enum IrradianceUnit {
     #[serde(rename = "W/m²")]
     WattsPerSquareMeter,
+    #[serde(rename = "BTU/(h⋅ft²)")]
+    BtusPerHourSquareFoot,
 }
 
-/// Precipitation units
+impl Into<Unit> for IrradianceUnit {
+    fn into(self) -> Unit {
+        Unit::Irradiance(self)
+    }
+}
+/// PrecipitationDepth units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum PrecipitationUnit {
-    #[serde(rename = "mm/h")]
-    MillimetersPerHour,
+pub enum PrecipitationDepthUnit {
+    #[serde(rename = "in")]
+    Inches,
+    #[serde(rename = "mm")]
+    Millimeters,
+    #[serde(rename = "cm")]
+    Centimeters,
 }
 
-/// Concentration units
+impl Into<Unit> for PrecipitationDepthUnit {
+    fn into(self) -> Unit {
+        Unit::PrecipitationDepth(self)
+    }
+}
+/// BloodGlucoseConcentration units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum ConcentrationUnit {
-    #[serde(rename = "µg/m³")]
-    MicrogramsPerCubicMeter,
-    #[serde(rename = "mg/m³")]
-    MilligramsPerCubicMeter,
-    #[serde(rename = "p/m³")]
-    PartsPerCubicMeter,
-    #[serde(rename = "ppm")]
-    PartsPerMillion,
-    #[serde(rename = "ppb")]
-    PartsPerBillion,
+pub enum BloodGlucoseConcentrationUnit {
+    #[serde(rename = "mg/dL")]
+    MilligramsPerDeciliter,
+    #[serde(rename = "mmol/L")]
+    MillimolePerLiter,
 }
 
+impl Into<Unit> for BloodGlucoseConcentrationUnit {
+    fn into(self) -> Unit {
+        Unit::BloodGlucoseConcentration(self)
+    }
+}
 /// Speed units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum SpeedUnit {
-    #[serde(rename = "mm/d")]
-    MillimetersPerDay,
-    #[serde(rename = "in/d")]
-    InchesPerDay,
+    #[serde(rename = "Beaufort")]
+    Beaufort,
+    #[serde(rename = "ft/s")]
+    FeetPerSecond,
+    #[serde(rename = "in/s")]
+    InchesPerSecond,
     #[serde(rename = "m/s")]
     MetersPerSecond,
-    #[serde(rename = "in/h")]
-    InchesPerHour,
     #[serde(rename = "km/h")]
     KilometersPerHour,
+    #[serde(rename = "kn")]
+    Knots,
     #[serde(rename = "mph")]
     MilesPerHour,
+    #[serde(rename = "mm/s")]
+    MillimetersPerSecond,
 }
 
-/// Signal_strength units
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum SignalStrengthUnit {
-    #[serde(rename = "dB")]
-    Decibels,
-    #[serde(rename = "dBm")]
-    DecibelsMilliwatt,
+impl Into<Unit> for SpeedUnit {
+    fn into(self) -> Unit {
+        Unit::Speed(self)
+    }
 }
-
-/// Data units
+/// Information units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum DataUnit {
+pub enum InformationUnit {
     #[serde(rename = "bit")]
     Bits,
     #[serde(rename = "kbit")]
@@ -373,7 +511,12 @@ pub enum DataUnit {
     Yobibytes,
 }
 
-/// Data rate units
+impl Into<Unit> for InformationUnit {
+    fn into(self) -> Unit {
+        Unit::Information(self)
+    }
+}
+/// DataRate units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum DataRateUnit {
@@ -399,4 +542,10 @@ pub enum DataRateUnit {
     MebibytesPerSecond,
     #[serde(rename = "GiB/s")]
     GibibytesPerSecond,
+}
+
+impl Into<Unit> for DataRateUnit {
+    fn into(self) -> Unit {
+        Unit::DataRate(self)
+    }
 }

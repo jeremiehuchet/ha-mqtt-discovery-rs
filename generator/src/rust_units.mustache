@@ -1,0 +1,29 @@
+use serde_derive::Serialize;
+
+/// Units of measurement
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(untagged)]
+pub enum Unit {
+{{#each this}}
+    {{ name }}({{ name }}Unit),
+{{/each}}
+}
+
+{{#each this}}
+/// {{ name }} units
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub enum {{ name }}Unit {
+{{#each units}}
+    #[serde(rename = "{{ unitAbbreviation }}")]
+    {{ toPascalCase unitName }},
+{{/each}}
+}
+
+impl Into<Unit> for {{ name }}Unit {
+    fn into(self) -> Unit {
+        Unit::{{ name }}(self)
+    }
+}
+{{/each}}

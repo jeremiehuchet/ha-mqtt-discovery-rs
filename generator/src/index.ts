@@ -3,6 +3,7 @@ import Handlebars from "handlebars";
 import { allAbbreviations } from "./abbretiations";
 import { extractDeviceClassesEnums } from "./device-class";
 import { generateMqttEntityModel } from "./entity";
+import { extractUnitsEnums } from "./units";
 import { toPascalCase } from "./strings";
 
 const BASEDIR = process.env.DEVENV_ROOT;
@@ -43,11 +44,19 @@ const enumsModels = readdirSync(
     `${BASEDIR}/generator/input/device_classes/${deviceDocFile}`
   );
 });
-const template = readFileSync(
+const deviceClassesTemplate = readFileSync(
   `${BASEDIR}/generator/src/rust_device_classes.mustache`
 ).toString();
-const output = Handlebars.compile(template)(enumsModels);
+const output = Handlebars.compile(deviceClassesTemplate)(enumsModels);
 writeFileSync(`${BASEDIR}/src/mqtt/device_classes.rs`, output);
+
+// generate units
+const unitsTemplate = readFileSync(
+    `${BASEDIR}/generator/src/rust_units.mustache`
+).toString();
+const unitsModel = extractUnitsEnums(`${BASEDIR}/generator/input/units.py`);
+const unitsOutput = Handlebars.compile(unitsTemplate)(unitsModel);
+writeFileSync(`${BASEDIR}/src/mqtt/units.rs`, unitsOutput);
 
 // generate mod.rs
 const templateMod = readFileSync(

@@ -1,4 +1,5 @@
 use assert_json_diff::assert_json_eq;
+use ha_mqtt_discovery::mqtt::units::TemperatureUnit;
 use ha_mqtt_discovery::{
     Entity, HomeAssistantMqtt,
     mqtt::{
@@ -7,7 +8,6 @@ use ha_mqtt_discovery::{
         device_classes::{BinarySensorDeviceClass, NumberDeviceClass, SensorDeviceClass},
         number::Number,
         sensor::Sensor,
-        units::{TempUnit::Celsius, Unit},
     },
 };
 use rumqttc::v5::{
@@ -208,7 +208,7 @@ async fn can_publish_a_number_configuration() {
                         .mode("slider")
                         .payload_reset("NaN")
                         .step(dec!(0.1))
-                        .unit_of_measurement(Unit::Temperature(Celsius)),
+                        .unit_of_measurement(TemperatureUnit::Celsius),
                 ))
                 .await
                 .expect("message to be published");
@@ -301,7 +301,7 @@ async fn can_publish_a_sensor_configuration() {
                         .name("Temperature")
                         .suggested_display_precision(1)
                         .state_class(SensorStateClass::Measurement)
-                        .unit_of_measurement(Unit::Temperature(Celsius)),
+                        .unit_of_measurement(TemperatureUnit::Celsius),
                 ))
                 .await
                 .expect("message to be published");

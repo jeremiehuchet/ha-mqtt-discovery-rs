@@ -6,6 +6,9 @@ inputs:
     inputs:
       nixpkgs:
         follows: nixpkgs
+  homeassistant-core:
+    url: github:home-assistant/core/master
+    flake: false
   homeassistant-docs:
     url: github:home-assistant/home-assistant.io/current
     flake: false

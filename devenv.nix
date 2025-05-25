@@ -23,6 +23,7 @@
     set -e
     rm -rf "$DEVENV_ROOT/generator/input"
     mkdir -p "$DEVENV_ROOT/generator/input" "$DEVENV_ROOT/generator/input/device_classes"
+
     for entity_doc in ${inputs.homeassistant-docs}/source/_integrations/*.mqtt.markdown ; do
       entity_name=$(basename "''${entity_doc%.mqtt.markdown}")
       cat "$entity_doc" \
@@ -42,7 +43,11 @@
           | yaml2json | json2yaml \
           > "$DEVENV_ROOT/generator/input/''${entity_name}.yml"
     done
+
     cp $(grep -lri '^###* Device Class' '${inputs.homeassistant-docs}/source/_integrations/') "$DEVENV_ROOT/generator/input/device_classes/"
+
+    cat ${inputs.homeassistant-core}/homeassistant/const.py | grep -v '^$' | grep -Pzo '\nclass UnitOf(\w+).*\n(   .*\n)*' > "$DEVENV_ROOT/generator/input/units.py"
+
     chmod -R +w generator/input/
   '';
 
