@@ -6,7 +6,6 @@
     pkgs.openssl
     pkgs.pkg-config
     pkgs.yaml2json
-    pkgs.vscode
   ];
 
   languages.rust = {
