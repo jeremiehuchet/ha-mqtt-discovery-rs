@@ -17,7 +17,7 @@
     bun.enable = true;
   };
 
-  pre-commit.hooks.rustfmt.enable = true;
+  git-hooks.hooks.rustfmt.enable = true;
 
   scripts.update-ha-docs-src.exec = ''
     set -e

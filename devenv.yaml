@@ -1,14 +1,19 @@
 inputs:
-  nixpkgs:
-    url: github:NixOS/nixpkgs/nixpkgs-unstable
-  fenix:
-    url: github:nix-community/fenix
+  rust-overlay:
+    url: github:oxalica/rust-overlay
     inputs:
       nixpkgs:
         follows: nixpkgs
   homeassistant-core:
     url: github:home-assistant/core/master
     flake: false
+  fenix:
+    url: github:nix-community/fenix
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+  nixpkgs:
+    url: github:NixOS/nixpkgs/nixpkgs-unstable
   homeassistant-docs:
     url: github:home-assistant/home-assistant.io/current
     flake: false
