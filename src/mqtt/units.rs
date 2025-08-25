@@ -9,6 +9,7 @@ pub enum Unit {
     Power(PowerUnit),
     ReactivePower(ReactivePowerUnit),
     Energy(EnergyUnit),
+    ReactiveEnergy(ReactiveEnergyUnit),
     EnergyDistance(EnergyDistanceUnit),
     ElectricCurrent(ElectricCurrentUnit),
     ElectricPotential(ElectricPotentialUnit),
@@ -121,12 +122,29 @@ impl Into<Unit> for EnergyUnit {
         Unit::Energy(self)
     }
 }
+/// ReactiveEnergy units
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub enum ReactiveEnergyUnit {
+    #[serde(rename = "varh")]
+    VoltAmpereReactiveHour,
+    #[serde(rename = "kvarh")]
+    KiloVoltAmpereReactiveHour,
+}
+
+impl Into<Unit> for ReactiveEnergyUnit {
+    fn into(self) -> Unit {
+        Unit::ReactiveEnergy(self)
+    }
+}
 /// EnergyDistance units
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum EnergyDistanceUnit {
     #[serde(rename = "kWh/100km")]
     KiloWattHourPer100Km,
+    #[serde(rename = "Wh/km")]
+    WattHourPerKm,
     #[serde(rename = "mi/kWh")]
     MilesPerKiloWattHour,
     #[serde(rename = "km/kWh")]

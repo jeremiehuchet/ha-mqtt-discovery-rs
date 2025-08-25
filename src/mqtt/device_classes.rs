@@ -68,6 +68,10 @@ pub enum NumberDeviceClass {
     #[serde(rename = "None")]
     None,
 
+    /// Absolute humidity in g/m³, mg/m³.
+    #[serde(rename = "absolute_humidity")]
+    AbsoluteHumidity,
+
     /// Apparent power in VA.
     #[serde(rename = "apparent_power")]
     ApparentPower,
@@ -124,7 +128,7 @@ pub enum NumberDeviceClass {
     #[serde(rename = "energy")]
     Energy,
 
-    /// Energy per distance in kWh/100km, mi/kWh or km/kWh.
+    /// Energy per distance in kWh/100km, Wh/km, mi/kWh, or km/kWh.
     #[serde(rename = "energy_distance")]
     EnergyDistance,
 
@@ -136,7 +140,7 @@ pub enum NumberDeviceClass {
     #[serde(rename = "frequency")]
     Frequency,
 
-    /// Gasvolume in m³, ft³ or CCF
+    /// Gas volume in L, m³, ft³ or CCF
     #[serde(rename = "gas")]
     Gas,
 
@@ -212,6 +216,10 @@ pub enum NumberDeviceClass {
     #[serde(rename = "pressure")]
     Pressure,
 
+    /// Reactive energy in varh or kvarh
+    #[serde(rename = "reactive_energy")]
+    ReactiveEnergy,
+
     /// Reactive power in var or kvar
     #[serde(rename = "reactive_power")]
     ReactivePower,
@@ -236,7 +244,7 @@ pub enum NumberDeviceClass {
     #[serde(rename = "temperature")]
     Temperature,
 
-    /// Concentration of volatile organic compounds in µg/m³
+    /// Concentration of volatile organic compounds in µg/m³ or mg/m³
     #[serde(rename = "volatile_organic_compounds")]
     VolatileOrganicCompounds,
 
@@ -476,6 +484,10 @@ pub enum SensorDeviceClass {
     #[serde(rename = "None")]
     None,
 
+    /// Absolute humidity in g/m³, mg/m³.
+    #[serde(rename = "absolute_humidity")]
+    AbsoluteHumidity,
+
     /// Apparent power in VA.
     #[serde(rename = "apparent_power")]
     ApparentPower,
@@ -536,7 +548,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "energy")]
     Energy,
 
-    /// Energy per distance in kWh/100km, mi/kWh or km/kWh.
+    /// Energy per distance in kWh/100km, Wh/km, mi/kWh, or km/kWh.
     #[serde(rename = "energy_distance")]
     EnergyDistance,
 
@@ -552,7 +564,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "frequency")]
     Frequency,
 
-    /// Gasvolume in m³, ft³ or CCF
+    /// Gas volume in L, m³, ft³ or CCF
     #[serde(rename = "gas")]
     Gas,
 
@@ -628,6 +640,10 @@ pub enum SensorDeviceClass {
     #[serde(rename = "pressure")]
     Pressure,
 
+    /// Reactive energy in varh or kvarh
+    #[serde(rename = "reactive_energy")]
+    ReactiveEnergy,
+
     /// Reactive power in var or kvar
     #[serde(rename = "reactive_power")]
     ReactivePower,
@@ -656,7 +672,7 @@ pub enum SensorDeviceClass {
     #[serde(rename = "timestamp")]
     Timestamp,
 
-    /// Concentration of volatile organic compounds in µg/m³
+    /// Concentration of volatile organic compounds in µg/m³ or mg/m³
     #[serde(rename = "volatile_organic_compounds")]
     VolatileOrganicCompounds,
 

@@ -11,9 +11,9 @@ related:
     title: Configuration file
 ---
 
-The `mqtt` alarm panel {% term integration %} enables the possibility to control MQTT capable alarm panels. The Alarm icon will change state after receiving a new state from `state_topic`. If these messages are published with *RETAIN* flag, the MQTT alarm panel will receive an instant state update after subscription and will start with the correct state. Otherwise, the initial state will be `unknown`.
+The `mqtt` alarm panel `integration` enables the possibility to control MQTT capable alarm panels. The Alarm icon will change state after receiving a new state from `state_topic`. If these messages are published with *RETAIN* flag, the MQTT alarm panel will receive an instant state update after subscription and will start with the correct state. Otherwise, the initial state will be `unknown`.
 
-The {% term integration %} will accept the following states from your Alarm Panel (in lower case):
+The `integration` will accept the following states from your Alarm Panel (in lower case):
 
 - `disarmed`
 - `armed_home`
@@ -26,11 +26,11 @@ The {% term integration %} will accept the following states from your Alarm Pane
 - `arming`
 - `disarming`
 
-The {% term integration %} can control your Alarm Panel by publishing to the `command_topic` when a user interacts with the Home Assistant frontend.
+The `integration` can control your Alarm Panel by publishing to the `command_topic` when a user interacts with the Home Assistant frontend.
 
 ## Configuration
 
-To enable this {% term integration %}, add the following lines to your {% term "`configuration.yaml`" %} file.
+To use an MQTT alarm control panel in your installation, add the following to your `configuration.yaml` file.
 {% include integrations/restart_ha_after_config_inclusion.md %}
 
 ```yaml
@@ -40,6 +40,8 @@ mqtt:
       state_topic: "home/alarm"
       command_topic: "home/alarm/set"
 ```
+
+Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 
 
 ## Examples

@@ -28,7 +28,8 @@
       entity_name=$(basename "''${entity_doc%.mqtt.markdown}")
       cat "$entity_doc" \
           | sed '/^{% configuration %}$/,/^{% endconfiguration %}$/d' \
-          | sed 's/{% term "[\\"]*" %}/\\1/g' \
+          | sed 's/{% term "\([^"]*\)" %}/\1/g' \
+          | sed 's/{% term \([^`]*\) %}/`\1`/g' \
           | sed 's/^{% caution %}$/🚨 Caution\\/g' \
           | sed 's/^{% important %}$/⚠ Important\\/g' \
           | sed 's/^{% note %}$/🛈 Note\\/g' \

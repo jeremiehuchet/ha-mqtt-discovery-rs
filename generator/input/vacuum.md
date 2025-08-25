@@ -7,12 +7,23 @@ ha_release: 0.54
 ha_domain: mqtt
 ---
 
-The `mqtt` vacuum {% term integration %} allows you to control your MQTT-enabled vacuum.
-The initial state of the MQTT vacuum {% term entity %} will set to `unknown` and can be reset by a device by sending a `null` payload as state.
+The `mqtt` vacuum `integration` allows you to control your MQTT-enabled vacuum.
+The initial state of the MQTT vacuum `entity` will set to `unknown` and can be reset by a device by sending a `null` payload as state.
 
 ## Configuration
 
-MQTT vacuum configuration section.
+To use an MQTT vacuum in your installation, add the following to your `configuration.yaml` file.
+{% include integrations/restart_ha_after_config_inclusion.md %}
+
+```yaml
+# Example configuration.yaml entry
+mqtt:
+  - vacuum:
+      state_topic: state-topic
+      command_topic: command-topic
+```
+
+Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 
 
 ## Configuration example
@@ -27,7 +38,6 @@ mqtt:
         - pause
         - stop
         - return_home
-        - battery
         - status
         - locate
         - clean_spot
@@ -105,7 +115,6 @@ MQTT payload:
 
 ```json
 {
-    "battery_level": 61,
     "state": "docked",
     "fan_speed": "off"
 }

@@ -6,8 +6,8 @@ pub use rust_decimal::Decimal;
 use serde_derive::Serialize;
 
 /// ---
-/// title: "MQTT HVAC"
-/// description: "Instructions on how to integrate MQTT HVAC into Home Assistant."
+/// title: "MQTT climate (HVAC)"
+/// description: "Instructions on how to integrate MQTT climate into Home Assistant."
 /// ha_category:
 ///   - Climate
 /// ha_release: 0.55
@@ -19,7 +19,7 @@ use serde_derive::Serialize;
 ///
 /// ## Configuration
 ///
-/// To enable this climate platform in your installation, first add the following to your {% term "`configuration.yaml`" %} file.
+/// To use an MQTT climate in your installation, [add an MQTT device as a subentry](/integrations/mqtt/#configuration), or add the following to your `configuration.yaml` file.
 /// {% include integrations/restart_ha_after_config_inclusion.md %}
 ///
 /// ```yaml
@@ -29,6 +29,8 @@ use serde_derive::Serialize;
 ///       name: Study
 ///       mode_command_topic: "study/ac/mode/set"
 /// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// ## Optimistic mode
@@ -241,7 +243,7 @@ pub struct Climate {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
 
@@ -393,15 +395,15 @@ pub struct Climate {
     #[serde(rename = "temp_hi_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub temperature_high_command_template: Option<String>,
 
-    /// The MQTT topic to publish commands to change the high target temperature.
+    /// The MQTT topic to publish commands to change the upper target temperature.
     #[serde(rename = "temp_hi_cmd_t", skip_serializing_if = "Option::is_none")]
     pub temperature_high_command_topic: Option<String>,
 
-    /// A template to render the value received on the `temperature_high_state_topic` with. A `"None"` value received will reset the temperature high set point. Empty values (`'''`) will be ignored.
+    /// A template to render the value received on the `temperature_high_state_topic` with. A `"None"` value received will reset the upper temperature setpoint. Empty values (`""'`) will be ignored.
     #[serde(rename = "temp_hi_stat_tpl", skip_serializing_if = "Option::is_none")]
     pub temperature_high_state_template: Option<String>,
 
-    /// The MQTT topic to subscribe for changes in the target high temperature. If this is not set, the target high temperature works in optimistic mode (see below).
+    /// The MQTT topic to subscribe for changes in the upper target temperature. If this is not set, the upper target temperature works in optimistic mode (see below).
     #[serde(rename = "temp_hi_stat_t", skip_serializing_if = "Option::is_none")]
     pub temperature_high_state_topic: Option<String>,
 
@@ -409,15 +411,15 @@ pub struct Climate {
     #[serde(rename = "temp_lo_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub temperature_low_command_template: Option<String>,
 
-    /// The MQTT topic to publish commands to change the target low temperature.
+    /// The MQTT topic to publish commands to change the lower target temperature.
     #[serde(rename = "temp_lo_cmd_t", skip_serializing_if = "Option::is_none")]
     pub temperature_low_command_topic: Option<String>,
 
-    /// A template to render the value received on the `temperature_low_state_topic` with. A `"None"` value received will reset the temperature low set point. Empty values (`'''`) will be ignored.
+    /// A template to render the value received on the `temperature_low_state_topic` with. A `"None"` value received will reset the lower temperature setpoint. Empty values (`""`) will be ignored.
     #[serde(rename = "temp_lo_stat_tpl", skip_serializing_if = "Option::is_none")]
     pub temperature_low_state_template: Option<String>,
 
-    /// The MQTT topic to subscribe for changes in the target low temperature. If this is not set, the target low temperature works in optimistic mode (see below).
+    /// The MQTT topic to subscribe for changes in the lower target temperature. If this is not set, the lower target temperature works in optimistic mode (see below).
     #[serde(rename = "temp_lo_stat_t", skip_serializing_if = "Option::is_none")]
     pub temperature_low_state_topic: Option<String>,
 
@@ -657,7 +659,7 @@ impl Climate {
         self
     }
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
         self
@@ -910,7 +912,7 @@ impl Climate {
         self
     }
 
-    /// The MQTT topic to publish commands to change the high target temperature.
+    /// The MQTT topic to publish commands to change the upper target temperature.
     pub fn temperature_high_command_topic<T: Into<String>>(
         mut self,
         temperature_high_command_topic: T,
@@ -919,7 +921,7 @@ impl Climate {
         self
     }
 
-    /// A template to render the value received on the `temperature_high_state_topic` with. A `"None"` value received will reset the temperature high set point. Empty values (`'''`) will be ignored.
+    /// A template to render the value received on the `temperature_high_state_topic` with. A `"None"` value received will reset the upper temperature setpoint. Empty values (`""'`) will be ignored.
     pub fn temperature_high_state_template<T: Into<String>>(
         mut self,
         temperature_high_state_template: T,
@@ -928,7 +930,7 @@ impl Climate {
         self
     }
 
-    /// The MQTT topic to subscribe for changes in the target high temperature. If this is not set, the target high temperature works in optimistic mode (see below).
+    /// The MQTT topic to subscribe for changes in the upper target temperature. If this is not set, the upper target temperature works in optimistic mode (see below).
     pub fn temperature_high_state_topic<T: Into<String>>(
         mut self,
         temperature_high_state_topic: T,
@@ -946,7 +948,7 @@ impl Climate {
         self
     }
 
-    /// The MQTT topic to publish commands to change the target low temperature.
+    /// The MQTT topic to publish commands to change the lower target temperature.
     pub fn temperature_low_command_topic<T: Into<String>>(
         mut self,
         temperature_low_command_topic: T,
@@ -955,7 +957,7 @@ impl Climate {
         self
     }
 
-    /// A template to render the value received on the `temperature_low_state_topic` with. A `"None"` value received will reset the temperature low set point. Empty values (`'''`) will be ignored.
+    /// A template to render the value received on the `temperature_low_state_topic` with. A `"None"` value received will reset the lower temperature setpoint. Empty values (`""`) will be ignored.
     pub fn temperature_low_state_template<T: Into<String>>(
         mut self,
         temperature_low_state_template: T,
@@ -964,7 +966,7 @@ impl Climate {
         self
     }
 
-    /// The MQTT topic to subscribe for changes in the target low temperature. If this is not set, the target low temperature works in optimistic mode (see below).
+    /// The MQTT topic to subscribe for changes in the lower target temperature. If this is not set, the lower target temperature works in optimistic mode (see below).
     pub fn temperature_low_state_topic<T: Into<String>>(
         mut self,
         temperature_low_state_topic: T,

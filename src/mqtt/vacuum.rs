@@ -12,12 +12,23 @@ use serde_derive::Serialize;
 /// ha_domain: mqtt
 /// ---
 ///
-/// The `mqtt` vacuum {% term integration %} allows you to control your MQTT-enabled vacuum.
-/// The initial state of the MQTT vacuum {% term entity %} will set to `unknown` and can be reset by a device by sending a `null` payload as state.
+/// The `mqtt` vacuum `integration` allows you to control your MQTT-enabled vacuum.
+/// The initial state of the MQTT vacuum `entity` will set to `unknown` and can be reset by a device by sending a `null` payload as state.
 ///
 /// ## Configuration
 ///
-/// MQTT vacuum configuration section.
+/// To use an MQTT vacuum in your installation, add the following to your `configuration.yaml` file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
+///
+/// ```yaml
+/// # Example configuration.yaml entry
+/// mqtt:
+///   - vacuum:
+///       state_topic: state-topic
+///       command_topic: command-topic
+/// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// ## Configuration example
@@ -32,7 +43,6 @@ use serde_derive::Serialize;
 ///         - pause
 ///         - stop
 ///         - return_home
-///         - battery
 ///         - status
 ///         - locate
 ///         - clean_spot
@@ -110,7 +120,6 @@ use serde_derive::Serialize;
 ///
 /// ```json
 /// {
-///     "battery_level": 61,
 ///     "state": "docked",
 ///     "fan_speed": "off"
 /// }
@@ -194,7 +203,7 @@ pub struct Vacuum {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
 
@@ -242,11 +251,11 @@ pub struct Vacuum {
     #[serde(rename = "set_fan_spd_t", skip_serializing_if = "Option::is_none")]
     pub set_fan_speed_topic: Option<String>,
 
-    /// The MQTT topic subscribed to receive state messages from the vacuum. Messages received on the `state_topic` must be a valid JSON dictionary, with a mandatory `state` key and optionally `battery_level` and `fan_speed` keys as shown in the [example](#configuration-example).
+    /// The MQTT topic subscribed to receive state messages from the vacuum. Messages received on the `state_topic` must be a valid JSON dictionary, with a mandatory `state` key and optionally `fan_speed` keys as shown in the [example](#configuration-example).
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
     pub state_topic: Option<String>,
 
-    /// List of features that the vacuum supports (possible values are `start`, `stop`, `pause`, `return_home`, `battery`, `status`, `locate`, `clean_spot`, `fan_speed`, `send_command`).
+    /// List of features that the vacuum supports (possible values are `start`, `stop`, `pause`, `return_home`, `status`, `locate`, `clean_spot`, `fan_speed`, `send_command`).
     #[serde(rename = "sup_feat", skip_serializing_if = "Option::is_none")]
     pub supported_features: Option<Vec<String>>,
 
@@ -326,7 +335,7 @@ impl Vacuum {
         self
     }
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
         self
@@ -398,13 +407,13 @@ impl Vacuum {
         self
     }
 
-    /// The MQTT topic subscribed to receive state messages from the vacuum. Messages received on the `state_topic` must be a valid JSON dictionary, with a mandatory `state` key and optionally `battery_level` and `fan_speed` keys as shown in the [example](#configuration-example).
+    /// The MQTT topic subscribed to receive state messages from the vacuum. Messages received on the `state_topic` must be a valid JSON dictionary, with a mandatory `state` key and optionally `fan_speed` keys as shown in the [example](#configuration-example).
     pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
         self.state_topic = Some(state_topic.into());
         self
     }
 
-    /// List of features that the vacuum supports (possible values are `start`, `stop`, `pause`, `return_home`, `battery`, `status`, `locate`, `clean_spot`, `fan_speed`, `send_command`).
+    /// List of features that the vacuum supports (possible values are `start`, `stop`, `pause`, `return_home`, `status`, `locate`, `clean_spot`, `fan_speed`, `send_command`).
     pub fn supported_features<T: Into<String>>(mut self, supported_features: Vec<T>) -> Self {
         self.supported_features = Some(supported_features.into_iter().map(|v| v.into()).collect());
         self

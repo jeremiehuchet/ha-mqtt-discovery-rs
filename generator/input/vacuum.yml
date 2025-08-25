@@ -150,7 +150,9 @@ name:
   required: false
   type: string
 object_id:
-  description: Used instead of `name` for automatic generation of `entity_id`
+  description: Used `object_id` instead of `name` for automatic generation of `entity_id`.
+    This only works when the entity is added for the first time. When set, this overrides
+    a user-customized Entity ID in case the entity was deleted and added again.
   required: false
   type: string
 payload_available:
@@ -222,14 +224,13 @@ set_fan_speed_topic:
 state_topic:
   description: The MQTT topic subscribed to receive state messages from the vacuum.
     Messages received on the `state_topic` must be a valid JSON dictionary, with a
-    mandatory `state` key and optionally `battery_level` and `fan_speed` keys as shown
-    in the [example](#configuration-example).
+    mandatory `state` key and optionally `fan_speed` keys as shown in the [example](#configuration-example).
   required: false
   type: string
 supported_features:
-  default: '`start`, `stop`, `return_home`, `status`, `battery`, `clean_spot`'
+  default: '`start`, `stop`, `return_home`, `status`, `clean_spot`'
   description: List of features that the vacuum supports (possible values are `start`,
-    `stop`, `pause`, `return_home`, `battery`, `status`, `locate`, `clean_spot`, `fan_speed`,
+    `stop`, `pause`, `return_home`, `status`, `locate`, `clean_spot`, `fan_speed`,
     `send_command`).
   required: false
   type:

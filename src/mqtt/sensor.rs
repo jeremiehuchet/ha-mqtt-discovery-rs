@@ -20,7 +20,9 @@ use serde_derive::Serialize;
 ///
 /// ## Configuration
 ///
-/// To use your MQTT sensor in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+///
+/// To use an MQTT sensor in your installation, [add a MQTT device as a subentry](/integrations/mqtt/#configuration), or add the following to your `configuration.yaml` file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
@@ -29,6 +31,8 @@ use serde_derive::Serialize;
 ///     - name: "Bedroom Temperature"
 ///       state_topic: "home/bedroom/temperature"
 /// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// ## Examples
@@ -262,7 +266,7 @@ use serde_derive::Serialize;
 ///
 /// ### Get sensor value from a device with ESPEasy
 ///
-/// Assuming that you have flashed your ESP8266 unit with [ESPEasy](https://github.com/letscontrolit/ESPEasy). Under "Config" set a name ("Unit Name:") for your device (here it's "bathroom"). A "Controller" for MQTT with the protocol "OpenHAB MQTT" is present and the entries ("Controller Subscribe:" and "Controller Publish:") are adjusted to match your needs. In this example the topics are prefixed with "home". Please keep in mind that the ESPEasy default topics start with a `/` and only contain the name when writing your entry for the {% term "`configuration.yaml`" %} file.
+/// Assuming that you have flashed your ESP8266 unit with [ESPEasy](https://github.com/letscontrolit/ESPEasy). Under "Config" set a name ("Unit Name:") for your device (here it's "bathroom"). A "Controller" for MQTT with the protocol "OpenHAB MQTT" is present and the entries ("Controller Subscribe:" and "Controller Publish:") are adjusted to match your needs. In this example the topics are prefixed with "home". Please keep in mind that the ESPEasy default topics start with a `/` and only contain the name when writing your entry for the `configuration.yaml` file.
 ///
 /// - **Controller Subscribe**: `home/%sysname%/#` (instead of `/%sysname%/#`)
 /// - **Controller Publish**: `home/%sysname%/%tskname%/%valname%` (instead of `/%sysname%/%tskname%/%valname%`)
@@ -350,7 +354,7 @@ pub struct Sensor {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
 
@@ -370,7 +374,7 @@ pub struct Sensor {
     #[serde(rename = "stat_cla", skip_serializing_if = "Option::is_none")]
     pub state_class: Option<SensorStateClass>,
 
-    /// The MQTT topic subscribed to receive sensor values. If `device_class`, `state_class`, `unit_of_measurement` or `suggested_display_precision` is set, and a numeric value is expected, an empty value `''` will be ignored and will not update the state, a `'None'` value will set the sensor to an `unknown` state. If a `value_template` is used to parse a JSON payload, a `null` value in the JSON [will be rendered as]((/docs/configuration/templating/#using-value-templates-with-mqtt)) `'None'`. Note that the `device_class` can be `null`.
+    /// The MQTT topic subscribed to receive sensor values. If `device_class`, `state_class`, `unit_of_measurement` or `suggested_display_precision` is set, and a numeric value is expected, an empty value `''` will be ignored and will not update the state, a `'None'` value will set the sensor to an `unknown` state. If a `value_template` is used to parse a JSON payload, a `null` value in the JSON [will be rendered as](/docs/configuration/templating/#using-value-templates-with-mqtt) `'None'`. Note that the `device_class` can be `null`.
     #[serde(rename = "stat_t")]
     pub state_topic: String,
 
@@ -489,7 +493,7 @@ impl Sensor {
         self
     }
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
         self
@@ -519,7 +523,7 @@ impl Sensor {
         self
     }
 
-    /// The MQTT topic subscribed to receive sensor values. If `device_class`, `state_class`, `unit_of_measurement` or `suggested_display_precision` is set, and a numeric value is expected, an empty value `''` will be ignored and will not update the state, a `'None'` value will set the sensor to an `unknown` state. If a `value_template` is used to parse a JSON payload, a `null` value in the JSON [will be rendered as]((/docs/configuration/templating/#using-value-templates-with-mqtt)) `'None'`. Note that the `device_class` can be `null`.
+    /// The MQTT topic subscribed to receive sensor values. If `device_class`, `state_class`, `unit_of_measurement` or `suggested_display_precision` is set, and a numeric value is expected, an empty value `''` will be ignored and will not update the state, a `'None'` value will set the sensor to an `unknown` state. If a `value_template` is used to parse a JSON payload, a `null` value in the JSON [will be rendered as](/docs/configuration/templating/#using-value-templates-with-mqtt) `'None'`. Note that the `device_class` can be `null`.
     pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
         self.state_topic = state_topic.into();
         self

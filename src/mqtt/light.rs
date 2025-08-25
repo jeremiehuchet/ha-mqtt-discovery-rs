@@ -47,12 +47,17 @@ use serde_derive::Serialize;
 /// Home Assistant internally assumes that a light's state corresponds to a defined `color_mode`.
 /// The state of MQTT lights with default schema and support for both color and color temperature will set the `color_mode` according to the last received valid color or color temperature. Optionally, a `color_mode_state_topic` can be configured for explicit control of the `color_mode`.
 ///
+/// To use an MQTT basic light in your installation, [add a MQTT device as a subentry](/integrations/mqtt/#configuration), or add the following to your `configuration.yaml` file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
+///
 /// ```yaml
 /// # Example configuration.yaml entry
 /// mqtt:
 ///   - light:
 ///       command_topic: "office/rgb1/light/switch"
 /// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// ⚠ Important\
@@ -67,7 +72,7 @@ use serde_derive::Serialize;
 ///
 /// ### Brightness and RGB support
 ///
-/// To enable a light with brightness and RGB support in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+/// To enable a light with brightness and RGB support in your installation, add the following to your `configuration.yaml` file:
 ///
 ///
 /// ```yaml
@@ -93,7 +98,7 @@ use serde_derive::Serialize;
 ///
 /// ### Brightness and no RGB support
 ///
-/// To enable a light with brightness (no RGB version) in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+/// To enable a light with brightness (no RGB version) in your installation, add the following to your `configuration.yaml` file:
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
@@ -112,7 +117,7 @@ use serde_derive::Serialize;
 ///
 /// ### Brightness without on commands
 ///
-/// To enable a light that sends only brightness topics to turn it on, add the following to your {% term "`configuration.yaml`" %} file. The `command_topic` is only used to send an off command in this case:
+/// To enable a light that sends only brightness topics to turn it on, add the following to your `configuration.yaml` file. The `command_topic` is only used to send an off command in this case:
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
@@ -169,6 +174,9 @@ use serde_derive::Serialize;
 ///
 /// Optimistic mode can be forced, even if state topic is available. Try enabling it if the light is operating incorrectly.
 ///
+/// To use an MQTT JSON light in your installation, [add a MQTT device as a subentry](/integrations/mqtt/#configuration), or add the following to your `configuration.yaml` file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
+///
 /// ```yaml
 /// # Example configuration.yaml entry
 /// mqtt:
@@ -176,6 +184,8 @@ use serde_derive::Serialize;
 ///       schema: json
 ///       command_topic: "home/rgb1/set"
 /// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// *The `color` attribute dict in the JSON state payload should contain the following keys based on the `color_mode`:
@@ -216,7 +226,7 @@ use serde_derive::Serialize;
 ///
 /// ### Brightness and RGB support
 ///
-/// To enable a light with brightness and RGB support in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+/// To enable a light with brightness and RGB support in your installation, add the following to your `configuration.yaml` file:
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
@@ -232,7 +242,7 @@ use serde_derive::Serialize;
 ///
 /// ### Brightness and no RGB support
 ///
-/// To enable a light with brightness (but no color support) in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+/// To enable a light with brightness (but no color support) in your installation, add the following to your `configuration.yaml` file:
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
@@ -301,7 +311,7 @@ use serde_derive::Serialize;
 ///
 /// ### Brightness and RGBW support
 ///
-/// To enable a light with brightness, RGB support and a separate white channel (RGBW) in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+/// To enable a light with brightness, RGB support and a separate white channel (RGBW) in your installation, add the following to your `configuration.yaml` file:
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
@@ -346,6 +356,9 @@ use serde_derive::Serialize;
 ///
 /// Optimistic mode can be forced, even if state topic is available. Try enabling it if the light is operating incorrectly.
 ///
+/// To use an MQTT template light in your installation, [add a MQTT device as a subentry](/integrations/mqtt/#configuration), or add the following to your `configuration.yaml` file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
+///
 /// ```yaml
 /// # Example configuration.yaml entry
 /// mqtt:
@@ -355,6 +368,8 @@ use serde_derive::Serialize;
 ///       command_on_template: "on"
 ///       command_off_template: "off"
 /// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// ⚠ Important\
@@ -366,7 +381,7 @@ use serde_derive::Serialize;
 ///
 /// ### Simple string payload
 ///
-/// For a simple string payload with the format `state,brightness,r-g-b,h-s` (e.g., `on,255,255-255-255,360-100`), add the following to your {% term "`configuration.yaml`" %} file:
+/// For a simple string payload with the format `state,brightness,r-g-b,h-s` (e.g., `on,255,255-255-255,360-100`), add the following to your `configuration.yaml` file:
 ///
 ///
 /// ```yaml
@@ -388,7 +403,7 @@ use serde_derive::Serialize;
 ///
 /// ### JSON payload
 ///
-/// For a JSON payload with the format `{"state": "on", "brightness": 255, "color": [255, 255, 255], "effect": "rainbow"}`, add the following to your {% term "`configuration.yaml`" %} file:
+/// For a JSON payload with the format `{"state": "on", "brightness": 255, "color": [255, 255, 255], "effect": "rainbow"}`, add the following to your `configuration.yaml` file:
 ///
 ///
 /// ```yaml
@@ -431,7 +446,7 @@ use serde_derive::Serialize;
 /// This example comes from a configuration of Shelly RGBW Bulb working in White mode.
 /// `max_mireds` and `min_mireds` set color temperature boundaries to 3000K - 6500K. Notice the same limits are applied in `command_on_template`, but in kelvin units this time. It's due to conversion from mired to kelvin which causes exceeding boundary values accepted by the device.
 /// The code also ensures bi-directional conversion of brightness scale between 0-100 (required by the device) and 0-255 (required by Home Assistant).
-/// Add the following to your {% term "`configuration.yaml`" %} file:
+/// Add the following to your `configuration.yaml` file:
 ///
 ///
 /// ```yaml
@@ -625,7 +640,7 @@ pub struct Light {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
 
@@ -1000,7 +1015,7 @@ impl Light {
         self
     }
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
         self

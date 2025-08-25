@@ -16,9 +16,9 @@ use serde_derive::Serialize;
 ///     title: Configuration file
 /// ---
 ///
-/// The `mqtt` alarm panel {% term integration %} enables the possibility to control MQTT capable alarm panels. The Alarm icon will change state after receiving a new state from `state_topic`. If these messages are published with *RETAIN* flag, the MQTT alarm panel will receive an instant state update after subscription and will start with the correct state. Otherwise, the initial state will be `unknown`.
+/// The `mqtt` alarm panel `integration` enables the possibility to control MQTT capable alarm panels. The Alarm icon will change state after receiving a new state from `state_topic`. If these messages are published with *RETAIN* flag, the MQTT alarm panel will receive an instant state update after subscription and will start with the correct state. Otherwise, the initial state will be `unknown`.
 ///
-/// The {% term integration %} will accept the following states from your Alarm Panel (in lower case):
+/// The `integration` will accept the following states from your Alarm Panel (in lower case):
 ///
 /// - `disarmed`
 /// - `armed_home`
@@ -31,11 +31,11 @@ use serde_derive::Serialize;
 /// - `arming`
 /// - `disarming`
 ///
-/// The {% term integration %} can control your Alarm Panel by publishing to the `command_topic` when a user interacts with the Home Assistant frontend.
+/// The `integration` can control your Alarm Panel by publishing to the `command_topic` when a user interacts with the Home Assistant frontend.
 ///
 /// ## Configuration
 ///
-/// To enable this {% term integration %}, add the following lines to your {% term "`configuration.yaml`" %} file.
+/// To use an MQTT alarm control panel in your installation, add the following to your `configuration.yaml` file.
 /// {% include integrations/restart_ha_after_config_inclusion.md %}
 ///
 /// ```yaml
@@ -45,6 +45,8 @@ use serde_derive::Serialize;
 ///       state_topic: "home/alarm"
 ///       command_topic: "home/alarm/set"
 /// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// ## Examples
@@ -197,7 +199,7 @@ pub struct AlarmControlPanel {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
 
@@ -371,7 +373,7 @@ impl AlarmControlPanel {
         self
     }
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
         self

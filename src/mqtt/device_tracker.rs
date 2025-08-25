@@ -17,11 +17,12 @@ use serde_derive::Serialize;
 /// ---
 ///
 ///
-/// The `mqtt` device tracker {% term integration %} allows you to define new device_trackers through [manual YAML configuration](#yaml-configuration) in {% term "`configuration.yaml`" %} and also to automatically discover device_trackers [using the MQTT Discovery protocol](#using-the-discovery-protocol).
+/// The `mqtt` device tracker `integration` allows you to define new device_trackers through [manual YAML configuration](#yaml-configuration) in `configuration.yaml` and also to automatically discover device_trackers [using the MQTT Discovery protocol](#using-the-discovery-protocol).
 ///
 /// ## Configuration
 ///
-/// To use this device tracker in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+/// To use an MQTT device tracker in your installation, add the following to your `configuration.yaml` file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
@@ -33,6 +34,8 @@ use serde_derive::Serialize;
 ///       name: "paulus_oneplus"
 ///       state_topic: "location/paulus"
 /// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// ## Examples
@@ -155,7 +158,7 @@ pub struct DeviceTracker {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
 
@@ -261,7 +264,7 @@ impl DeviceTracker {
         self
     }
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
         self

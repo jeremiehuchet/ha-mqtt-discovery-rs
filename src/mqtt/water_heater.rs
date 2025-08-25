@@ -19,7 +19,8 @@ use serde_derive::Serialize;
 ///
 /// ## Configuration
 ///
-/// To enable this water heater platform in your installation, first add the following to your {% term "`configuration.yaml`" %} file:
+/// To use an MQTT water heater in your installation, add the following to your `configuration.yaml` file.
+/// {% include integrations/restart_ha_after_config_inclusion.md %}
 ///
 /// ```yaml
 /// # Example configuration.yaml entry
@@ -29,10 +30,12 @@ use serde_derive::Serialize;
 ///       mode_command_topic: "basement/boiler/mode/set"
 /// ```
 ///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
+///
 ///
 /// ## Optimistic mode
 ///
-/// If a property works in *optimistic mode* (when the corresponding state topic is not set), Home Assistant will assume that any state changes published to the command topics did work and change the internal state of the {% term entity %} immediately after publishing to the command topic. If it does not work in optimistic mode, the internal state of the {% term entity %} is only updated when the requested update is confirmed by the device through the state topic. You can enforce optimistic mode by setting the `optimistic` option to `true`. When set, the internal state will always be updated, even when a state topic is defined.
+/// If a property works in *optimistic mode* (when the corresponding state topic is not set), Home Assistant will assume that any state changes published to the command topics did work and change the internal state of the `entity %} immediately after publishing to the command topic. If it does not work in optimistic mode, the internal state of the {% term entity` is only updated when the requested update is confirmed by the device through the state topic. You can enforce optimistic mode by setting the `optimistic` option to `true`. When set, the internal state will always be updated, even when a state topic is defined.
 ///
 /// ## Using templates
 ///
@@ -174,7 +177,7 @@ pub struct WaterHeater {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
 
@@ -392,7 +395,7 @@ impl WaterHeater {
         self
     }
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
         self

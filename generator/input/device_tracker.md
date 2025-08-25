@@ -12,11 +12,12 @@ related:
 ---
 
 
-The `mqtt` device tracker {% term integration %} allows you to define new device_trackers through [manual YAML configuration](#yaml-configuration) in {% term "`configuration.yaml`" %} and also to automatically discover device_trackers [using the MQTT Discovery protocol](#using-the-discovery-protocol).
+The `mqtt` device tracker `integration` allows you to define new device_trackers through [manual YAML configuration](#yaml-configuration) in `configuration.yaml` and also to automatically discover device_trackers [using the MQTT Discovery protocol](#using-the-discovery-protocol).
 
 ## Configuration
 
-To use this device tracker in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+To use an MQTT device tracker in your installation, add the following to your `configuration.yaml` file.
+{% include integrations/restart_ha_after_config_inclusion.md %}
 
 ```yaml
 # Example configuration.yaml entry
@@ -28,6 +29,8 @@ mqtt:
       name: "paulus_oneplus"
       state_topic: "location/paulus"
 ```
+
+Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 
 
 ## Examples

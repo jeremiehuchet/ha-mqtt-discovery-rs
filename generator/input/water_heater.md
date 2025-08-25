@@ -12,7 +12,8 @@ The `mqtt` water heater platform lets you control your MQTT enabled water heater
 
 ## Configuration
 
-To enable this water heater platform in your installation, first add the following to your {% term "`configuration.yaml`" %} file:
+To use an MQTT water heater in your installation, add the following to your `configuration.yaml` file.
+{% include integrations/restart_ha_after_config_inclusion.md %}
 
 ```yaml
 # Example configuration.yaml entry
@@ -22,10 +23,12 @@ mqtt:
       mode_command_topic: "basement/boiler/mode/set"
 ```
 
+Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
+
 
 ## Optimistic mode
 
-If a property works in *optimistic mode* (when the corresponding state topic is not set), Home Assistant will assume that any state changes published to the command topics did work and change the internal state of the {% term entity %} immediately after publishing to the command topic. If it does not work in optimistic mode, the internal state of the {% term entity %} is only updated when the requested update is confirmed by the device through the state topic. You can enforce optimistic mode by setting the `optimistic` option to `true`. When set, the internal state will always be updated, even when a state topic is defined.
+If a property works in *optimistic mode* (when the corresponding state topic is not set), Home Assistant will assume that any state changes published to the command topics did work and change the internal state of the `entity %} immediately after publishing to the command topic. If it does not work in optimistic mode, the internal state of the {% term entity` is only updated when the requested update is confirmed by the device through the state topic. You can enforce optimistic mode by setting the `optimistic` option to `true`. When set, the internal state will always be updated, even when a state topic is defined.
 
 ## Using templates
 

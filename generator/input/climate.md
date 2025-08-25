@@ -1,6 +1,6 @@
 ---
-title: "MQTT HVAC"
-description: "Instructions on how to integrate MQTT HVAC into Home Assistant."
+title: "MQTT climate (HVAC)"
+description: "Instructions on how to integrate MQTT climate into Home Assistant."
 ha_category:
   - Climate
 ha_release: 0.55
@@ -12,7 +12,7 @@ The `mqtt` climate platform lets you control your MQTT enabled HVAC devices.
 
 ## Configuration
 
-To enable this climate platform in your installation, first add the following to your {% term "`configuration.yaml`" %} file.
+To use an MQTT climate in your installation, [add an MQTT device as a subentry](/integrations/mqtt/#configuration), or add the following to your `configuration.yaml` file.
 {% include integrations/restart_ha_after_config_inclusion.md %}
 
 ```yaml
@@ -22,6 +22,8 @@ mqtt:
       name: Study
       mode_command_topic: "study/ac/mode/set"
 ```
+
+Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 
 
 ## Optimistic mode

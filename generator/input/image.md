@@ -18,7 +18,8 @@ An alternative setup is to use the `url_topic` option to receive an image URL fo
 
 ## Configuration
 
-To enable this image in your installation, add the following to your {% term "`configuration.yaml`" %} file:
+To use an MQTT image entity in your installation, add the following to your `configuration.yaml` file.
+{% include integrations/restart_ha_after_config_inclusion.md %}
 
 ```yaml
 # Example configuration.yaml entry
@@ -27,10 +28,12 @@ mqtt:
       url_topic: mynas/status/url
 ```
 
+Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
+
 
 ### Example receiving images from a URL
 
-Add the configuration below to your {% term "`configuration.yaml`" %}.
+Add the configuration below to your `configuration.yaml`.
 
 To test it publish an image URL to the topic from the console:
 
@@ -49,7 +52,7 @@ mqtt:
 
 ### Example receiving images from a file
 
-Add the configuration below to your {% term "`configuration.yaml`" %}.
+Add the configuration below to your `configuration.yaml`.
 
 To test it, publish an image URL to the topic from the console:
 

@@ -23,7 +23,7 @@ use serde_derive::Serialize;
 ///
 /// Optimistic mode can be forced even if a `state_topic` is available. Try to enable it if you are experiencing incorrect fan operation.
 ///
-/// To enable MQTT fans in your installation, add the following to your {% term "`configuration.yaml`" %} file.
+/// To use an MQTT fan in your installation, [add a MQTT device as a subentry](/integrations/mqtt/#configuration), or add the following to your `configuration.yaml` file.
 /// {% include integrations/restart_ha_after_config_inclusion.md %}
 ///
 /// ```yaml
@@ -32,6 +32,8 @@ use serde_derive::Serialize;
 ///   - fan:
 ///       command_topic: "bedroom_fan/on/set"
 /// ```
+///
+/// Alternatively, a more advanced approach is to set it up via [MQTT discovery](/integrations/mqtt/#mqtt-discovery).
 ///
 ///
 /// ⚠ Important\
@@ -195,7 +197,7 @@ pub struct Fan {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
     pub object_id: Option<String>,
 
@@ -291,11 +293,11 @@ pub struct Fan {
     #[serde(rename = "ret", skip_serializing_if = "Option::is_none")]
     pub retain: Option<bool>,
 
-    /// The maximum of numeric output range (representing 100 %). The number of speeds within the `speed_range` / `100` will determine the `percentage_step`.
+    /// The maximum of numeric output range (representing 100 %). The `percentage_step` is defined by `100` / the number of speeds within the speed range.
     #[serde(rename = "spd_rng_max", skip_serializing_if = "Option::is_none")]
     pub speed_range_max: Option<i32>,
 
-    /// The minimum of numeric output range (`off` not included, so `speed_range_min` - `1` represents 0 %). The number of speeds within the speed_range / 100 will determine the `percentage_step`.
+    /// The minimum of numeric output range (`off` not included, so `speed_range_min` - `1` represents 0 %). The `percentage_step` is defined by `100` / the number of speeds within the speed range.
     #[serde(rename = "spd_rng_min", skip_serializing_if = "Option::is_none")]
     pub speed_range_min: Option<i32>,
 
@@ -431,7 +433,7 @@ impl Fan {
         self
     }
 
-    /// Used instead of `name` for automatic generation of `entity_id`
+    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
         self.object_id = Some(object_id.into());
         self
@@ -608,13 +610,13 @@ impl Fan {
         self
     }
 
-    /// The maximum of numeric output range (representing 100 %). The number of speeds within the `speed_range` / `100` will determine the `percentage_step`.
+    /// The maximum of numeric output range (representing 100 %). The `percentage_step` is defined by `100` / the number of speeds within the speed range.
     pub fn speed_range_max(mut self, speed_range_max: i32) -> Self {
         self.speed_range_max = Some(speed_range_max);
         self
     }
 
-    /// The minimum of numeric output range (`off` not included, so `speed_range_min` - `1` represents 0 %). The number of speeds within the speed_range / 100 will determine the `percentage_step`.
+    /// The minimum of numeric output range (`off` not included, so `speed_range_min` - `1` represents 0 %). The `percentage_step` is defined by `100` / the number of speeds within the speed range.
     pub fn speed_range_min(mut self, speed_range_min: i32) -> Self {
         self.speed_range_min = Some(speed_range_min);
         self
