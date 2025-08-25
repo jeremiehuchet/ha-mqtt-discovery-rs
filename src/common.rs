@@ -54,7 +54,7 @@ impl Origin {
 
 /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
 #[derive(Clone, Debug, PartialEq, Serialize, Default)]
-pub struct Device {
+pub struct DeviceInformation {
     /// The name of the device.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -87,7 +87,7 @@ pub struct Device {
     pub via_device: Option<String>,
 }
 
-impl Device {
+impl DeviceInformation {
     /// The name of the device.
     pub fn name<S: Into<String>>(mut self, name: S) -> Self {
         self.name = Some(name.into());
@@ -386,7 +386,7 @@ mod tests {
 
     #[test]
     fn can_serialize_device() {
-        let device = Device {
+        let device = DeviceInformation {
             name: Some("device name".to_string()),
             identifiers: vec!["device id".to_string()],
             connections: vec![DeviceConnection::mac("connection id")],

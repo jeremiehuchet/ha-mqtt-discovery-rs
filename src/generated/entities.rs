@@ -12,7 +12,7 @@ use crate::generated::Unit;
 use crate::generated::UpdateDeviceClass;
 use crate::{
     Entity,
-    common::{Availability, Device, EntityCategory, Origin},
+    common::{Availability, DeviceInformation, EntityCategory, Origin},
 };
 pub use rust_decimal::Decimal;
 use serde_derive::Serialize;
@@ -65,7 +65,7 @@ pub struct Camera {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -135,7 +135,7 @@ impl Camera {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -317,7 +317,7 @@ pub struct Button {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -407,7 +407,7 @@ impl Button {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -648,7 +648,7 @@ pub struct Humidifier {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -822,7 +822,7 @@ impl Humidifier {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -1244,7 +1244,7 @@ pub struct Climate {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -1570,7 +1570,7 @@ impl Climate {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -2343,7 +2343,7 @@ pub struct AlarmControlPanel {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -2481,7 +2481,7 @@ impl AlarmControlPanel {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -2841,7 +2841,7 @@ pub struct DeviceTracker {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -2929,7 +2929,7 @@ impl DeviceTracker {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -3165,7 +3165,7 @@ pub struct WaterHeater {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -3327,7 +3327,7 @@ impl WaterHeater {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -3703,7 +3703,7 @@ pub struct Image {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -3785,7 +3785,7 @@ impl Image {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -4010,7 +4010,7 @@ pub struct DeviceTrigger {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -4068,7 +4068,7 @@ impl DeviceTrigger {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -4269,7 +4269,7 @@ pub struct Event {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -4355,7 +4355,7 @@ impl Event {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -4541,7 +4541,7 @@ pub struct Number {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -4663,7 +4663,7 @@ impl Number {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -4990,7 +4990,7 @@ pub struct BinarySensor {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -5088,7 +5088,7 @@ impl BinarySensor {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -5308,7 +5308,7 @@ pub struct Tag {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -5342,7 +5342,7 @@ impl Tag {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -5553,7 +5553,7 @@ pub struct Valve {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -5691,7 +5691,7 @@ impl Valve {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -6057,7 +6057,7 @@ pub struct Fan {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -6251,7 +6251,7 @@ impl Fan {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -6920,7 +6920,7 @@ pub struct Sensor {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -7026,7 +7026,7 @@ impl Sensor {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -7272,7 +7272,7 @@ pub struct LawnMower {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -7385,7 +7385,7 @@ impl LawnMower {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -7750,7 +7750,7 @@ pub struct Update {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -7868,7 +7868,7 @@ impl Update {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -8184,7 +8184,7 @@ pub struct Switch {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -8298,7 +8298,7 @@ impl Switch {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -8828,7 +8828,7 @@ pub struct Cover {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -9018,7 +9018,7 @@ impl Cover {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -9425,7 +9425,7 @@ pub struct Scene {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -9507,7 +9507,7 @@ impl Scene {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -9737,7 +9737,7 @@ pub struct Lock {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -9871,7 +9871,7 @@ impl Lock {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -10160,7 +10160,7 @@ pub struct Text {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -10262,7 +10262,7 @@ impl Text {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -10500,7 +10500,7 @@ pub struct Notify {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -10578,7 +10578,7 @@ impl Notify {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -10873,7 +10873,7 @@ pub struct Vacuum {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -10983,7 +10983,7 @@ impl Vacuum {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -11278,7 +11278,7 @@ pub struct Siren {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -11405,7 +11405,7 @@ impl Siren {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -12114,7 +12114,7 @@ pub struct Light {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -12392,7 +12392,7 @@ impl Light {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
@@ -12939,7 +12939,7 @@ pub struct Select {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -13037,7 +13037,7 @@ impl Select {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }

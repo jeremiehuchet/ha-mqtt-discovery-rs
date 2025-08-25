@@ -1,8 +1,9 @@
 use assert_json_diff::assert_json_eq;
+use ha_mqtt_discovery::common::DeviceInformation;
 use ha_mqtt_discovery::{
     BinarySensorDeviceClass, Entity, HomeAssistantMqtt, NumberDeviceClass, SensorDeviceClass,
     TemperatureUnit,
-    common::{Availability, Device, DeviceConnection, Origin, SensorStateClass},
+    common::{Availability, DeviceConnection, Origin, SensorStateClass},
     entities::{BinarySensor, Number, Sensor},
 };
 use rumqttc::v5::{
@@ -26,8 +27,8 @@ fn origin() -> Origin {
         .with_support_url("https://www.github.com")
 }
 
-fn device() -> Device {
-    Device::default()
+fn device() -> DeviceInformation {
+    DeviceInformation::default()
         .name("Barometer")
         .add_identifier("barometer-09AF")
         .add_connection(DeviceConnection::mac("09:AF:A4:54:F0:9D"))

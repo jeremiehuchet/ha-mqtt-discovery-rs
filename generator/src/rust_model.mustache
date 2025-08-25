@@ -12,7 +12,7 @@ pub struct {{ toPascalCase entityName }} {
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
     #[serde(rename = "dev")]
-    pub device: Device,
+    pub device: DeviceInformation,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
     #[serde(flatten)]
@@ -49,7 +49,7 @@ impl {{ toPascalCase entityName }} {
     }
 
     /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: Device) -> Self {
+    pub fn device(mut self, device: DeviceInformation) -> Self {
         self.device = device;
         self
     }
