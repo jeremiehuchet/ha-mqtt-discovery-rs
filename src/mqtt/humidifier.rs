@@ -123,17 +123,11 @@ pub struct Humidifier {
     pub command_topic: String,
 
     /// A template with which the value received on `current_humidity_topic` will be rendered.
-    #[serde(
-        rename = "current_humidity_template",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "curr_hum_tpl", skip_serializing_if = "Option::is_none")]
     pub current_humidity_template: Option<String>,
 
     /// The MQTT topic on which to listen for the current humidity. A `"None"` value received will reset the current humidity. Empty values (`'''`) will be ignored.
-    #[serde(
-        rename = "current_humidity_topic",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "curr_hum_t", skip_serializing_if = "Option::is_none")]
     pub current_humidity_topic: Option<String>,
 
     /// The [device class](/integrations/humidifier/#device-class) of the MQTT device. Must be either `humidifier`, `dehumidifier` or `null`.
@@ -221,7 +215,7 @@ pub struct Humidifier {
     pub payload_reset_mode: Option<String>,
 
     /// Must be `humidifier`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.

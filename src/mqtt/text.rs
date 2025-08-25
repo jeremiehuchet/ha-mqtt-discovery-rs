@@ -128,7 +128,7 @@ pub struct Text {
     pub pattern: Option<String>,
 
     /// Must be `text`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.

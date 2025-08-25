@@ -408,11 +408,11 @@ pub struct Cover {
     pub payload_stop: Option<String>,
 
     /// The command payload that stops the tilt.
-    #[serde(rename = "payload_stop_tilt", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "pl_stop_tilt", skip_serializing_if = "Option::is_none")]
     pub payload_stop_tilt: Option<String>,
 
     /// Must be `cover`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// Number which represents closed position.

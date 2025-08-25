@@ -236,7 +236,7 @@ pub struct Valve {
     pub payload_stop: Option<String>,
 
     /// Must be `valve`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// Number which represents closed position. The valve's position will be scaled to the(`position_closed`...`position_open`) range when an action is performed and scaled back when a value is received.

@@ -262,7 +262,7 @@ pub struct Fan {
     pub percentage_value_template: Option<String>,
 
     /// Must be `fan`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.

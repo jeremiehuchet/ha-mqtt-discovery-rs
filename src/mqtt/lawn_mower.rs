@@ -79,28 +79,19 @@ pub struct LawnMower {
     pub entity_category: Option<EntityCategory>,
 
     /// The MQTT topic subscribed to receive an update of the activity. Valid activities are `mowing`, `paused`, `docked`, and `error`. Use `value_template` to extract the activity state from a custom payload. When payload `none` is received, the activity state will be reset to `unknown`.
-    #[serde(
-        rename = "activity_state_topic",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "act_stat_t", skip_serializing_if = "Option::is_none")]
     pub activity_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
-    #[serde(
-        rename = "activity_value_template",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "act_val_tpl", skip_serializing_if = "Option::is_none")]
     pub activity_value_template: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `dock_command_topic`. The `value` parameter in the template will be set to `dock`.
-    #[serde(
-        rename = "dock_command_template",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "dock_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub dock_command_template: Option<String>,
 
     /// The MQTT topic that publishes commands when the `lawn_mower.dock` action is performed. The value `dock` is published when the action is used. Use a `dock_command_template` to publish a custom format.
-    #[serde(rename = "dock_command_topic", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "dock_cmd_t", skip_serializing_if = "Option::is_none")]
     pub dock_command_topic: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -140,21 +131,15 @@ pub struct LawnMower {
     pub optimistic: Option<bool>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `pause_command_topic`. The `value` parameter in the template will be set to `pause`.
-    #[serde(
-        rename = "pause_command_template",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "pause_mw_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub pause_command_template: Option<String>,
 
     /// The MQTT topic that publishes commands when the `lawn_mower.pause` action is performed. The value `pause` is published when the action is used. Use a `pause_command_template` to publish a custom format.
-    #[serde(
-        rename = "pause_command_topic",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "pause_cmd_t", skip_serializing_if = "Option::is_none")]
     pub pause_command_topic: Option<String>,
 
     /// Must be `lawn_mower`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
@@ -166,10 +151,7 @@ pub struct LawnMower {
     pub retain: Option<bool>,
 
     /// The MQTT topic that publishes commands when the `lawn_mower.start_mowing` action is performed. The value `start_mowing` is published when the action used. Use a `start_mowing_command_template` to publish a custom format.
-    #[serde(
-        rename = "start_mowing_command_topic",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "strt_mw_cmd_t", skip_serializing_if = "Option::is_none")]
     pub start_mowing_command_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.

@@ -545,7 +545,7 @@ pub struct Light {
     pub color_temp_command_topic: Option<String>,
 
     /// When set to `true`, `color_temp_command_topic` will publish color mode updates in Kelvin and process `color_temp_state_topic` will process state updates in Kelvin. When not set the `color_temp` values are converted to mireds.
-    #[serde(rename = "color_temp_kelvin", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "clr_temp_k", skip_serializing_if = "Option::is_none")]
     pub color_temp_kelvin: Option<bool>,
 
     /// The MQTT topic subscribed to receive color temperature state updates.
@@ -621,7 +621,7 @@ pub struct Light {
     pub json_attributes_topic: Option<String>,
 
     /// The maximum color temperature in Kelvin.
-    #[serde(rename = "max_kelvin", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "max_k", skip_serializing_if = "Option::is_none")]
     pub max_kelvin: Option<i32>,
 
     /// The maximum color temperature in mireds.
@@ -629,7 +629,7 @@ pub struct Light {
     pub max_mireds: Option<i32>,
 
     /// The minimum color temperature in Kelvin.
-    #[serde(rename = "min_kelvin", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "min_k", skip_serializing_if = "Option::is_none")]
     pub min_kelvin: Option<i32>,
 
     /// The minimum color temperature in mireds.
@@ -661,7 +661,7 @@ pub struct Light {
     pub payload_on: Option<String>,
 
     /// Must be `light`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.

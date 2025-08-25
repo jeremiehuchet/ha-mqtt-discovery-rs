@@ -134,17 +134,11 @@ pub struct Climate {
     pub action_topic: Option<String>,
 
     /// A template with which the value received on `current_humidity_topic` will be rendered.
-    #[serde(
-        rename = "current_humidity_template",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "curr_hum_tpl", skip_serializing_if = "Option::is_none")]
     pub current_humidity_template: Option<String>,
 
     /// The MQTT topic on which to listen for the current humidity. A `"None"` value received will reset the current humidity. Empty values (`'''`) will be ignored.
-    #[serde(
-        rename = "current_humidity_topic",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "curr_hum_t", skip_serializing_if = "Option::is_none")]
     pub current_humidity_topic: Option<String>,
 
     /// A template with which the value received on `current_temperature_topic` will be rendered.
@@ -260,17 +254,11 @@ pub struct Climate {
     pub payload_on: Option<String>,
 
     /// A template to render the value sent to the `power_command_topic` with. The `value` parameter is the payload set for `payload_on` or `payload_off`.
-    #[serde(
-        rename = "power_command_template",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "pow_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub power_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the HVAC power state. Sends the payload configured with `payload_on` if the climate is turned on via the `climate.turn_on`, or the payload configured with `payload_off` if the climate is turned off via the `climate.turn_off` action. Note that `optimistic` mode is not supported through `climate.turn_on` and `climate.turn_off` actions. When called, these actions will send a power command to the device but will not optimistically update the state of the climate entity. The climate device should report its state back via `mode_state_topic`.
-    #[serde(
-        rename = "power_command_topic",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "pow_cmd_t", skip_serializing_if = "Option::is_none")]
     pub power_command_topic: Option<String>,
 
     /// The desired precision for this device. Can be used to match your actual thermostat's precision. Supported values are `0.1`, `0.5` and `1.0`.
@@ -307,37 +295,31 @@ pub struct Climate {
 
     /// A template to render the value sent to the `swing_horizontal_mode_command_topic` with.
     #[serde(
-        rename = "swing_horizontal_mode_command_template",
+        rename = "swing_h_mode_cmd_tpl",
         skip_serializing_if = "Option::is_none"
     )]
     pub swing_horizontal_mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the swing horizontal mode.
-    #[serde(
-        rename = "swing_horizontal_mode_command_topic",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "swing_h_mode_cmd_t", skip_serializing_if = "Option::is_none")]
     pub swing_horizontal_mode_command_topic: Option<String>,
 
     /// A template to render the value received on the `swing_horizontal_mode_state_topic` with.
     #[serde(
-        rename = "swing_horizontal_mode_state_template",
+        rename = "swing_h_mode_stat_tpl",
         skip_serializing_if = "Option::is_none"
     )]
     pub swing_horizontal_mode_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes of the HVAC swing horizontal mode. If this is not set, the swing horizontal mode works in optimistic mode (see below).
     #[serde(
-        rename = "swing_horizontal_mode_state_topic",
+        rename = "swing_h_mode_stat_t",
         skip_serializing_if = "Option::is_none"
     )]
     pub swing_horizontal_mode_state_topic: Option<String>,
 
     /// A list of supported swing horizontal modes.
-    #[serde(
-        rename = "swing_horizontal_modes",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "swing_h_modes", skip_serializing_if = "Option::is_none")]
     pub swing_horizontal_modes: Option<Vec<String>>,
 
     /// A template to render the value sent to the `swing_mode_command_topic` with.

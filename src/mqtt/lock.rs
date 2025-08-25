@@ -108,7 +108,7 @@ pub struct Lock {
     pub entity_category: Option<EntityCategory>,
 
     /// A regular expression to validate a supplied code when it is set during the action to `open`, `lock` or `unlock` the MQTT lock.
-    #[serde(rename = "code_format", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "cod_form", skip_serializing_if = "Option::is_none")]
     pub code_format: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`. The lock command template accepts the parameters `value` and `code`. The `value` parameter will contain the configured value for either `payload_open`, `payload_lock` or `payload_unlock`. The `code` parameter is set during the action to `open`, `lock` or `unlock` the MQTT lock and will be set `None` if no code was passed.
@@ -172,7 +172,7 @@ pub struct Lock {
     pub payload_unlock: Option<String>,
 
     /// Must be `lock`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.

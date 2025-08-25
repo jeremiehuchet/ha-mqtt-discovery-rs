@@ -194,21 +194,15 @@ pub struct WaterHeater {
     pub payload_on: Option<String>,
 
     /// Must be `water_heater`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// A template to render the value sent to the `power_command_topic` with. The `value` parameter is the payload set for `payload_on` or `payload_off`.
-    #[serde(
-        rename = "power_command_template",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "pow_cmd_tpl", skip_serializing_if = "Option::is_none")]
     pub power_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the water heater power state. Sends the payload configured with `payload_on` if the water heater is turned on via the `water_heater.turn_on`, or the payload configured with `payload_off` if the water heater is turned off via the `water_heater.turn_off` action. Note that `optimistic` mode is not supported through `water_heater.turn_on` and `water_heater.turn_off` actions. When called, these actions will send a power command to the device but will not optimistically update the state of the water heater. The water heater device should report its state back via `mode_state_topic`.
-    #[serde(
-        rename = "power_command_topic",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "pow_cmd_t", skip_serializing_if = "Option::is_none")]
     pub power_command_topic: Option<String>,
 
     /// The desired precision for this device. Can be used to match your actual water heater's precision. Supported values are `0.1`, `0.5` and `1.0`.

@@ -200,7 +200,7 @@ pub struct Update {
     pub device_class: Option<UpdateDeviceClass>,
 
     /// Number of decimal digits for display of update progress.
-    #[serde(rename = "display_precision", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "dsp_prc", skip_serializing_if = "Option::is_none")]
     pub display_precision: Option<i32>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -248,7 +248,7 @@ pub struct Update {
     pub payload_install: Option<String>,
 
     /// Must be `update`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "platform")]
+    #[serde(rename = "p")]
     pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
