@@ -124,24 +124,24 @@ function appendRustType(name: string, attrs: FieldAttributes) {
       if (entityName) {
         const deviceClassType = `${toPascalCase(entityName)}DeviceClass`;
         attrs.rustType = deviceClassType;
-        attrs.import = `use super::device_classes::${deviceClassType}`;
+        attrs.import = `use crate::generated::${deviceClassType}`;
       }
       break;
     case "unit_of_measurement":
       attrs.rustType = "Unit";
-      attrs.import = `use super::units::Unit`;
+      attrs.import = `use crate::generated::Unit`;
       break;
       case "state_class":
         attrs.rustType = "SensorStateClass";
-        attrs.import = `use super::common::SensorStateClass`;
+        attrs.import = `use crate::common::SensorStateClass`;
         break;
     case "qos":
       attrs.rustType = "Qos";
-      attrs.import = `use super::common::Qos`;
+      attrs.import = `use crate::common::Qos`;
       break;
     case "temperature_unit":
       attrs.rustType = "TemperatureUnit";
-      attrs.import = `use super::common::TemperatureUnit`;
+      attrs.import = `use crate::common::TemperatureUnit`;
       break;
   }
 }

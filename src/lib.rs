@@ -1,26 +1,20 @@
 #![recursion_limit = "256"]
 
 use anyhow::{Result, anyhow};
-use mqtt::{
-    alarm_control_panel::AlarmControlPanel, binary_sensor::BinarySensor, button::Button,
-    camera::Camera, climate::Climate, cover::Cover, device_tracker::DeviceTracker,
-    device_trigger::DeviceTrigger, event::Event, fan::Fan, humidifier::Humidifier, image::Image,
-    lawn_mower::LawnMower, lock::Lock, number::Number, scene::Scene, select::Select,
-    sensor::Sensor, siren::Siren, switch::Switch, tag::Tag, text::Text, update::Update,
-    vacuum::Vacuum, valve::Valve, water_heater::WaterHeater,
-};
 use rumqttc::v5::{
     AsyncClient,
     mqttbytes::{QoS::AtLeastOnce, v5::PublishProperties},
 };
 use serde::Serialize;
 
-use crate::mqtt::light::Light;
-use crate::mqtt::notify::Notify;
 pub use rumqttc::v5;
 use serde_json::Value;
 
-pub mod mqtt;
+pub mod common;
+
+mod generated;
+pub use generated::entities::*;
+pub use generated::*;
 
 const ONE_WEEK_SECONDS: u32 = 60 * 60 * 24 * 7;
 

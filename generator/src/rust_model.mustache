@@ -1,10 +1,3 @@
-use serde_derive::Serialize;
-use crate::Entity;
-use super::common::{Availability, Device, EntityCategory, Origin};
-{{#each imports}}
-{{ this }};
-{{/each}}
-
 /// {{{ comment entityDoc }}}
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct {{ toPascalCase entityName }} {

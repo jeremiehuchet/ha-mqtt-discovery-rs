@@ -1,14 +1,9 @@
 use assert_json_diff::assert_json_eq;
-use ha_mqtt_discovery::mqtt::units::TemperatureUnit;
 use ha_mqtt_discovery::{
-    Entity, HomeAssistantMqtt,
-    mqtt::{
-        binary_sensor::BinarySensor,
-        common::{Availability, Device, DeviceConnection, Origin, SensorStateClass},
-        device_classes::{BinarySensorDeviceClass, NumberDeviceClass, SensorDeviceClass},
-        number::Number,
-        sensor::Sensor,
-    },
+    BinarySensorDeviceClass, Entity, HomeAssistantMqtt, NumberDeviceClass, SensorDeviceClass,
+    TemperatureUnit,
+    common::{Availability, Device, DeviceConnection, Origin, SensorStateClass},
+    entities::{BinarySensor, Number, Sensor},
 };
 use rumqttc::v5::{
     AsyncClient,

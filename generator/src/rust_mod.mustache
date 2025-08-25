@@ -1,7 +1,3 @@
-pub mod common;
-pub mod device_classes;
-pub mod units;
+pub mod entities;
 
-{{#each this}}
-pub mod {{ . }};
-{{/each}}
+use serde_derive::Serialize;
