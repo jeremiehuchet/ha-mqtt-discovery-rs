@@ -49,6 +49,8 @@
 
     cat ${inputs.homeassistant-core}/homeassistant/const.py | grep -v '^$' | grep -Pzo '\nclass UnitOf(\w+).*\n(   .*\n)*' > "$DEVENV_ROOT/generator/input/units.py"
 
+    cat ${inputs.homeassistant-core}/homeassistant/components/mqtt/abbreviations.py > "$DEVENV_ROOT/generator/input/abbreviations.py"
+
     chmod -R +w generator/input/
   '';
 

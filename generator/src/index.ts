@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, readdirSync } from "fs";
 import Handlebars from "handlebars";
-import { allAbbreviations } from "./abbretiations";
+import { loadAbbreviations } from "./abbreviations.ts";
 import { extractDeviceClassesEnums } from "./device-class";
 import { generateMqttEntityModel } from "./entity";
 import { extractUnitsEnums } from "./units";
@@ -8,11 +8,11 @@ import { toPascalCase } from "./strings";
 
 const BASEDIR = process.env.DEVENV_ROOT;
 
+const ABBREVIATIONS = loadAbbreviations(`${BASEDIR}/generator/input/abbreviations.py`);
+
 Handlebars.registerHelper("abbreviation", (name: string) => {
-  const abbreviation = Object.entries(allAbbreviations).find(
-    ([_shortName, fullName]) => name === fullName
-  );
-  return new Handlebars.SafeString(abbreviation ? abbreviation[0] : name);
+  const abbreviation = ABBREVIATIONS.find((item) => item.fullName === name);
+  return new Handlebars.SafeString(abbreviation ? abbreviation.shortName : name);
 });
 
 Handlebars.registerHelper("comment", (text: string) => {
