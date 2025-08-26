@@ -1,20 +1,23 @@
 #![recursion_limit = "256"]
 
 use anyhow::{Result, anyhow};
+use bon::bon;
+pub use rumqttc::v5;
 use rumqttc::v5::{
     AsyncClient,
     mqttbytes::{QoS::AtLeastOnce, v5::PublishProperties},
 };
 use serde::Serialize;
-
-pub use rumqttc::v5;
-use serde_json::Value;
+use std::collections::HashMap;
 
 pub mod common;
 
 mod generated;
+use crate::common::{Availability, DeviceInformation, Origin, Qos};
 pub use generated::entities::*;
 pub use generated::*;
+use regex::Regex;
+use unicode_normalization::UnicodeNormalization;
 
 const ONE_WEEK_SECONDS: u32 = 60 * 60 * 24 * 7;
 
@@ -35,32 +38,56 @@ impl HomeAssistantMqtt {
     /// The discovery topic needs to follow a specific format:
     /// `<discovery_prefix>/<component>/[<node_id>/]<object_id>/config`
     ///
-    /// - `<discovery_prefix>`: The Discovery Prefix defaults to homeassistant. This prefix can be changed.
-    /// - `<component>`: One of the supported MQTT integrations, eg. binary_sensor.
+    /// - `<discovery_prefix>`: The Discovery Prefix defaults to `homeassistant`. This prefix can be changed.
+    /// - `<component>`: One of the supported MQTT integrations, eg. `binary_sensor`.
     /// - `<node_id>` (Optional): ID of the node providing the topic, this is not used by Home Assistant but may be used to structure the MQTT topic. The ID of the node must only consist of characters from the character class [a-zA-Z0-9_-] (alphanumerics, underscore and hyphen).
-    /// - `<object_id>`: The ID of the device. This is only to allow for separate topics for each device and is not used for the entity_id. The ID of the device must only consist of characters from the character class [a-zA-Z0-9_-] (alphanumerics, underscore and hyphen).
+    /// - `<object_id>`: The ID of the device. This is only to allow for separate topics for each device and is not used for the `entity_id`. The ID of the device must only consist of characters from the character class [a-zA-Z0-9_-] (alphanumerics, underscore and hyphen).
     ///
     /// The `<node_id>` level can be used by clients to only subscribe to their own (command) topics by using one wildcard topic like <discovery_prefix>/+/<node_id>/+/set.
     ///
     /// Best practice for entities with a unique_id is to set `<object_id>` to unique_id and omit the `<node_id>`.
     pub async fn publish_entity(&self, entity: Entity) -> Result<()> {
-        let component = entity.get_component_name();
-        let attributes = entity.get_attributes()?;
-        let object_id = attributes
-            .as_object()
-            .ok_or(anyhow!("entity configuration should be an object"))?
-            .get("uniq_id")
-            .ok_or(anyhow!(
-                "entity configuration should have an attribute 'uniq_id'"
-            ))?
-            .as_str()
-            .ok_or(anyhow!("'uniq_id' attribute should be a string"))?;
+        let component = entity.get_platform();
+        let unique_id = entity
+            .get_unique_id()
+            .expect("'uniq_id' attribute should be defined");
         let prefix = self
             .discovery_prefix
             .strip_suffix("/")
             .unwrap_or(&self.discovery_prefix);
-        let topic = format!("{prefix}/{component}/{object_id}/config");
-        let payload = serde_json::ser::to_string(&attributes).unwrap();
+        let topic = format!("{prefix}/{component}/{unique_id}/config");
+        let payload = serde_json::ser::to_string(&entity).unwrap();
+        let props = PublishProperties {
+            //payload_format_indicator: Some(1),
+            message_expiry_interval: Some(ONE_WEEK_SECONDS),
+            content_type: Some("application/json".to_string()),
+            ..Default::default()
+        };
+        Ok(self
+            .client
+            .publish_with_properties(topic, AtLeastOnce, true, payload, props)
+            .await?)
+    }
+
+    /// The discovery topic needs to follow a specific format:
+    /// `<discovery_prefix>/<component>/[<node_id>/]<object_id>/config`
+    ///
+    /// - `<discovery_prefix>`: The Discovery Prefix defaults to `homeassistant` and this prefix can be changed.
+    /// - `<component>`: One of the supported MQTT integrations, e.g., `binary_sensor`, or `device` in case of a device discovery.
+    /// - `<node_id>`: (Optional): ID of the node providing the topic, this is not used by Home Assistant but may be used to structure the MQTT topic. The ID of the node must only consist of characters from the character class `[a-zA-Z0-9_-]` (alphanumerics, underscore and hyphen).
+    /// - `<object_id>`: The ID of the device. This is only to allow for separate topics for each device and is not used for the `entity_id`. The ID of the device must only consist of characters from the character class `[a-zA-Z0-9_-]` (alphanumerics, underscore and hyphen).
+    ///
+    /// The <node_id> level can be used by clients to only subscribe to their own (command) topics by using one wildcard topic like `<discovery_prefix>/+/<node_id>/+/set`.
+    ///
+    /// Best practice for entities with a unique_id is to set <object_id> to unique_id and omit the <node_id>.
+    pub async fn publish_device(&self, device: DeviceComponents) -> Result<()> {
+        let prefix = self
+            .discovery_prefix
+            .strip_suffix("/")
+            .unwrap_or(&self.discovery_prefix);
+        let unique_id = device.unique_id();
+        let topic = format!("{prefix}/device/{unique_id}/config");
+        let payload = serde_json::ser::to_string(&device)?;
         let props = PublishProperties {
             //payload_format_indicator: Some(1),
             message_expiry_interval: Some(ONE_WEEK_SECONDS),
@@ -92,105 +119,97 @@ impl HomeAssistantMqtt {
     }
 }
 
-#[derive(Clone)]
-pub enum Entity {
-    AlarmControlPanel(AlarmControlPanel),
-    BinarySensor(BinarySensor),
-    Button(Button),
-    Camera(Camera),
-    Climate(Climate),
-    Cover(Cover),
-    DeviceTracker(DeviceTracker),
-    DeviceTrigger(DeviceTrigger),
-    Event(Event),
-    Fan(Fan),
-    Humidifier(Humidifier),
-    Image(Image),
-    LawnMower(LawnMower),
-    Light(Light),
-    Lock(Lock),
-    Notify(Notify),
-    Number(Number),
-    Scene(Scene),
-    Select(Select),
-    Sensor(Sensor),
-    Siren(Siren),
-    Switch(Switch),
-    Tag(Tag),
-    Text(Text),
-    Update(Update),
-    Vacuum(Vacuum),
-    Valve(Valve),
-    WaterHeater(WaterHeater),
+/// A device with multiple components declared at once.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct DeviceComponents {
+    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
+    #[serde(rename = "o")]
+    pub origin: Origin,
+
+    /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
+    #[serde(rename = "dev")]
+    pub device: DeviceInformation,
+
+    /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
+
+    /// Components of the device.
+    #[serde(rename = "cmps")]
+    pub components: HashMap<String, Entity>,
+
+    /// Replaces `~` with this value in any MQTT topic attribute.
+    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
+    #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    pub topic_prefix: Option<String>,
+
+    /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. Valid state payloads are `OFF` and `ON`. Custom `OFF` and `ON` values can be set with the `payload_off` and `payload_on` config options.
+    #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    pub state_topic: Option<String>,
+
+    /// The MQTT topic to publish commands to change the alarm state.
+    #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    pub command_topic: Option<String>,
+
+    /// The maximum QoS level to be used when receiving and publishing messages.
+    #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
+    pub qos: Option<Qos>,
+
+    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
+    #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    pub encoding: Option<String>,
 }
 
-impl Entity {
-    fn get_component_name(&self) -> &str {
-        match self {
-            Entity::AlarmControlPanel(_) => "alarm_control_panel",
-            Entity::BinarySensor(_) => "binary_sensor",
-            Entity::Button(_) => "button",
-            Entity::Camera(_) => "camera",
-            Entity::Climate(_) => "climate",
-            Entity::Cover(_) => "cover",
-            Entity::DeviceTracker(_) => "device_tracker",
-            Entity::DeviceTrigger(_) => "device_trigger",
-            Entity::Event(_) => "event",
-            Entity::Fan(_) => "fan",
-            Entity::Humidifier(_) => "humidifier",
-            Entity::Image(_) => "image",
-            Entity::LawnMower(_) => "lawn_mower",
-            Entity::Light(_) => "light",
-            Entity::Lock(_) => "lock",
-            Entity::Notify(_) => "notify",
-            Entity::Number(_) => "number",
-            Entity::Scene(_) => "scene",
-            Entity::Select(_) => "select",
-            Entity::Sensor(_) => "sensor",
-            Entity::Siren(_) => "siren",
-            Entity::Switch(_) => "switch",
-            Entity::Tag(_) => "tag",
-            Entity::Text(_) => "text",
-            Entity::Update(_) => "update",
-            Entity::Vacuum(_) => "vacuum",
-            Entity::Valve(_) => "valve",
-            Entity::WaterHeater(_) => "water_heater",
+#[bon]
+impl DeviceComponents {
+    #[builder]
+    pub fn new(
+        #[builder(field)] components: HashMap<String, Entity>,
+        origin: Origin,
+        device: DeviceInformation,
+        availability: Option<Availability>,
+        #[builder(into)] topic_prefix: Option<String>,
+        #[builder(into)] state_topic: Option<String>,
+        #[builder(into)] command_topic: Option<String>,
+        qos: Option<Qos>,
+        #[builder(into)] encoding: Option<String>,
+    ) -> Self {
+        DeviceComponents {
+            origin,
+            device,
+            availability,
+            components: components.into_iter().map(|(k, v)| (k.into(), v)).collect(),
+            topic_prefix,
+            state_topic,
+            command_topic,
+            qos,
+            encoding,
         }
     }
 
-    fn get_attributes(&self) -> Result<Value> {
-        let attributes = match self {
-            Entity::AlarmControlPanel(alarm_control_panel) => {
-                serde_json::to_value(alarm_control_panel)?
-            }
-            Entity::BinarySensor(binary_sensor) => serde_json::to_value(binary_sensor)?,
-            Entity::Button(button) => serde_json::to_value(button)?,
-            Entity::Camera(camera) => serde_json::to_value(camera)?,
-            Entity::Climate(climate) => serde_json::to_value(climate)?,
-            Entity::Cover(cover) => serde_json::to_value(cover)?,
-            Entity::DeviceTracker(device_tracker) => serde_json::to_value(device_tracker)?,
-            Entity::DeviceTrigger(device_trigger) => serde_json::to_value(device_trigger)?,
-            Entity::Event(event) => serde_json::to_value(event)?,
-            Entity::Fan(fan) => serde_json::to_value(fan)?,
-            Entity::Humidifier(humidifier) => serde_json::to_value(humidifier)?,
-            Entity::Image(image) => serde_json::to_value(image)?,
-            Entity::LawnMower(lawn_mower) => serde_json::to_value(lawn_mower)?,
-            Entity::Light(light) => serde_json::to_value(light)?,
-            Entity::Lock(lock) => serde_json::to_value(lock)?,
-            Entity::Notify(notify) => serde_json::to_value(notify)?,
-            Entity::Number(number) => serde_json::to_value(number)?,
-            Entity::Scene(scene) => serde_json::to_value(scene)?,
-            Entity::Select(select) => serde_json::to_value(select)?,
-            Entity::Sensor(sensor) => serde_json::to_value(sensor)?,
-            Entity::Siren(siren) => serde_json::to_value(siren)?,
-            Entity::Switch(switch) => serde_json::to_value(switch)?,
-            Entity::Tag(tag) => serde_json::to_value(tag)?,
-            Entity::Text(text) => serde_json::to_value(text)?,
-            Entity::Update(update) => serde_json::to_value(update)?,
-            Entity::Vacuum(vacuum) => serde_json::to_value(vacuum)?,
-            Entity::Valve(valve) => serde_json::to_value(valve)?,
-            Entity::WaterHeater(water_heater) => serde_json::to_value(water_heater)?,
-        };
-        Ok(attributes)
+    fn unique_id(&self) -> String {
+        slug(
+            self.device
+                .identifiers
+                .first()
+                .expect("a device must have at least one identifier"),
+        )
     }
+}
+
+impl<S: device_components_builder::State> DeviceComponentsBuilder<S> {
+    pub fn component<N: Into<String>>(mut self, name: N, value: Entity) -> Self {
+        // `self.levels` is accessible in the builder
+        self.components.insert(name.into(), value);
+        self
+    }
+}
+
+fn slug(string: &String) -> String {
+    let nfkd = string.nfkd().to_string();
+    let without_diacritics = Regex::new(r"\p{M}").unwrap().replace_all(&nfkd, "");
+    Regex::new(r"[^a-zA-Z0-9_-]")
+        .unwrap()
+        .replace_all(&without_diacritics.to_string(), "_")
+        .to_string()
 }

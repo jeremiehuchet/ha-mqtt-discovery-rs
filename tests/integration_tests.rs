@@ -1,8 +1,8 @@
 use assert_json_diff::assert_json_eq;
 use ha_mqtt_discovery::common::DeviceInformation;
 use ha_mqtt_discovery::{
-    BinarySensorDeviceClass, Entity, HomeAssistantMqtt, NumberDeviceClass, SensorDeviceClass,
-    TemperatureUnit,
+    BinarySensorDeviceClass, DeviceComponents, Entity, HomeAssistantMqtt, NumberDeviceClass,
+    SensorDeviceClass, TemperatureUnit,
     common::{Availability, DeviceConnection, Origin, SensorStateClass},
     entities::{BinarySensor, Number, Sensor},
 };
@@ -95,7 +95,7 @@ async fn can_publish_a_binary_sensor_configuration() {
         tokio::spawn(async move {
             registry
                 .publish_entity(Entity::BinarySensor(
-                    BinarySensor::default()
+                    BinarySensor::builder()
                         .topic_prefix("temperature_devices/barometer-09AF")
                         .origin(origin())
                         .device(device())
@@ -111,7 +111,8 @@ async fn can_publish_a_binary_sensor_configuration() {
                         .name("Barometer state")
                         .off_delay(10)
                         .payload_off("Off")
-                        .payload_on("On"),
+                        .payload_on("On")
+                        .build(),
                 ))
                 .await
                 .expect("message to be published");
@@ -182,7 +183,7 @@ async fn can_publish_a_number_configuration() {
         tokio::spawn(async move {
             registry
                 .publish_entity(Entity::Number(
-                    Number::default()
+                    Number::builder()
                         .topic_prefix("temperature_devices/barometer-09AF")
                         .origin(origin())
                         .device(device())
@@ -204,7 +205,8 @@ async fn can_publish_a_number_configuration() {
                         .mode("slider")
                         .payload_reset("NaN")
                         .step(dec!(0.1))
-                        .unit_of_measurement(TemperatureUnit::Celsius),
+                        .unit_of_measurement(TemperatureUnit::Celsius)
+                        .build(),
                 ))
                 .await
                 .expect("message to be published");
@@ -281,7 +283,7 @@ async fn can_publish_a_sensor_configuration() {
         tokio::spawn(async move {
             registry
                 .publish_entity(Entity::Sensor(
-                    Sensor::default()
+                    Sensor::builder()
                         .topic_prefix("temperature_devices/barometer-09AF")
                         .origin(origin())
                         .device(device())
@@ -297,7 +299,8 @@ async fn can_publish_a_sensor_configuration() {
                         .name("Temperature")
                         .suggested_display_precision(1)
                         .state_class(SensorStateClass::Measurement)
-                        .unit_of_measurement(TemperatureUnit::Celsius),
+                        .unit_of_measurement(TemperatureUnit::Celsius)
+                        .build(),
                 ))
                 .await
                 .expect("message to be published");
@@ -357,6 +360,139 @@ async fn can_publish_a_sensor_configuration() {
                 "stat_cla": "measurement",
                 "unit_of_meas": "°C"
               }
+        )
+    );
+}
+
+#[tokio::test]
+async fn can_publish_a_device_with_multiple_components() {
+    let (packet, json) = do_with_mosquitto(|client| {
+        let registry = HomeAssistantMqtt::new(client, "homeassistant/");
+        tokio::spawn(async move {
+            registry
+                .publish_device(
+                    DeviceComponents::builder()
+                        .topic_prefix("temperature_devices/barometer-09AF")
+                        .state_topic("~/state")
+                        .device(device())
+                        .origin(origin())
+                        .availability(
+                            Availability::single_topic("~/availability").expire_after(120),
+                        )
+                        .component(
+                            "temperature",
+                            Entity::Sensor(
+                                Sensor::builder()
+                                    .unique_id("barometer-09AF_temperature")
+                                    .value_template("{{ json_value.temperature }}")
+                                    .device_class(SensorDeviceClass::Temperature)
+                                    .force_update(true)
+                                    .name("Temperature")
+                                    .suggested_display_precision(1)
+                                    .state_class(SensorStateClass::Measurement)
+                                    .unit_of_measurement(TemperatureUnit::Celsius)
+                                    .build(),
+                            ),
+                        )
+                        .component(
+                            "temp_drift",
+                            Entity::Number(
+                                Number::builder()
+                                    .unique_id("barometer-09AF_temperature_drift")
+                                    .value_template("{{ json_value.temperature }}")
+                                    .command_topic("~/command".to_string())
+                                    .command_template("{{ json_value.command }}".to_string())
+                                    .optimistic(false)
+                                    .retain(true)
+                                    .device_class(NumberDeviceClass::Temperature)
+                                    .name("Temperature drift")
+                                    .min(dec!(-10.0))
+                                    .max(dec!(10.0))
+                                    .mode("slider")
+                                    .payload_reset("NaN")
+                                    .step(dec!(0.1))
+                                    .unit_of_measurement(TemperatureUnit::Celsius)
+                                    .build(),
+                            ),
+                        )
+                        .build(),
+                )
+                .await
+                .expect("message to be published");
+        });
+    })
+    .await;
+
+    assert_eq!(packet.topic, "homeassistant/device/barometer-09AF/config");
+
+    assert_json_eq!(
+        json,
+        json!(
+            {
+                "avty_mode": "all",
+                "avty": [
+                  {
+                    "t": "~/availability"
+                  }
+                ],
+                "exp_aft": 120,
+                "cmps": {
+                    "temp_drift": {
+                        "p": "number",
+                        "cmd_t": "~/command",
+                        "cmd_tpl": "{{ json_value.command }}",
+                        "dev_cla": "temperature",
+                        "max": 10.0,
+                        "min": -10.0,
+                        "mode": "slider",
+                        "name": "Temperature drift",
+                        "opt": false,
+                        "pl_rst": "NaN",
+                        "ret": true,
+                        "step": 0.1,
+                        "uniq_id": "barometer-09AF_temperature_drift",
+                        "unit_of_meas": "°C",
+                        "val_tpl": "{{ json_value.temperature }}",
+                    },
+                    "temperature": {
+                        "p": "sensor",
+                        "dev_cla": "temperature",
+                        "frc_upd": true,
+                        "name": "Temperature",
+                        "stat_cla": "measurement",
+                        "sug_dsp_prc": 1,
+                        "uniq_id": "barometer-09AF_temperature",
+                        "unit_of_meas": "°C",
+                        "val_tpl": "{{ json_value.temperature }}",
+                    },
+                },
+                "dev": {
+                    "cns": [
+                        [
+                            "mac",
+                            "09:AF:A4:54:F0:9D",
+                        ],
+                    ],
+                    "cu": "https://barometer.home/admin",
+                    "hw": "rev B",
+                    "ids": [
+                        "barometer-09AF",
+                    ],
+                    "mdl": "Awesome model",
+                    "mf": "Awesome corp",
+                    "name": "Barometer",
+                    "sa": "kitchen",
+                    "sw": "0.1a",
+                    "via_device": "manufacturer cloud",
+                },
+                "o": {
+                    "name": "Integration test",
+                    "support_url": "https://www.github.com",
+                    "sw": "0.0.1",
+                },
+                "stat_t": "~/state",
+                "~": "temperature_devices/barometer-09AF",
+            }
         )
     );
 }

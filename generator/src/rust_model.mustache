@@ -1,22 +1,23 @@
 /// {{{ comment entityDoc }}}
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct {{ toPascalCase entityName }} {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -29,73 +30,12 @@ pub struct {{ toPascalCase entityName }} {
     {{else}}
     #[serde(rename = "{{ abbreviation @key }}", skip_serializing_if = "Option::is_none")]
     {{/if}}
+    {{#if useInto}}
+    #[builder(into)]
+    {{/if}}
     pub {{ rustSafeName }}: {{#unless required}}Option<{{/unless}}{{#if iterable }}Vec<{{/if}}{{{ rustType }}}{{#if iterable }}>{{/if}}{{#unless required}}>{{/unless}},
 
     {{/each }}
-}
-
-impl {{ toPascalCase entityName }} {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    {{#each properties }}
-
-    /// {{{ comment description }}}
-    {{#if iterable}}
-    pub fn {{ rustSafeName }}{{#if useInto}}<T: Into<{{{ rustType }}}>>{{/if}}(mut self, {{ rustSafeName }}: Vec<{{#if useInto}}T{{else}}{{{ rustType }}}{{/if}}>) -> Self {
-        self.{{ rustSafeName }} = {{#unless required}}Some({{/unless}}{{ rustSafeName }}{{#if useInto}}.into_iter().map(|v| v.into()).collect(){{/if}}{{#unless required}}){{/unless}};
-        self
-    }
-    {{else}}
-    pub fn {{ rustSafeName }}{{#if useInto}}<T: Into<{{{ rustType }}}>>{{/if}}(mut self, {{ rustSafeName }}: {{#if useInto}}T{{else}}{{{ rustType }}}{{/if}}) -> Self {
-        self.{{ rustSafeName }} = {{#unless required}}Some({{/unless}}{{ rustSafeName }}{{#if useInto}}.into(){{/if}}{{#unless required}}){{/unless}};
-        self
-    }
-    {{/if}}
-    {{/each }}
-}
-
-impl Default for {{ toPascalCase entityName }} {
-      fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            {{#each properties}}
-            {{ rustSafeName }}: {{#if defaultValue}}"{{ defaultValue }}".to_string(){{else}}Default::default(){{/if}},
-            {{/each}}
-        }
-    }
 }
 
 impl From<{{ toPascalCase entityName }}> for Entity {

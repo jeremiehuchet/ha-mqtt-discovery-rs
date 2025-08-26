@@ -1,3 +1,63 @@
 pub mod entities;
 
+use crate::entities::{
+{{#each supportedEntities}}
+    {{ toPascalCase . }},
+{{/each}}
+{{#each unsupportedEntities}}
+    {{ toPascalCase . }},
+{{/each}}
+};
+
+use anyhow::Result;
 use serde_derive::Serialize;
+use serde_json::Value;
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(tag = "p")]
+pub enum Entity {
+{{#each supportedEntities}}
+    #[serde(rename = "{{ . }}")]
+    {{ toPascalCase . }}({{ toPascalCase . }}),
+{{/each}}
+
+{{#each unsupportedEntities}}
+    #[serde(rename = "{{ . }}")]
+    {{ toPascalCase . }}({{ toPascalCase . }}),
+{{/each}}
+}
+
+impl Entity {
+    pub fn get_platform(&self) -> &str {
+        match self {
+        {{#each supportedEntities}}
+            Entity::{{ toPascalCase . }}(_) => "{{ . }}",
+        {{/each}}
+        {{#each unsupportedEntities}}
+            Entity::{{ toPascalCase . }}(_) => "{{ . }}",
+        {{/each}}
+        }
+    }
+
+    pub fn get_object_id(&self) -> Option<&String> {
+        match self {
+        {{#each supportedEntities}}
+            Entity::{{ toPascalCase . }}({{ . }}) => {{ . }}.object_id.as_ref(),
+        {{/each}}
+        {{#each unsupportedEntities}}
+            Entity::{{ toPascalCase . }}(_) => panic!("{{ toPascalCase . }} doesn't have an object_id attribute"),
+        {{/each}}
+        }
+    }
+
+    pub fn get_unique_id(&self) -> Option<&String> {
+        match self {
+        {{#each supportedEntities}}
+            Entity::{{ toPascalCase . }}({{ . }}) => {{ . }}.unique_id.as_ref(),
+        {{/each}}
+        {{#each unsupportedEntities}}
+            Entity::{{ toPascalCase . }}(_) => panic!("{{ toPascalCase . }} doesn't have an unique_id attribute"),
+        {{/each}}
+        }
+    }
+}

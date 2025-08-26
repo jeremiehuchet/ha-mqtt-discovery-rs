@@ -32,7 +32,6 @@ const imports = entitiesModels.flatMap((entityModel) => Array.from(entityModel.i
 const templateImports = readFileSync(
     `${BASEDIR}/generator/src/rust_model_imports.mustache`
 ).toString();
-console.log(imports)
 const importsOutput = Handlebars.compile(templateImports)(new Set(imports));
 
 const templateContent = readFileSync(
@@ -64,7 +63,11 @@ const enumsModels = readdirSync(
 const templateMod = readFileSync(
   `${BASEDIR}/generator/src/rust_mod.mustache`
 ).toString();
-const outputMod = Handlebars.compile(templateMod)(entities);
+const unsupportedEntities = ['tag', 'device_trigger'];
+const outputMod = Handlebars.compile(templateMod)({
+  unsupportedEntities,
+  supportedEntities: entities.filter(entity => !unsupportedEntities.includes(entity)),
+});
 
 // with units
 const unitsTemplate = readFileSync(

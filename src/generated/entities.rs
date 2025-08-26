@@ -14,6 +14,7 @@ use crate::{
     Entity,
     common::{Availability, DeviceInformation, EntityCategory, Origin},
 };
+use bon::Builder;
 pub use rust_decimal::Decimal;
 use serde_derive::Serialize;
 
@@ -52,24 +53,25 @@ use serde_derive::Serialize;
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Camera {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -81,168 +83,53 @@ pub struct Camera {
 
     /// The encoding of the payloads received. Set to `""` to disable decoding of incoming payload. Use `image_encoding` to enable `Base64` decoding on `topic`.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// The encoding of the image payloads received. Set to `"b64"` to enable base64 decoding of image payload. If not set, the image payload must be raw binary data.
     #[serde(rename = "img_e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub image_encoding: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Implies `force_update` of the current sensor state when a message is received on this topic.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the camera. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// The MQTT topic to subscribe to.
     #[serde(rename = "t")]
+    #[builder(into)]
     pub topic: String,
 
     /// An ID that uniquely identifies this camera. If two cameras have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl Camera {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received. Set to `""` to disable decoding of incoming payload. Use `image_encoding` to enable `Base64` decoding on `topic`.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// The encoding of the image payloads received. Set to `"b64"` to enable base64 decoding of image payload. If not set, the image payload must be raw binary data.
-    pub fn image_encoding<T: Into<String>>(mut self, image_encoding: T) -> Self {
-        self.image_encoding = Some(image_encoding.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Implies `force_update` of the current sensor state when a message is received on this topic.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the camera. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe to.
-    pub fn topic<T: Into<String>>(mut self, topic: T) -> Self {
-        self.topic = topic.into();
-        self
-    }
-
-    /// An ID that uniquely identifies this camera. If two cameras have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for Camera {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            image_encoding: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            topic: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<Camera> for Entity {
@@ -304,24 +191,25 @@ impl From<Camera> for Entity {
 ///       device_class: "restart"
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Button {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -329,10 +217,12 @@ pub struct Button {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to trigger the button.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// The [type/class](/integrations/button/#device-class) of the button to set the icon in the frontend. The `device_class` can be `null`.
@@ -345,39 +235,43 @@ pub struct Button {
 
     /// The encoding of the published messages.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name to use when displaying this button. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// The payload To send to trigger the button.
     #[serde(rename = "pl_prs", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_press: Option<String>,
-
-    /// Must be `button`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -389,167 +283,8 @@ pub struct Button {
 
     /// An ID that uniquely identifies this button entity. If two buttons have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl Button {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to trigger the button.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// The [type/class](/integrations/button/#device-class) of the button to set the icon in the frontend. The `device_class` can be `null`.
-    pub fn device_class(mut self, device_class: ButtonDeviceClass) -> Self {
-        self.device_class = Some(device_class);
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the published messages.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name to use when displaying this button. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// The payload To send to trigger the button.
-    pub fn payload_press<T: Into<String>>(mut self, payload_press: T) -> Self {
-        self.payload_press = Some(payload_press.into());
-        self
-    }
-
-    /// Must be `button`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// An ID that uniquely identifies this button entity. If two buttons have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for Button {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            payload_press: Default::default(),
-            platform: "button".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<Button> for Entity {
@@ -635,24 +370,25 @@ impl From<Button> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Humidifier {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -660,30 +396,37 @@ pub struct Humidifier {
 
     /// A template to render the value received on the `action_topic` with.
     #[serde(rename = "act_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub action_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes of the current action. Valid values: `off`, `humidifying`, `drying`, `idle`
     #[serde(rename = "act_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub action_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the humidifier state.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// A template with which the value received on `current_humidity_topic` will be rendered.
     #[serde(rename = "curr_hum_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub current_humidity_template: Option<String>,
 
     /// The MQTT topic on which to listen for the current humidity. A `"None"` value received will reset the current humidity. Empty values (`'''`) will be ignored.
     #[serde(rename = "curr_hum_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub current_humidity_topic: Option<String>,
 
     /// The [device class](/integrations/humidifier/#device-class) of the MQTT device. Must be either `humidifier`, `dehumidifier` or `null`.
     #[serde(rename = "dev_cla", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub device_class: Option<HumidifierDeviceClass>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -692,22 +435,27 @@ pub struct Humidifier {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The minimum target humidity percentage that can be set.
@@ -720,30 +468,37 @@ pub struct Humidifier {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `mode_command_topic`.
     #[serde(rename = "mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the `mode` on the humidifier. This attribute ust be configured together with the `modes` attribute.
     #[serde(rename = "mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_command_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the humidifier `mode` state.
     #[serde(rename = "mode_stat_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_state_template: Option<String>,
 
     /// The MQTT topic subscribed to receive the humidifier `mode`.
     #[serde(rename = "mode_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_state_topic: Option<String>,
 
     /// List of available modes this humidifier is capable of running at. Common examples include `normal`, `eco`, `away`, `boost`, `comfort`, `home`, `sleep`, `auto` and `baby`. These examples offer built-in translations but other custom modes are allowed as well.  This attribute ust be configured together with the `mode_command_topic` attribute.
     #[serde(rename = "modes", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub modes: Option<Vec<String>>,
 
     /// The name of the humidifier. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if humidifier works in optimistic mode
@@ -752,23 +507,23 @@ pub struct Humidifier {
 
     /// The payload that represents the stop state.
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_off: Option<String>,
 
     /// The payload that represents the running state.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
 
     /// A special payload that resets the `target_humidity` state attribute to an `unknown` state when received at the `target_humidity_state_topic`. When received at `current_humidity_topic` it will reset the current humidity state.
     #[serde(rename = "pl_rst_hum", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_reset_humidity: Option<String>,
 
     /// A special payload that resets the `mode` state attribute to an `unknown` state when received at the `mode_state_topic`.
     #[serde(rename = "pl_rst_mode", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_reset_mode: Option<String>,
-
-    /// Must be `humidifier`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -780,353 +535,38 @@ pub struct Humidifier {
 
     /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. Valid state payloads are `OFF` and `ON`. Custom `OFF` and `ON` values can be set with the `payload_off` and `payload_on` config options.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the state.
     #[serde(rename = "stat_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_value_template: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `target_humidity_command_topic`.
     #[serde(rename = "hum_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub target_humidity_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the humidifier target humidity state based on a percentage.
     #[serde(rename = "hum_cmd_t")]
+    #[builder(into)]
     pub target_humidity_command_topic: String,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the humidifier `target_humidity` state.
     #[serde(rename = "hum_state_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub target_humidity_state_template: Option<String>,
 
     /// The MQTT topic subscribed to receive humidifier target humidity.
     #[serde(rename = "hum_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub target_humidity_state_topic: Option<String>,
 
     /// An ID that uniquely identifies this humidifier. If two humidifiers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl Humidifier {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// A template to render the value received on the `action_topic` with.
-    pub fn action_template<T: Into<String>>(mut self, action_template: T) -> Self {
-        self.action_template = Some(action_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes of the current action. Valid values: `off`, `humidifying`, `drying`, `idle`
-    pub fn action_topic<T: Into<String>>(mut self, action_topic: T) -> Self {
-        self.action_topic = Some(action_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the humidifier state.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// A template with which the value received on `current_humidity_topic` will be rendered.
-    pub fn current_humidity_template<T: Into<String>>(
-        mut self,
-        current_humidity_template: T,
-    ) -> Self {
-        self.current_humidity_template = Some(current_humidity_template.into());
-        self
-    }
-
-    /// The MQTT topic on which to listen for the current humidity. A `"None"` value received will reset the current humidity. Empty values (`'''`) will be ignored.
-    pub fn current_humidity_topic<T: Into<String>>(mut self, current_humidity_topic: T) -> Self {
-        self.current_humidity_topic = Some(current_humidity_topic.into());
-        self
-    }
-
-    /// The [device class](/integrations/humidifier/#device-class) of the MQTT device. Must be either `humidifier`, `dehumidifier` or `null`.
-    pub fn device_class<T: Into<HumidifierDeviceClass>>(mut self, device_class: T) -> Self {
-        self.device_class = Some(device_class.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The minimum target humidity percentage that can be set.
-    pub fn max_humidity(mut self, max_humidity: Decimal) -> Self {
-        self.max_humidity = Some(max_humidity);
-        self
-    }
-
-    /// The maximum target humidity percentage that can be set.
-    pub fn min_humidity(mut self, min_humidity: Decimal) -> Self {
-        self.min_humidity = Some(min_humidity);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `mode_command_topic`.
-    pub fn mode_command_template<T: Into<String>>(mut self, mode_command_template: T) -> Self {
-        self.mode_command_template = Some(mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the `mode` on the humidifier. This attribute ust be configured together with the `modes` attribute.
-    pub fn mode_command_topic<T: Into<String>>(mut self, mode_command_topic: T) -> Self {
-        self.mode_command_topic = Some(mode_command_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the humidifier `mode` state.
-    pub fn mode_state_template<T: Into<String>>(mut self, mode_state_template: T) -> Self {
-        self.mode_state_template = Some(mode_state_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive the humidifier `mode`.
-    pub fn mode_state_topic<T: Into<String>>(mut self, mode_state_topic: T) -> Self {
-        self.mode_state_topic = Some(mode_state_topic.into());
-        self
-    }
-
-    /// List of available modes this humidifier is capable of running at. Common examples include `normal`, `eco`, `away`, `boost`, `comfort`, `home`, `sleep`, `auto` and `baby`. These examples offer built-in translations but other custom modes are allowed as well.  This attribute ust be configured together with the `mode_command_topic` attribute.
-    pub fn modes<T: Into<String>>(mut self, modes: Vec<T>) -> Self {
-        self.modes = Some(modes.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// The name of the humidifier. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if humidifier works in optimistic mode
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The payload that represents the stop state.
-    pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
-        self.payload_off = Some(payload_off.into());
-        self
-    }
-
-    /// The payload that represents the running state.
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// A special payload that resets the `target_humidity` state attribute to an `unknown` state when received at the `target_humidity_state_topic`. When received at `current_humidity_topic` it will reset the current humidity state.
-    pub fn payload_reset_humidity<T: Into<String>>(mut self, payload_reset_humidity: T) -> Self {
-        self.payload_reset_humidity = Some(payload_reset_humidity.into());
-        self
-    }
-
-    /// A special payload that resets the `mode` state attribute to an `unknown` state when received at the `mode_state_topic`.
-    pub fn payload_reset_mode<T: Into<String>>(mut self, payload_reset_mode: T) -> Self {
-        self.payload_reset_mode = Some(payload_reset_mode.into());
-        self
-    }
-
-    /// Must be `humidifier`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. Valid state payloads are `OFF` and `ON`. Custom `OFF` and `ON` values can be set with the `payload_off` and `payload_on` config options.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the state.
-    pub fn state_value_template<T: Into<String>>(mut self, state_value_template: T) -> Self {
-        self.state_value_template = Some(state_value_template.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `target_humidity_command_topic`.
-    pub fn target_humidity_command_template<T: Into<String>>(
-        mut self,
-        target_humidity_command_template: T,
-    ) -> Self {
-        self.target_humidity_command_template = Some(target_humidity_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the humidifier target humidity state based on a percentage.
-    pub fn target_humidity_command_topic<T: Into<String>>(
-        mut self,
-        target_humidity_command_topic: T,
-    ) -> Self {
-        self.target_humidity_command_topic = target_humidity_command_topic.into();
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the humidifier `target_humidity` state.
-    pub fn target_humidity_state_template<T: Into<String>>(
-        mut self,
-        target_humidity_state_template: T,
-    ) -> Self {
-        self.target_humidity_state_template = Some(target_humidity_state_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive humidifier target humidity.
-    pub fn target_humidity_state_topic<T: Into<String>>(
-        mut self,
-        target_humidity_state_topic: T,
-    ) -> Self {
-        self.target_humidity_state_topic = Some(target_humidity_state_topic.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this humidifier. If two humidifiers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for Humidifier {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            action_template: Default::default(),
-            action_topic: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            current_humidity_template: Default::default(),
-            current_humidity_topic: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            max_humidity: Default::default(),
-            min_humidity: Default::default(),
-            mode_command_template: Default::default(),
-            mode_command_topic: Default::default(),
-            mode_state_template: Default::default(),
-            mode_state_topic: Default::default(),
-            modes: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_off: Default::default(),
-            payload_on: Default::default(),
-            payload_reset_humidity: Default::default(),
-            payload_reset_mode: Default::default(),
-            platform: "humidifier".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            state_topic: Default::default(),
-            state_value_template: Default::default(),
-            target_humidity_command_template: Default::default(),
-            target_humidity_command_topic: Default::default(),
-            target_humidity_state_template: Default::default(),
-            target_humidity_state_topic: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<Humidifier> for Entity {
@@ -1231,24 +671,25 @@ impl From<Humidifier> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Climate {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -1256,26 +697,32 @@ pub struct Climate {
 
     /// A template to render the value received on the `action_topic` with.
     #[serde(rename = "act_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub action_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes of the current action. If this is set, the climate graph uses the value received as data source. A "None" payload resets the current action state. An empty payload is ignored. Valid action values: `off`, `heating`, `cooling`, `drying`, `idle`, `fan`.
     #[serde(rename = "act_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub action_topic: Option<String>,
 
     /// A template with which the value received on `current_humidity_topic` will be rendered.
     #[serde(rename = "curr_hum_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub current_humidity_template: Option<String>,
 
     /// The MQTT topic on which to listen for the current humidity. A `"None"` value received will reset the current humidity. Empty values (`'''`) will be ignored.
     #[serde(rename = "curr_hum_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub current_humidity_topic: Option<String>,
 
     /// A template with which the value received on `current_temperature_topic` will be rendered.
     #[serde(rename = "curr_temp_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub current_temperature_template: Option<String>,
 
     /// The MQTT topic on which to listen for the current temperature. A `"None"` value received will reset the current temperature. Empty values (`'''`) will be ignored.
     #[serde(rename = "curr_temp_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub current_temperature_topic: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -1284,34 +731,42 @@ pub struct Climate {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// A template to render the value sent to the `fan_mode_command_topic` with.
     #[serde(rename = "fan_mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub fan_mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the fan mode.
     #[serde(rename = "fan_mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub fan_mode_command_topic: Option<String>,
 
     /// A template to render the value received on the `fan_mode_state_topic` with.
     #[serde(rename = "fan_mode_stat_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub fan_mode_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes of the HVAC fan mode. If this is not set, the fan mode works in optimistic mode (see below). A "None" payload resets the fan mode state. An empty payload is ignored.
     #[serde(rename = "fan_mode_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub fan_mode_state_topic: Option<String>,
 
     /// A list of supported fan modes.
     #[serde(rename = "fan_modes", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub fan_modes: Option<Vec<String>>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Set the initial target temperature. The default value depends on the temperature unit and will be 21° or 69.8°F.
@@ -1320,10 +775,12 @@ pub struct Climate {
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The minimum target humidity percentage that can be set.
@@ -1344,30 +801,37 @@ pub struct Climate {
 
     /// A template to render the value sent to the `mode_command_topic` with.
     #[serde(rename = "mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the HVAC operation mode.
     #[serde(rename = "mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_command_topic: Option<String>,
 
     /// A template to render the value received on the `mode_state_topic` with.
     #[serde(rename = "mode_stat_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes of the HVAC operation mode. If this is not set, the operation mode works in optimistic mode (see below). A "None" payload resets to an `unknown` state. An empty payload is ignored.
     #[serde(rename = "mode_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_state_topic: Option<String>,
 
     /// A list of supported modes. Needs to be a subset of the default values.
     #[serde(rename = "modes", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub modes: Option<Vec<String>>,
 
     /// The name of the HVAC. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if the climate works in optimistic mode
@@ -1376,18 +840,22 @@ pub struct Climate {
 
     /// The payload sent to turn off the device.
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_off: Option<String>,
 
     /// The payload sent to turn the device on.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
 
     /// A template to render the value sent to the `power_command_topic` with. The `value` parameter is the payload set for `payload_on` or `payload_off`.
     #[serde(rename = "pow_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub power_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the HVAC power state. Sends the payload configured with `payload_on` if the climate is turned on via the `climate.turn_on`, or the payload configured with `payload_off` if the climate is turned off via the `climate.turn_off` action. Note that `optimistic` mode is not supported through `climate.turn_on` and `climate.turn_off` actions. When called, these actions will send a power command to the device but will not optimistically update the state of the climate entity. The climate device should report its state back via `mode_state_topic`.
     #[serde(rename = "pow_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub power_command_topic: Option<String>,
 
     /// The desired precision for this device. Can be used to match your actual thermostat's precision. Supported values are `0.1`, `0.5` and `1.0`.
@@ -1396,22 +864,27 @@ pub struct Climate {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.
     #[serde(rename = "pr_mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the preset mode.
     #[serde(rename = "pr_mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_mode_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive climate speed based on presets. When preset 'none' is received or `None` the `preset_mode` will be reset.
     #[serde(rename = "pr_mode_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_mode_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
     #[serde(rename = "pr_mode_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_mode_value_template: Option<String>,
 
     /// List of preset modes this climate is supporting. Common examples include `eco`, `away`, `boost`, `comfort`, `home`, `sleep` and `activity`.
     #[serde(rename = "pr_modes", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_modes: Option<Vec<String>>,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
@@ -1427,10 +900,12 @@ pub struct Climate {
         rename = "swing_h_mode_cmd_tpl",
         skip_serializing_if = "Option::is_none"
     )]
+    #[builder(into)]
     pub swing_horizontal_mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the swing horizontal mode.
     #[serde(rename = "swing_h_mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub swing_horizontal_mode_command_topic: Option<String>,
 
     /// A template to render the value received on the `swing_horizontal_mode_state_topic` with.
@@ -1438,6 +913,7 @@ pub struct Climate {
         rename = "swing_h_mode_stat_tpl",
         skip_serializing_if = "Option::is_none"
     )]
+    #[builder(into)]
     pub swing_horizontal_mode_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes of the HVAC swing horizontal mode. If this is not set, the swing horizontal mode works in optimistic mode (see below).
@@ -1445,18 +921,22 @@ pub struct Climate {
         rename = "swing_h_mode_stat_t",
         skip_serializing_if = "Option::is_none"
     )]
+    #[builder(into)]
     pub swing_horizontal_mode_state_topic: Option<String>,
 
     /// A list of supported swing horizontal modes.
     #[serde(rename = "swing_h_modes", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub swing_horizontal_modes: Option<Vec<String>>,
 
     /// A template to render the value sent to the `swing_mode_command_topic` with.
     #[serde(rename = "swing_mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub swing_mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the swing mode.
     #[serde(rename = "swing_mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub swing_mode_command_topic: Option<String>,
 
     /// A template to render the value received on the `swing_mode_state_topic` with.
@@ -1464,30 +944,37 @@ pub struct Climate {
         rename = "swing_mode_stat_tpl",
         skip_serializing_if = "Option::is_none"
     )]
+    #[builder(into)]
     pub swing_mode_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes of the HVAC swing mode. If this is not set, the swing mode works in optimistic mode (see below).
     #[serde(rename = "swing_mode_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub swing_mode_state_topic: Option<String>,
 
     /// A list of supported swing modes.
     #[serde(rename = "swing_modes", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub swing_modes: Option<Vec<String>>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `target_humidity_command_topic`.
     #[serde(rename = "hum_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub target_humidity_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the target humidity.
     #[serde(rename = "hum_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub target_humidity_command_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the climate `target_humidity` state.
     #[serde(rename = "hum_state_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub target_humidity_state_template: Option<String>,
 
     /// The MQTT topic subscribed to receive the target humidity. If this is not set, the target humidity works in optimistic mode (see below). A `"None"` value received will reset the target humidity. Empty values (`'''`) will be ignored.
     #[serde(rename = "hum_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub target_humidity_state_topic: Option<String>,
 
     /// Step size for temperature set point.
@@ -1496,712 +983,78 @@ pub struct Climate {
 
     /// A template to render the value sent to the `temperature_command_topic` with.
     #[serde(rename = "temp_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the target temperature.
     #[serde(rename = "temp_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_command_topic: Option<String>,
 
     /// A template to render the value sent to the `temperature_high_command_topic` with.
     #[serde(rename = "temp_hi_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_high_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the upper target temperature.
     #[serde(rename = "temp_hi_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_high_command_topic: Option<String>,
 
     /// A template to render the value received on the `temperature_high_state_topic` with. A `"None"` value received will reset the upper temperature setpoint. Empty values (`""'`) will be ignored.
     #[serde(rename = "temp_hi_stat_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_high_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes in the upper target temperature. If this is not set, the upper target temperature works in optimistic mode (see below).
     #[serde(rename = "temp_hi_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_high_state_topic: Option<String>,
 
     /// A template to render the value sent to the `temperature_low_command_topic` with.
     #[serde(rename = "temp_lo_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_low_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the lower target temperature.
     #[serde(rename = "temp_lo_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_low_command_topic: Option<String>,
 
     /// A template to render the value received on the `temperature_low_state_topic` with. A `"None"` value received will reset the lower temperature setpoint. Empty values (`""`) will be ignored.
     #[serde(rename = "temp_lo_stat_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_low_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes in the lower target temperature. If this is not set, the lower target temperature works in optimistic mode (see below).
     #[serde(rename = "temp_lo_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_low_state_topic: Option<String>,
 
     /// A template to render the value received on the `temperature_state_topic` with.
     #[serde(rename = "temp_stat_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes in the target temperature. If this is not set, the target temperature works in optimistic mode (see below). A `"None"` value received will reset the temperature set point. Empty values (`'''`) will be ignored.
     #[serde(rename = "temp_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_state_topic: Option<String>,
 
     /// Defines the temperature unit of the device, `C` or `F`. If this is not set, the temperature unit is set to the system temperature unit.
     #[serde(rename = "temp_unit", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_unit: Option<TemperatureUnit>,
 
     /// An ID that uniquely identifies this HVAC device. If two HVAC devices have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Default template to render the payloads on *all* `*_state_topic`s with.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Climate {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// A template to render the value received on the `action_topic` with.
-    pub fn action_template<T: Into<String>>(mut self, action_template: T) -> Self {
-        self.action_template = Some(action_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes of the current action. If this is set, the climate graph uses the value received as data source. A "None" payload resets the current action state. An empty payload is ignored. Valid action values: `off`, `heating`, `cooling`, `drying`, `idle`, `fan`.
-    pub fn action_topic<T: Into<String>>(mut self, action_topic: T) -> Self {
-        self.action_topic = Some(action_topic.into());
-        self
-    }
-
-    /// A template with which the value received on `current_humidity_topic` will be rendered.
-    pub fn current_humidity_template<T: Into<String>>(
-        mut self,
-        current_humidity_template: T,
-    ) -> Self {
-        self.current_humidity_template = Some(current_humidity_template.into());
-        self
-    }
-
-    /// The MQTT topic on which to listen for the current humidity. A `"None"` value received will reset the current humidity. Empty values (`'''`) will be ignored.
-    pub fn current_humidity_topic<T: Into<String>>(mut self, current_humidity_topic: T) -> Self {
-        self.current_humidity_topic = Some(current_humidity_topic.into());
-        self
-    }
-
-    /// A template with which the value received on `current_temperature_topic` will be rendered.
-    pub fn current_temperature_template<T: Into<String>>(
-        mut self,
-        current_temperature_template: T,
-    ) -> Self {
-        self.current_temperature_template = Some(current_temperature_template.into());
-        self
-    }
-
-    /// The MQTT topic on which to listen for the current temperature. A `"None"` value received will reset the current temperature. Empty values (`'''`) will be ignored.
-    pub fn current_temperature_topic<T: Into<String>>(
-        mut self,
-        current_temperature_topic: T,
-    ) -> Self {
-        self.current_temperature_topic = Some(current_temperature_topic.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// A template to render the value sent to the `fan_mode_command_topic` with.
-    pub fn fan_mode_command_template<T: Into<String>>(
-        mut self,
-        fan_mode_command_template: T,
-    ) -> Self {
-        self.fan_mode_command_template = Some(fan_mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the fan mode.
-    pub fn fan_mode_command_topic<T: Into<String>>(mut self, fan_mode_command_topic: T) -> Self {
-        self.fan_mode_command_topic = Some(fan_mode_command_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `fan_mode_state_topic` with.
-    pub fn fan_mode_state_template<T: Into<String>>(mut self, fan_mode_state_template: T) -> Self {
-        self.fan_mode_state_template = Some(fan_mode_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes of the HVAC fan mode. If this is not set, the fan mode works in optimistic mode (see below). A "None" payload resets the fan mode state. An empty payload is ignored.
-    pub fn fan_mode_state_topic<T: Into<String>>(mut self, fan_mode_state_topic: T) -> Self {
-        self.fan_mode_state_topic = Some(fan_mode_state_topic.into());
-        self
-    }
-
-    /// A list of supported fan modes.
-    pub fn fan_modes<T: Into<String>>(mut self, fan_modes: Vec<T>) -> Self {
-        self.fan_modes = Some(fan_modes.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Set the initial target temperature. The default value depends on the temperature unit and will be 21° or 69.8°F.
-    pub fn initial(mut self, initial: Decimal) -> Self {
-        self.initial = Some(initial);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The minimum target humidity percentage that can be set.
-    pub fn max_humidity(mut self, max_humidity: Decimal) -> Self {
-        self.max_humidity = Some(max_humidity);
-        self
-    }
-
-    /// Maximum set point available. The default value depends on the temperature unit, and will be 35°C or 95°F.
-    pub fn max_temp(mut self, max_temp: Decimal) -> Self {
-        self.max_temp = Some(max_temp);
-        self
-    }
-
-    /// The maximum target humidity percentage that can be set.
-    pub fn min_humidity(mut self, min_humidity: Decimal) -> Self {
-        self.min_humidity = Some(min_humidity);
-        self
-    }
-
-    /// Minimum set point available. The default value depends on the temperature unit, and will be 7°C or 44.6°F.
-    pub fn min_temp(mut self, min_temp: Decimal) -> Self {
-        self.min_temp = Some(min_temp);
-        self
-    }
-
-    /// A template to render the value sent to the `mode_command_topic` with.
-    pub fn mode_command_template<T: Into<String>>(mut self, mode_command_template: T) -> Self {
-        self.mode_command_template = Some(mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the HVAC operation mode.
-    pub fn mode_command_topic<T: Into<String>>(mut self, mode_command_topic: T) -> Self {
-        self.mode_command_topic = Some(mode_command_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `mode_state_topic` with.
-    pub fn mode_state_template<T: Into<String>>(mut self, mode_state_template: T) -> Self {
-        self.mode_state_template = Some(mode_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes of the HVAC operation mode. If this is not set, the operation mode works in optimistic mode (see below). A "None" payload resets to an `unknown` state. An empty payload is ignored.
-    pub fn mode_state_topic<T: Into<String>>(mut self, mode_state_topic: T) -> Self {
-        self.mode_state_topic = Some(mode_state_topic.into());
-        self
-    }
-
-    /// A list of supported modes. Needs to be a subset of the default values.
-    pub fn modes<T: Into<String>>(mut self, modes: Vec<T>) -> Self {
-        self.modes = Some(modes.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// The name of the HVAC. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if the climate works in optimistic mode
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The payload sent to turn off the device.
-    pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
-        self.payload_off = Some(payload_off.into());
-        self
-    }
-
-    /// The payload sent to turn the device on.
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// A template to render the value sent to the `power_command_topic` with. The `value` parameter is the payload set for `payload_on` or `payload_off`.
-    pub fn power_command_template<T: Into<String>>(mut self, power_command_template: T) -> Self {
-        self.power_command_template = Some(power_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the HVAC power state. Sends the payload configured with `payload_on` if the climate is turned on via the `climate.turn_on`, or the payload configured with `payload_off` if the climate is turned off via the `climate.turn_off` action. Note that `optimistic` mode is not supported through `climate.turn_on` and `climate.turn_off` actions. When called, these actions will send a power command to the device but will not optimistically update the state of the climate entity. The climate device should report its state back via `mode_state_topic`.
-    pub fn power_command_topic<T: Into<String>>(mut self, power_command_topic: T) -> Self {
-        self.power_command_topic = Some(power_command_topic.into());
-        self
-    }
-
-    /// The desired precision for this device. Can be used to match your actual thermostat's precision. Supported values are `0.1`, `0.5` and `1.0`.
-    pub fn precision(mut self, precision: Decimal) -> Self {
-        self.precision = Some(precision);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.
-    pub fn preset_mode_command_template<T: Into<String>>(
-        mut self,
-        preset_mode_command_template: T,
-    ) -> Self {
-        self.preset_mode_command_template = Some(preset_mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the preset mode.
-    pub fn preset_mode_command_topic<T: Into<String>>(
-        mut self,
-        preset_mode_command_topic: T,
-    ) -> Self {
-        self.preset_mode_command_topic = Some(preset_mode_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive climate speed based on presets. When preset 'none' is received or `None` the `preset_mode` will be reset.
-    pub fn preset_mode_state_topic<T: Into<String>>(mut self, preset_mode_state_topic: T) -> Self {
-        self.preset_mode_state_topic = Some(preset_mode_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
-    pub fn preset_mode_value_template<T: Into<String>>(
-        mut self,
-        preset_mode_value_template: T,
-    ) -> Self {
-        self.preset_mode_value_template = Some(preset_mode_value_template.into());
-        self
-    }
-
-    /// List of preset modes this climate is supporting. Common examples include `eco`, `away`, `boost`, `comfort`, `home`, `sleep` and `activity`.
-    pub fn preset_modes<T: Into<String>>(mut self, preset_modes: Vec<T>) -> Self {
-        self.preset_modes = Some(preset_modes.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// Defines if published messages should have the retain flag set.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// A template to render the value sent to the `swing_horizontal_mode_command_topic` with.
-    pub fn swing_horizontal_mode_command_template<T: Into<String>>(
-        mut self,
-        swing_horizontal_mode_command_template: T,
-    ) -> Self {
-        self.swing_horizontal_mode_command_template =
-            Some(swing_horizontal_mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the swing horizontal mode.
-    pub fn swing_horizontal_mode_command_topic<T: Into<String>>(
-        mut self,
-        swing_horizontal_mode_command_topic: T,
-    ) -> Self {
-        self.swing_horizontal_mode_command_topic = Some(swing_horizontal_mode_command_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `swing_horizontal_mode_state_topic` with.
-    pub fn swing_horizontal_mode_state_template<T: Into<String>>(
-        mut self,
-        swing_horizontal_mode_state_template: T,
-    ) -> Self {
-        self.swing_horizontal_mode_state_template =
-            Some(swing_horizontal_mode_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes of the HVAC swing horizontal mode. If this is not set, the swing horizontal mode works in optimistic mode (see below).
-    pub fn swing_horizontal_mode_state_topic<T: Into<String>>(
-        mut self,
-        swing_horizontal_mode_state_topic: T,
-    ) -> Self {
-        self.swing_horizontal_mode_state_topic = Some(swing_horizontal_mode_state_topic.into());
-        self
-    }
-
-    /// A list of supported swing horizontal modes.
-    pub fn swing_horizontal_modes<T: Into<String>>(
-        mut self,
-        swing_horizontal_modes: Vec<T>,
-    ) -> Self {
-        self.swing_horizontal_modes = Some(
-            swing_horizontal_modes
-                .into_iter()
-                .map(|v| v.into())
-                .collect(),
-        );
-        self
-    }
-
-    /// A template to render the value sent to the `swing_mode_command_topic` with.
-    pub fn swing_mode_command_template<T: Into<String>>(
-        mut self,
-        swing_mode_command_template: T,
-    ) -> Self {
-        self.swing_mode_command_template = Some(swing_mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the swing mode.
-    pub fn swing_mode_command_topic<T: Into<String>>(
-        mut self,
-        swing_mode_command_topic: T,
-    ) -> Self {
-        self.swing_mode_command_topic = Some(swing_mode_command_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `swing_mode_state_topic` with.
-    pub fn swing_mode_state_template<T: Into<String>>(
-        mut self,
-        swing_mode_state_template: T,
-    ) -> Self {
-        self.swing_mode_state_template = Some(swing_mode_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes of the HVAC swing mode. If this is not set, the swing mode works in optimistic mode (see below).
-    pub fn swing_mode_state_topic<T: Into<String>>(mut self, swing_mode_state_topic: T) -> Self {
-        self.swing_mode_state_topic = Some(swing_mode_state_topic.into());
-        self
-    }
-
-    /// A list of supported swing modes.
-    pub fn swing_modes<T: Into<String>>(mut self, swing_modes: Vec<T>) -> Self {
-        self.swing_modes = Some(swing_modes.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `target_humidity_command_topic`.
-    pub fn target_humidity_command_template<T: Into<String>>(
-        mut self,
-        target_humidity_command_template: T,
-    ) -> Self {
-        self.target_humidity_command_template = Some(target_humidity_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the target humidity.
-    pub fn target_humidity_command_topic<T: Into<String>>(
-        mut self,
-        target_humidity_command_topic: T,
-    ) -> Self {
-        self.target_humidity_command_topic = Some(target_humidity_command_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value for the climate `target_humidity` state.
-    pub fn target_humidity_state_template<T: Into<String>>(
-        mut self,
-        target_humidity_state_template: T,
-    ) -> Self {
-        self.target_humidity_state_template = Some(target_humidity_state_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive the target humidity. If this is not set, the target humidity works in optimistic mode (see below). A `"None"` value received will reset the target humidity. Empty values (`'''`) will be ignored.
-    pub fn target_humidity_state_topic<T: Into<String>>(
-        mut self,
-        target_humidity_state_topic: T,
-    ) -> Self {
-        self.target_humidity_state_topic = Some(target_humidity_state_topic.into());
-        self
-    }
-
-    /// Step size for temperature set point.
-    pub fn temp_step(mut self, temp_step: Decimal) -> Self {
-        self.temp_step = Some(temp_step);
-        self
-    }
-
-    /// A template to render the value sent to the `temperature_command_topic` with.
-    pub fn temperature_command_template<T: Into<String>>(
-        mut self,
-        temperature_command_template: T,
-    ) -> Self {
-        self.temperature_command_template = Some(temperature_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the target temperature.
-    pub fn temperature_command_topic<T: Into<String>>(
-        mut self,
-        temperature_command_topic: T,
-    ) -> Self {
-        self.temperature_command_topic = Some(temperature_command_topic.into());
-        self
-    }
-
-    /// A template to render the value sent to the `temperature_high_command_topic` with.
-    pub fn temperature_high_command_template<T: Into<String>>(
-        mut self,
-        temperature_high_command_template: T,
-    ) -> Self {
-        self.temperature_high_command_template = Some(temperature_high_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the upper target temperature.
-    pub fn temperature_high_command_topic<T: Into<String>>(
-        mut self,
-        temperature_high_command_topic: T,
-    ) -> Self {
-        self.temperature_high_command_topic = Some(temperature_high_command_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `temperature_high_state_topic` with. A `"None"` value received will reset the upper temperature setpoint. Empty values (`""'`) will be ignored.
-    pub fn temperature_high_state_template<T: Into<String>>(
-        mut self,
-        temperature_high_state_template: T,
-    ) -> Self {
-        self.temperature_high_state_template = Some(temperature_high_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes in the upper target temperature. If this is not set, the upper target temperature works in optimistic mode (see below).
-    pub fn temperature_high_state_topic<T: Into<String>>(
-        mut self,
-        temperature_high_state_topic: T,
-    ) -> Self {
-        self.temperature_high_state_topic = Some(temperature_high_state_topic.into());
-        self
-    }
-
-    /// A template to render the value sent to the `temperature_low_command_topic` with.
-    pub fn temperature_low_command_template<T: Into<String>>(
-        mut self,
-        temperature_low_command_template: T,
-    ) -> Self {
-        self.temperature_low_command_template = Some(temperature_low_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the lower target temperature.
-    pub fn temperature_low_command_topic<T: Into<String>>(
-        mut self,
-        temperature_low_command_topic: T,
-    ) -> Self {
-        self.temperature_low_command_topic = Some(temperature_low_command_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `temperature_low_state_topic` with. A `"None"` value received will reset the lower temperature setpoint. Empty values (`""`) will be ignored.
-    pub fn temperature_low_state_template<T: Into<String>>(
-        mut self,
-        temperature_low_state_template: T,
-    ) -> Self {
-        self.temperature_low_state_template = Some(temperature_low_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes in the lower target temperature. If this is not set, the lower target temperature works in optimistic mode (see below).
-    pub fn temperature_low_state_topic<T: Into<String>>(
-        mut self,
-        temperature_low_state_topic: T,
-    ) -> Self {
-        self.temperature_low_state_topic = Some(temperature_low_state_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `temperature_state_topic` with.
-    pub fn temperature_state_template<T: Into<String>>(
-        mut self,
-        temperature_state_template: T,
-    ) -> Self {
-        self.temperature_state_template = Some(temperature_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes in the target temperature. If this is not set, the target temperature works in optimistic mode (see below). A `"None"` value received will reset the temperature set point. Empty values (`'''`) will be ignored.
-    pub fn temperature_state_topic<T: Into<String>>(mut self, temperature_state_topic: T) -> Self {
-        self.temperature_state_topic = Some(temperature_state_topic.into());
-        self
-    }
-
-    /// Defines the temperature unit of the device, `C` or `F`. If this is not set, the temperature unit is set to the system temperature unit.
-    pub fn temperature_unit<T: Into<TemperatureUnit>>(mut self, temperature_unit: T) -> Self {
-        self.temperature_unit = Some(temperature_unit.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this HVAC device. If two HVAC devices have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Default template to render the payloads on *all* `*_state_topic`s with.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Climate {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            action_template: Default::default(),
-            action_topic: Default::default(),
-            current_humidity_template: Default::default(),
-            current_humidity_topic: Default::default(),
-            current_temperature_template: Default::default(),
-            current_temperature_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            fan_mode_command_template: Default::default(),
-            fan_mode_command_topic: Default::default(),
-            fan_mode_state_template: Default::default(),
-            fan_mode_state_topic: Default::default(),
-            fan_modes: Default::default(),
-            icon: Default::default(),
-            initial: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            max_humidity: Default::default(),
-            max_temp: Default::default(),
-            min_humidity: Default::default(),
-            min_temp: Default::default(),
-            mode_command_template: Default::default(),
-            mode_command_topic: Default::default(),
-            mode_state_template: Default::default(),
-            mode_state_topic: Default::default(),
-            modes: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_off: Default::default(),
-            payload_on: Default::default(),
-            power_command_template: Default::default(),
-            power_command_topic: Default::default(),
-            precision: Default::default(),
-            preset_mode_command_template: Default::default(),
-            preset_mode_command_topic: Default::default(),
-            preset_mode_state_topic: Default::default(),
-            preset_mode_value_template: Default::default(),
-            preset_modes: Default::default(),
-            qos: Default::default(),
-            retain: Default::default(),
-            swing_horizontal_mode_command_template: Default::default(),
-            swing_horizontal_mode_command_topic: Default::default(),
-            swing_horizontal_mode_state_template: Default::default(),
-            swing_horizontal_mode_state_topic: Default::default(),
-            swing_horizontal_modes: Default::default(),
-            swing_mode_command_template: Default::default(),
-            swing_mode_command_topic: Default::default(),
-            swing_mode_state_template: Default::default(),
-            swing_mode_state_topic: Default::default(),
-            swing_modes: Default::default(),
-            target_humidity_command_template: Default::default(),
-            target_humidity_command_topic: Default::default(),
-            target_humidity_state_template: Default::default(),
-            target_humidity_state_topic: Default::default(),
-            temp_step: Default::default(),
-            temperature_command_template: Default::default(),
-            temperature_command_topic: Default::default(),
-            temperature_high_command_template: Default::default(),
-            temperature_high_command_topic: Default::default(),
-            temperature_high_state_template: Default::default(),
-            temperature_high_state_topic: Default::default(),
-            temperature_low_command_template: Default::default(),
-            temperature_low_command_topic: Default::default(),
-            temperature_low_state_template: Default::default(),
-            temperature_low_state_topic: Default::default(),
-            temperature_state_template: Default::default(),
-            temperature_state_topic: Default::default(),
-            temperature_unit: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Climate> for Entity {
@@ -2330,24 +1183,25 @@ impl From<Climate> for Entity {
 /// When your MQTT connection is not secured, this will send your secret code over the network unprotected!
 ///  
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct AlarmControlPanel {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -2355,6 +1209,7 @@ pub struct AlarmControlPanel {
 
     /// If defined, specifies a code to enable or disable the alarm in the frontend. Note that the code is validated locally and blocks sending MQTT messages to the remote device. For remote code validation, the code can be configured to either of the special values `REMOTE_CODE` (numeric code) or `REMOTE_CODE_TEXT` (text code). In this case, local code validation is bypassed but the frontend will still show a numeric or text code dialog. Use `command_template` to send the code to the remote device. Example configurations for remote code validation [can be found here](#configurations-with-remote-code-validation).
     #[serde(rename = "code", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub code: Option<String>,
 
     /// If true the code is required to arm the alarm. If false the code is not validated.
@@ -2371,10 +1226,12 @@ pub struct AlarmControlPanel {
 
     /// The [template](/docs/configuration/templating/#using-command-templates-with-mqtt) used for the command payload. Available variables: `action` and `code`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the alarm state.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -2383,63 +1240,73 @@ pub struct AlarmControlPanel {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the alarm. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// The payload to set armed-away mode on your Alarm Panel.
     #[serde(rename = "pl_arm_away", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_arm_away: Option<String>,
 
     /// The payload to set armed-custom-bypass mode on your Alarm Panel.
     #[serde(rename = "pl_arm_custom_b", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_arm_custom_bypass: Option<String>,
 
     /// The payload to set armed-home mode on your Alarm Panel.
     #[serde(rename = "pl_arm_home", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_arm_home: Option<String>,
 
     /// The payload to set armed-night mode on your Alarm Panel.
     #[serde(rename = "pl_arm_nite", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_arm_night: Option<String>,
 
     /// The payload to set armed-vacation mode on your Alarm Panel.
     #[serde(rename = "pl_arm_vacation", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_arm_vacation: Option<String>,
 
     /// The payload to disarm your Alarm Panel.
     #[serde(rename = "pl_disarm", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_disarm: Option<String>,
 
     /// The payload to trigger the alarm on your Alarm Panel.
     #[serde(rename = "pl_trig", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_trigger: Option<String>,
-
-    /// Must be `alarm_control_panel`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -2450,267 +1317,24 @@ pub struct AlarmControlPanel {
     pub retain: Option<bool>,
 
     /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. Valid state payloads are: `armed_away`, `armed_custom_bypass`, `armed_home`, `armed_night`, `armed_vacation`, `arming`, `disarmed`, `disarming` `pending` and `triggered`.
-    #[serde(rename = "stat_t")]
-    pub state_topic: String,
+    #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
+    pub state_topic: Option<String>,
 
     /// A list of features that the alarm control panel supports. The available list options are `arm_home`, `arm_away`, `arm_night`, `arm_vacation`, `arm_custom_bypass`, and `trigger`.
     #[serde(rename = "sup_feat", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub supported_features: Option<Vec<String>>,
 
     /// An ID that uniquely identifies this alarm panel. If two alarm panels have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl AlarmControlPanel {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// If defined, specifies a code to enable or disable the alarm in the frontend. Note that the code is validated locally and blocks sending MQTT messages to the remote device. For remote code validation, the code can be configured to either of the special values `REMOTE_CODE` (numeric code) or `REMOTE_CODE_TEXT` (text code). In this case, local code validation is bypassed but the frontend will still show a numeric or text code dialog. Use `command_template` to send the code to the remote device. Example configurations for remote code validation [can be found here](#configurations-with-remote-code-validation).
-    pub fn code<T: Into<String>>(mut self, code: T) -> Self {
-        self.code = Some(code.into());
-        self
-    }
-
-    /// If true the code is required to arm the alarm. If false the code is not validated.
-    pub fn code_arm_required(mut self, code_arm_required: bool) -> Self {
-        self.code_arm_required = Some(code_arm_required);
-        self
-    }
-
-    /// If true the code is required to disarm the alarm. If false the code is not validated.
-    pub fn code_disarm_required(mut self, code_disarm_required: bool) -> Self {
-        self.code_disarm_required = Some(code_disarm_required);
-        self
-    }
-
-    /// If true the code is required to trigger the alarm. If false the code is not validated.
-    pub fn code_trigger_required(mut self, code_trigger_required: bool) -> Self {
-        self.code_trigger_required = Some(code_trigger_required);
-        self
-    }
-
-    /// The [template](/docs/configuration/templating/#using-command-templates-with-mqtt) used for the command payload. Available variables: `action` and `code`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the alarm state.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the alarm. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// The payload to set armed-away mode on your Alarm Panel.
-    pub fn payload_arm_away<T: Into<String>>(mut self, payload_arm_away: T) -> Self {
-        self.payload_arm_away = Some(payload_arm_away.into());
-        self
-    }
-
-    /// The payload to set armed-custom-bypass mode on your Alarm Panel.
-    pub fn payload_arm_custom_bypass<T: Into<String>>(
-        mut self,
-        payload_arm_custom_bypass: T,
-    ) -> Self {
-        self.payload_arm_custom_bypass = Some(payload_arm_custom_bypass.into());
-        self
-    }
-
-    /// The payload to set armed-home mode on your Alarm Panel.
-    pub fn payload_arm_home<T: Into<String>>(mut self, payload_arm_home: T) -> Self {
-        self.payload_arm_home = Some(payload_arm_home.into());
-        self
-    }
-
-    /// The payload to set armed-night mode on your Alarm Panel.
-    pub fn payload_arm_night<T: Into<String>>(mut self, payload_arm_night: T) -> Self {
-        self.payload_arm_night = Some(payload_arm_night.into());
-        self
-    }
-
-    /// The payload to set armed-vacation mode on your Alarm Panel.
-    pub fn payload_arm_vacation<T: Into<String>>(mut self, payload_arm_vacation: T) -> Self {
-        self.payload_arm_vacation = Some(payload_arm_vacation.into());
-        self
-    }
-
-    /// The payload to disarm your Alarm Panel.
-    pub fn payload_disarm<T: Into<String>>(mut self, payload_disarm: T) -> Self {
-        self.payload_disarm = Some(payload_disarm.into());
-        self
-    }
-
-    /// The payload to trigger the alarm on your Alarm Panel.
-    pub fn payload_trigger<T: Into<String>>(mut self, payload_trigger: T) -> Self {
-        self.payload_trigger = Some(payload_trigger.into());
-        self
-    }
-
-    /// Must be `alarm_control_panel`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. Valid state payloads are: `armed_away`, `armed_custom_bypass`, `armed_home`, `armed_night`, `armed_vacation`, `arming`, `disarmed`, `disarming` `pending` and `triggered`.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = state_topic.into();
-        self
-    }
-
-    /// A list of features that the alarm control panel supports. The available list options are `arm_home`, `arm_away`, `arm_night`, `arm_vacation`, `arm_custom_bypass`, and `trigger`.
-    pub fn supported_features<T: Into<String>>(mut self, supported_features: Vec<T>) -> Self {
-        self.supported_features = Some(supported_features.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// An ID that uniquely identifies this alarm panel. If two alarm panels have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for AlarmControlPanel {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            code: Default::default(),
-            code_arm_required: Default::default(),
-            code_disarm_required: Default::default(),
-            code_trigger_required: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            payload_arm_away: Default::default(),
-            payload_arm_custom_bypass: Default::default(),
-            payload_arm_home: Default::default(),
-            payload_arm_night: Default::default(),
-            payload_arm_vacation: Default::default(),
-            payload_disarm: Default::default(),
-            payload_trigger: Default::default(),
-            platform: "alarm_control_panel".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            state_topic: Default::default(),
-            supported_features: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<AlarmControlPanel> for Entity {
@@ -2828,24 +1452,25 @@ impl From<AlarmControlPanel> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct DeviceTracker {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -2853,10 +1478,12 @@ pub struct DeviceTracker {
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary message containing device tracker attributes. This topic can be used to set the location of the device tracker under the following conditions:
@@ -2867,31 +1494,33 @@ pub struct DeviceTracker {
     ///
     ///  Be aware that any location message received at `state_topic`  overrides the location received via `json_attributes_topic` until a message configured with `payload_reset` is received at `state_topic`. For a more generic usage example of the `json_attributes_topic`, refer to the [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the MQTT device_tracker.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// The payload value that represents the 'home' state for the device.
     #[serde(rename = "pl_home", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_home: Option<String>,
 
     /// The payload value that represents the 'not_home' state for the device.
     #[serde(rename = "pl_not_home", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_not_home: Option<String>,
 
     /// The payload value that will have the device's location automatically derived from Home Assistant's zones.
     #[serde(rename = "pl_rst", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_reset: Option<String>,
-
-    /// Must be `device_tracker`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -2899,171 +1528,23 @@ pub struct DeviceTracker {
 
     /// Attribute of a device tracker that affects state when being used to track a [person](/integrations/person/). Valid options are `gps`, `router`, `bluetooth`, or `bluetooth_le`.
     #[serde(rename = "src_type", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub source_type: Option<String>,
 
     /// The MQTT topic subscribed to receive device tracker state changes. The states defined in `state_topic` override the location states defined by the `json_attributes_topic`. This state override is turned inactive if the `state_topic` receives a message containing `payload_reset`. The `state_topic` can only be omitted if `json_attributes_topic` is used. An empty payload is ignored. Valid payloads are `not_home`, `home` or any other custom location or zone name. Payloads for `not_home`, `home` can be overridden with the `payload_not_home`and `payload_home` config options.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// An ID that uniquely identifies this device_tracker. If two device_trackers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that returns a device tracker state.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl DeviceTracker {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary message containing device tracker attributes. This topic can be used to set the location of the device tracker under the following conditions:
-    /// - If the attributes in the JSON message include `longitude`, `latitude`, and `gps_accuracy` (optional).
-    ///  - If the device tracker is within a configured [zone](/integrations/zone/).
-    ///
-    /// If these conditions are met, it is not required to configure `state_topic`.
-    ///
-    ///  Be aware that any location message received at `state_topic`  overrides the location received via `json_attributes_topic` until a message configured with `payload_reset` is received at `state_topic`. For a more generic usage example of the `json_attributes_topic`, refer to the [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the MQTT device_tracker.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// The payload value that represents the 'home' state for the device.
-    pub fn payload_home<T: Into<String>>(mut self, payload_home: T) -> Self {
-        self.payload_home = Some(payload_home.into());
-        self
-    }
-
-    /// The payload value that represents the 'not_home' state for the device.
-    pub fn payload_not_home<T: Into<String>>(mut self, payload_not_home: T) -> Self {
-        self.payload_not_home = Some(payload_not_home.into());
-        self
-    }
-
-    /// The payload value that will have the device's location automatically derived from Home Assistant's zones.
-    pub fn payload_reset<T: Into<String>>(mut self, payload_reset: T) -> Self {
-        self.payload_reset = Some(payload_reset.into());
-        self
-    }
-
-    /// Must be `device_tracker`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// Attribute of a device tracker that affects state when being used to track a [person](/integrations/person/). Valid options are `gps`, `router`, `bluetooth`, or `bluetooth_le`.
-    pub fn source_type<T: Into<String>>(mut self, source_type: T) -> Self {
-        self.source_type = Some(source_type.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive device tracker state changes. The states defined in `state_topic` override the location states defined by the `json_attributes_topic`. This state override is turned inactive if the `state_topic` receives a message containing `payload_reset`. The `state_topic` can only be omitted if `json_attributes_topic` is used. An empty payload is ignored. Valid payloads are `not_home`, `home` or any other custom location or zone name. Payloads for `not_home`, `home` can be overridden with the `payload_not_home`and `payload_home` config options.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this device_tracker. If two device_trackers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that returns a device tracker state.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for DeviceTracker {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            payload_home: Default::default(),
-            payload_not_home: Default::default(),
-            payload_reset: Default::default(),
-            platform: "device_tracker".to_string(),
-            qos: Default::default(),
-            source_type: Default::default(),
-            state_topic: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<DeviceTracker> for Entity {
@@ -3152,24 +1633,25 @@ impl From<DeviceTracker> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct WaterHeater {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -3177,10 +1659,12 @@ pub struct WaterHeater {
 
     /// A template with which the value received on `current_temperature_topic` will be rendered.
     #[serde(rename = "curr_temp_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub current_temperature_template: Option<String>,
 
     /// The MQTT topic on which to listen for the current temperature. A `"None"` value received will reset the current temperature. Empty values (`'''`) will be ignored.
     #[serde(rename = "curr_temp_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub current_temperature_topic: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -3189,14 +1673,17 @@ pub struct WaterHeater {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Set the initial target temperature. The default value depends on the temperature unit, and will be 43.3°C or 110°F.
@@ -3205,10 +1692,12 @@ pub struct WaterHeater {
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// Maximum set point available. The default value depends on the temperature unit, and will be 60°C or 140°F.
@@ -3221,30 +1710,37 @@ pub struct WaterHeater {
 
     /// A template to render the value sent to the `mode_command_topic` with.
     #[serde(rename = "mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the water heater operation mode.
     #[serde(rename = "mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_command_topic: Option<String>,
 
     /// A template to render the value received on the `mode_state_topic` with.
     #[serde(rename = "mode_stat_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes of the water heater operation mode. If this is not set, the operation mode works in optimistic mode (see below). A "None" payload resets to an `unknown` state. An empty payload is ignored.
     #[serde(rename = "mode_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode_state_topic: Option<String>,
 
     /// A list of supported modes. Needs to be a subset of the default values.
     #[serde(rename = "modes", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub modes: Option<Vec<String>>,
 
     /// The name of the water heater. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if the water heater works in optimistic mode
@@ -3253,22 +1749,22 @@ pub struct WaterHeater {
 
     /// The payload that represents disabled state.
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_off: Option<String>,
 
     /// The payload that represents enabled state.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
-
-    /// Must be `water_heater`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// A template to render the value sent to the `power_command_topic` with. The `value` parameter is the payload set for `payload_on` or `payload_off`.
     #[serde(rename = "pow_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub power_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the water heater power state. Sends the payload configured with `payload_on` if the water heater is turned on via the `water_heater.turn_on`, or the payload configured with `payload_off` if the water heater is turned off via the `water_heater.turn_off` action. Note that `optimistic` mode is not supported through `water_heater.turn_on` and `water_heater.turn_off` actions. When called, these actions will send a power command to the device but will not optimistically update the state of the water heater. The water heater device should report its state back via `mode_state_topic`.
     #[serde(rename = "pow_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub power_command_topic: Option<String>,
 
     /// The desired precision for this device. Can be used to match your actual water heater's precision. Supported values are `0.1`, `0.5` and `1.0`.
@@ -3285,332 +1781,38 @@ pub struct WaterHeater {
 
     /// A template to render the value sent to the `temperature_command_topic` with.
     #[serde(rename = "temp_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the target temperature.
     #[serde(rename = "temp_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_command_topic: Option<String>,
 
     /// A template to render the value received on the `temperature_state_topic` with.
     #[serde(rename = "temp_stat_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_state_template: Option<String>,
 
     /// The MQTT topic to subscribe for changes in the target temperature. If this is not set, the target temperature works in optimistic mode (see below). A `"None"` value received will reset the temperature set point. Empty values (`'''`) will be ignored.
     #[serde(rename = "temp_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_state_topic: Option<String>,
 
     /// Defines the temperature unit of the device, `C` or `F`. If this is not set, the temperature unit is set to the system temperature unit.
     #[serde(rename = "temp_unit", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub temperature_unit: Option<TemperatureUnit>,
 
     /// An ID that uniquely identifies this water heater device. If two water heater devices have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Default template to render the payloads on *all* `*_state_topic`s with.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl WaterHeater {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// A template with which the value received on `current_temperature_topic` will be rendered.
-    pub fn current_temperature_template<T: Into<String>>(
-        mut self,
-        current_temperature_template: T,
-    ) -> Self {
-        self.current_temperature_template = Some(current_temperature_template.into());
-        self
-    }
-
-    /// The MQTT topic on which to listen for the current temperature. A `"None"` value received will reset the current temperature. Empty values (`'''`) will be ignored.
-    pub fn current_temperature_topic<T: Into<String>>(
-        mut self,
-        current_temperature_topic: T,
-    ) -> Self {
-        self.current_temperature_topic = Some(current_temperature_topic.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Set the initial target temperature. The default value depends on the temperature unit, and will be 43.3°C or 110°F.
-    pub fn initial(mut self, initial: i32) -> Self {
-        self.initial = Some(initial);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// Maximum set point available. The default value depends on the temperature unit, and will be 60°C or 140°F.
-    pub fn max_temp(mut self, max_temp: Decimal) -> Self {
-        self.max_temp = Some(max_temp);
-        self
-    }
-
-    /// Minimum set point available. The default value depends on the temperature unit, and will be 43.3°C or 110°F.
-    pub fn min_temp(mut self, min_temp: Decimal) -> Self {
-        self.min_temp = Some(min_temp);
-        self
-    }
-
-    /// A template to render the value sent to the `mode_command_topic` with.
-    pub fn mode_command_template<T: Into<String>>(mut self, mode_command_template: T) -> Self {
-        self.mode_command_template = Some(mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the water heater operation mode.
-    pub fn mode_command_topic<T: Into<String>>(mut self, mode_command_topic: T) -> Self {
-        self.mode_command_topic = Some(mode_command_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `mode_state_topic` with.
-    pub fn mode_state_template<T: Into<String>>(mut self, mode_state_template: T) -> Self {
-        self.mode_state_template = Some(mode_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes of the water heater operation mode. If this is not set, the operation mode works in optimistic mode (see below). A "None" payload resets to an `unknown` state. An empty payload is ignored.
-    pub fn mode_state_topic<T: Into<String>>(mut self, mode_state_topic: T) -> Self {
-        self.mode_state_topic = Some(mode_state_topic.into());
-        self
-    }
-
-    /// A list of supported modes. Needs to be a subset of the default values.
-    pub fn modes<T: Into<String>>(mut self, modes: Vec<T>) -> Self {
-        self.modes = Some(modes.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// The name of the water heater. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if the water heater works in optimistic mode
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The payload that represents disabled state.
-    pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
-        self.payload_off = Some(payload_off.into());
-        self
-    }
-
-    /// The payload that represents enabled state.
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// Must be `water_heater`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// A template to render the value sent to the `power_command_topic` with. The `value` parameter is the payload set for `payload_on` or `payload_off`.
-    pub fn power_command_template<T: Into<String>>(mut self, power_command_template: T) -> Self {
-        self.power_command_template = Some(power_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the water heater power state. Sends the payload configured with `payload_on` if the water heater is turned on via the `water_heater.turn_on`, or the payload configured with `payload_off` if the water heater is turned off via the `water_heater.turn_off` action. Note that `optimistic` mode is not supported through `water_heater.turn_on` and `water_heater.turn_off` actions. When called, these actions will send a power command to the device but will not optimistically update the state of the water heater. The water heater device should report its state back via `mode_state_topic`.
-    pub fn power_command_topic<T: Into<String>>(mut self, power_command_topic: T) -> Self {
-        self.power_command_topic = Some(power_command_topic.into());
-        self
-    }
-
-    /// The desired precision for this device. Can be used to match your actual water heater's precision. Supported values are `0.1`, `0.5` and `1.0`.
-    pub fn precision(mut self, precision: Decimal) -> Self {
-        self.precision = Some(precision);
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// Defines if published messages should have the retain flag set.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// A template to render the value sent to the `temperature_command_topic` with.
-    pub fn temperature_command_template<T: Into<String>>(
-        mut self,
-        temperature_command_template: T,
-    ) -> Self {
-        self.temperature_command_template = Some(temperature_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the target temperature.
-    pub fn temperature_command_topic<T: Into<String>>(
-        mut self,
-        temperature_command_topic: T,
-    ) -> Self {
-        self.temperature_command_topic = Some(temperature_command_topic.into());
-        self
-    }
-
-    /// A template to render the value received on the `temperature_state_topic` with.
-    pub fn temperature_state_template<T: Into<String>>(
-        mut self,
-        temperature_state_template: T,
-    ) -> Self {
-        self.temperature_state_template = Some(temperature_state_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe for changes in the target temperature. If this is not set, the target temperature works in optimistic mode (see below). A `"None"` value received will reset the temperature set point. Empty values (`'''`) will be ignored.
-    pub fn temperature_state_topic<T: Into<String>>(mut self, temperature_state_topic: T) -> Self {
-        self.temperature_state_topic = Some(temperature_state_topic.into());
-        self
-    }
-
-    /// Defines the temperature unit of the device, `C` or `F`. If this is not set, the temperature unit is set to the system temperature unit.
-    pub fn temperature_unit<T: Into<TemperatureUnit>>(mut self, temperature_unit: T) -> Self {
-        self.temperature_unit = Some(temperature_unit.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this water heater device. If two water heater devices have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Default template to render the payloads on *all* `*_state_topic`s with.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for WaterHeater {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            current_temperature_template: Default::default(),
-            current_temperature_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            initial: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            max_temp: Default::default(),
-            min_temp: Default::default(),
-            mode_command_template: Default::default(),
-            mode_command_topic: Default::default(),
-            mode_state_template: Default::default(),
-            mode_state_topic: Default::default(),
-            modes: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_off: Default::default(),
-            payload_on: Default::default(),
-            platform: "water_heater".to_string(),
-            power_command_template: Default::default(),
-            power_command_topic: Default::default(),
-            precision: Default::default(),
-            qos: Default::default(),
-            retain: Default::default(),
-            temperature_command_template: Default::default(),
-            temperature_command_topic: Default::default(),
-            temperature_state_template: Default::default(),
-            temperature_state_topic: Default::default(),
-            temperature_unit: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<WaterHeater> for Entity {
@@ -3690,24 +1892,25 @@ impl From<WaterHeater> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Image {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -3715,6 +1918,7 @@ pub struct Image {
 
     /// The content type of and image data message received on `image_topic`. This option cannot be used with the `url_topic` because the content type is derived when downloading the image.
     #[serde(rename = "cont_type", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub content_type: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -3723,197 +1927,63 @@ pub struct Image {
 
     /// The encoding of the payloads received. Set to `""` to disable decoding of incoming payload. Use `image_encoding` to enable `Base64` decoding on `image_topic`.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// The encoding of the image payloads received. Set to `"b64"` to enable base64 decoding of image payload. If not set, the image payload must be raw binary data.
     #[serde(rename = "img_e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub image_encoding: Option<String>,
 
     /// The MQTT topic to subscribe to receive the image payload of the image to be downloaded. Ensure the `content_type` type option is set to the corresponding content type. This option cannot be used together with the `url_topic` option. But at least one of these option is required.
     #[serde(rename = "img_t")]
+    #[builder(into)]
     pub image_topic: String,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Implies `force_update` of the current sensor state when a message is received on this topic.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the image. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// An ID that uniquely identifies this image. If two images have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the image URL from a message received at `url_topic`.
     #[serde(rename = "url_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub url_template: Option<String>,
 
     /// The MQTT topic to subscribe to receive an image URL. A `url_template` option can extract the URL from the message. The `content_type` will be derived from the image when downloaded. This option cannot be used together with the `image_topic` option, but at least one of these options is required.
     #[serde(rename = "url_t")]
+    #[builder(into)]
     pub url_topic: String,
-}
-
-impl Image {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The content type of and image data message received on `image_topic`. This option cannot be used with the `url_topic` because the content type is derived when downloading the image.
-    pub fn content_type<T: Into<String>>(mut self, content_type: T) -> Self {
-        self.content_type = Some(content_type.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received. Set to `""` to disable decoding of incoming payload. Use `image_encoding` to enable `Base64` decoding on `image_topic`.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// The encoding of the image payloads received. Set to `"b64"` to enable base64 decoding of image payload. If not set, the image payload must be raw binary data.
-    pub fn image_encoding<T: Into<String>>(mut self, image_encoding: T) -> Self {
-        self.image_encoding = Some(image_encoding.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe to receive the image payload of the image to be downloaded. Ensure the `content_type` type option is set to the corresponding content type. This option cannot be used together with the `url_topic` option. But at least one of these option is required.
-    pub fn image_topic<T: Into<String>>(mut self, image_topic: T) -> Self {
-        self.image_topic = image_topic.into();
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Implies `force_update` of the current sensor state when a message is received on this topic.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the image. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this image. If two images have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the image URL from a message received at `url_topic`.
-    pub fn url_template<T: Into<String>>(mut self, url_template: T) -> Self {
-        self.url_template = Some(url_template.into());
-        self
-    }
-
-    /// The MQTT topic to subscribe to receive an image URL. A `url_template` option can extract the URL from the message. The `content_type` will be derived from the image when downloaded. This option cannot be used together with the `image_topic` option, but at least one of these options is required.
-    pub fn url_topic<T: Into<String>>(mut self, url_topic: T) -> Self {
-        self.url_topic = url_topic.into();
-        self
-    }
-}
-
-impl Default for Image {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            content_type: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            image_encoding: Default::default(),
-            image_topic: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            unique_id: Default::default(),
-            url_template: Default::default(),
-            url_topic: Default::default(),
-        }
-    }
 }
 
 impl From<Image> for Entity {
@@ -3997,24 +2067,25 @@ impl From<Image> for Entity {
 /// - Trigger topic: `zigbee2mqtt/0x90fd9ffffedf1266/action`
 /// - Trigger payload: `arrow_right_click`
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct DeviceTrigger {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -4022,15 +2093,13 @@ pub struct DeviceTrigger {
 
     /// The type of automation, must be 'trigger'.
     #[serde(rename = "atype")]
+    #[builder(into)]
     pub automation_type: String,
 
     /// Optional payload to match the payload being sent over the topic.
     #[serde(rename = "pl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload: Option<String>,
-
-    /// Must be `device_automation`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -4038,120 +2107,23 @@ pub struct DeviceTrigger {
 
     /// The subtype of the trigger, e.g. `button_1`. Entries supported by the frontend: `turn_on`, `turn_off`, `button_1`, `button_2`, `button_3`, `button_4`, `button_5`, `button_6`. If set to an unsupported value, will render as `subtype type`, e.g. `left_button pressed` with `type` set to `button_short_press` and `subtype` set to `left_button`
     #[serde(rename = "stype")]
+    #[builder(into)]
     pub subtype: String,
 
     /// The MQTT topic subscribed to receive trigger events.
     #[serde(rename = "t")]
+    #[builder(into)]
     pub topic: String,
 
     /// The type of the trigger, e.g. `button_short_press`. Entries supported by the frontend: `button_short_press`, `button_short_release`, `button_long_press`, `button_long_release`, `button_double_press`, `button_triple_press`, `button_quadruple_press`, `button_quintuple_press`. If set to an unsupported value, will render as `subtype type`, e.g. `button_1 spammed` with `type` set to `spammed` and `subtype` set to `button_1`
     #[serde(rename = "type")]
+    #[builder(into)]
     pub r#type: String,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl DeviceTrigger {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The type of automation, must be 'trigger'.
-    pub fn automation_type<T: Into<String>>(mut self, automation_type: T) -> Self {
-        self.automation_type = automation_type.into();
-        self
-    }
-
-    /// Optional payload to match the payload being sent over the topic.
-    pub fn payload<T: Into<String>>(mut self, payload: T) -> Self {
-        self.payload = Some(payload.into());
-        self
-    }
-
-    /// Must be `device_automation`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// The subtype of the trigger, e.g. `button_1`. Entries supported by the frontend: `turn_on`, `turn_off`, `button_1`, `button_2`, `button_3`, `button_4`, `button_5`, `button_6`. If set to an unsupported value, will render as `subtype type`, e.g. `left_button pressed` with `type` set to `button_short_press` and `subtype` set to `left_button`
-    pub fn subtype<T: Into<String>>(mut self, subtype: T) -> Self {
-        self.subtype = subtype.into();
-        self
-    }
-
-    /// The MQTT topic subscribed to receive trigger events.
-    pub fn topic<T: Into<String>>(mut self, topic: T) -> Self {
-        self.topic = topic.into();
-        self
-    }
-
-    /// The type of the trigger, e.g. `button_short_press`. Entries supported by the frontend: `button_short_press`, `button_short_release`, `button_long_press`, `button_long_release`, `button_double_press`, `button_triple_press`, `button_quadruple_press`, `button_quintuple_press`. If set to an unsupported value, will render as `subtype type`, e.g. `button_1 spammed` with `type` set to `spammed` and `subtype` set to `button_1`
-    pub fn r#type<T: Into<String>>(mut self, r#type: T) -> Self {
-        self.r#type = r#type.into();
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for DeviceTrigger {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            automation_type: Default::default(),
-            payload: Default::default(),
-            platform: "device_trigger".to_string(),
-            qos: Default::default(),
-            subtype: Default::default(),
-            topic: Default::default(),
-            r#type: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<DeviceTrigger> for Entity {
@@ -4256,24 +2228,25 @@ impl From<DeviceTrigger> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Event {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -4289,208 +2262,62 @@ pub struct Event {
 
     /// The encoding of the published messages.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// A list of valid `event_type` strings.
     #[serde(rename = "evt_typ")]
+    #[builder(into)]
     pub event_types: Vec<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name to use when displaying this event.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
-
-    /// Must be `event`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
     pub qos: Option<Qos>,
 
     /// The MQTT topic subscribed to receive JSON event payloads. The JSON payload should contain the `event_type` element. The event type should be one of the configured `event_types`. Note that replayed retained messages will be discarded.
-    #[serde(rename = "stat_t")]
-    pub state_topic: String,
+    #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
+    pub state_topic: Option<String>,
 
     /// An ID that uniquely identifies this event entity. If two events have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value and render it to a valid JSON event payload. If the template throws an error, the current state will be used instead.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Event {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The [type/class](/integrations/event/#device-class) of the event to set the icon in the frontend. The `device_class` can be `null`.
-    pub fn device_class(mut self, device_class: EventDeviceClass) -> Self {
-        self.device_class = Some(device_class);
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the published messages.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// A list of valid `event_type` strings.
-    pub fn event_types<T: Into<String>>(mut self, event_types: Vec<T>) -> Self {
-        self.event_types = event_types.into_iter().map(|v| v.into()).collect();
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name to use when displaying this event.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Must be `event`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive JSON event payloads. The JSON payload should contain the `event_type` element. The event type should be one of the configured `event_types`. Note that replayed retained messages will be discarded.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = state_topic.into();
-        self
-    }
-
-    /// An ID that uniquely identifies this event entity. If two events have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value and render it to a valid JSON event payload. If the template throws an error, the current state will be used instead.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Event {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            event_types: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            platform: "event".to_string(),
-            qos: Default::default(),
-            state_topic: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Event> for Entity {
@@ -4528,24 +2355,25 @@ impl From<Event> for Entity {
 /// ⚠ Important\
 /// Make sure that your topic matches exactly. `some-topic/` and `some-topic` are different topics.
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Number {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -4553,10 +2381,12 @@ pub struct Number {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the number.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// The [type/class](/integrations/number/#device-class) of the number. The `device_class` can be `null`.
@@ -4569,22 +2399,27 @@ pub struct Number {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as number attributes. Implies `force_update` of the current number state when a message is received on this topic.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// Maximum value.
@@ -4597,14 +2432,17 @@ pub struct Number {
 
     /// Control how the number should be displayed in the UI. Can be set to `box` or `slider` to force a display mode.
     #[serde(rename = "mode", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode: Option<String>,
 
     /// The name of the Number. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if number works in optimistic mode.
@@ -4613,11 +2451,8 @@ pub struct Number {
 
     /// A special payload that resets the state to `unknown` when received on the `state_topic`.
     #[serde(rename = "pl_rst", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_reset: Option<String>,
-
-    /// Must be `number`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -4629,6 +2464,7 @@ pub struct Number {
 
     /// The MQTT topic subscribed to receive number values. An empty payload is ignored.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// Step value. Smallest value `0.001`.
@@ -4637,231 +2473,18 @@ pub struct Number {
 
     /// An ID that uniquely identifies this Number. If two Numbers have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines the unit of measurement of the sensor, if any. The `unit_of_measurement` can be `null`.
     #[serde(rename = "unit_of_meas", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unit_of_measurement: Option<Unit>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Number {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the number.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// The [type/class](/integrations/number/#device-class) of the number. The `device_class` can be `null`.
-    pub fn device_class(mut self, device_class: NumberDeviceClass) -> Self {
-        self.device_class = Some(device_class);
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as number attributes. Implies `force_update` of the current number state when a message is received on this topic.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// Maximum value.
-    pub fn max(mut self, max: Decimal) -> Self {
-        self.max = Some(max);
-        self
-    }
-
-    /// Minimum value.
-    pub fn min(mut self, min: Decimal) -> Self {
-        self.min = Some(min);
-        self
-    }
-
-    /// Control how the number should be displayed in the UI. Can be set to `box` or `slider` to force a display mode.
-    pub fn mode<T: Into<String>>(mut self, mode: T) -> Self {
-        self.mode = Some(mode.into());
-        self
-    }
-
-    /// The name of the Number. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if number works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// A special payload that resets the state to `unknown` when received on the `state_topic`.
-    pub fn payload_reset<T: Into<String>>(mut self, payload_reset: T) -> Self {
-        self.payload_reset = Some(payload_reset.into());
-        self
-    }
-
-    /// Must be `number`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive number values. An empty payload is ignored.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// Step value. Smallest value `0.001`.
-    pub fn step(mut self, step: Decimal) -> Self {
-        self.step = Some(step);
-        self
-    }
-
-    /// An ID that uniquely identifies this Number. If two Numbers have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines the unit of measurement of the sensor, if any. The `unit_of_measurement` can be `null`.
-    pub fn unit_of_measurement<T: Into<Unit>>(mut self, unit_of_measurement: T) -> Self {
-        self.unit_of_measurement = Some(unit_of_measurement.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Number {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            max: Default::default(),
-            min: Default::default(),
-            mode: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_reset: Default::default(),
-            platform: "number".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            state_topic: Default::default(),
-            step: Default::default(),
-            unique_id: Default::default(),
-            unit_of_measurement: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Number> for Entity {
@@ -4977,24 +2600,25 @@ impl From<Number> for Entity {
 ///       payload_off: "0"
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct BinarySensor {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -5002,6 +2626,7 @@ pub struct BinarySensor {
 
     /// Sets the [class of the device](/integrations/binary_sensor/#device-class), changing the device state and icon that is displayed on the frontend. The `device_class` can be `null`.
     #[serde(rename = "dev_cla", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub device_class: Option<BinarySensorDeviceClass>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -5010,10 +2635,12 @@ pub struct BinarySensor {
 
     /// The encoding of the payloads received. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// Sends update events (which results in update of [state object](/docs/configuration/state_object/)'s `last_changed`) even if the sensor's state hasn't changed. Useful if you want to have meaningful value graphs in history or want to create an automation that triggers on *every* incoming state message (not only when the sensor's new state is different to the current one).
@@ -5022,22 +2649,27 @@ pub struct BinarySensor {
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the binary sensor. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// For sensors that only send `on` state updates (like PIRs), this variable sets a delay in seconds after which the sensor's state will be updated back to `off`.
@@ -5046,205 +2678,32 @@ pub struct BinarySensor {
 
     /// The string that represents the `off` state. It will be compared to the message in the `state_topic` (see `value_template` for details)
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_off: Option<String>,
 
     /// The string that represents the `on` state. It will be compared to the message in the `state_topic` (see `value_template` for details)
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
-
-    /// Must be `binary_sensor`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
     pub qos: Option<Qos>,
 
     /// The MQTT topic subscribed to receive sensor's state. Valid states are `OFF` and `ON`. Custom `OFF` and `ON` values can be set with the `payload_off` and `payload_on` config options.
-    #[serde(rename = "stat_t")]
-    pub state_topic: String,
+    #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
+    pub state_topic: Option<String>,
 
     /// An ID that uniquely identifies this sensor. If two sensors have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that returns a string to be compared to `payload_on`/`payload_off` or an empty string, in which case the MQTT message will be removed. Remove this option when `payload_on` and `payload_off` are sufficient to match your payloads (i.e no preprocessing of original message is required).
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl BinarySensor {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Sets the [class of the device](/integrations/binary_sensor/#device-class), changing the device state and icon that is displayed on the frontend. The `device_class` can be `null`.
-    pub fn device_class<T: Into<BinarySensorDeviceClass>>(mut self, device_class: T) -> Self {
-        self.device_class = Some(device_class.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// Sends update events (which results in update of [state object](/docs/configuration/state_object/)'s `last_changed`) even if the sensor's state hasn't changed. Useful if you want to have meaningful value graphs in history or want to create an automation that triggers on *every* incoming state message (not only when the sensor's new state is different to the current one).
-    pub fn force_update(mut self, force_update: bool) -> Self {
-        self.force_update = Some(force_update);
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the binary sensor. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// For sensors that only send `on` state updates (like PIRs), this variable sets a delay in seconds after which the sensor's state will be updated back to `off`.
-    pub fn off_delay(mut self, off_delay: i32) -> Self {
-        self.off_delay = Some(off_delay);
-        self
-    }
-
-    /// The string that represents the `off` state. It will be compared to the message in the `state_topic` (see `value_template` for details)
-    pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
-        self.payload_off = Some(payload_off.into());
-        self
-    }
-
-    /// The string that represents the `on` state. It will be compared to the message in the `state_topic` (see `value_template` for details)
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// Must be `binary_sensor`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive sensor's state. Valid states are `OFF` and `ON`. Custom `OFF` and `ON` values can be set with the `payload_off` and `payload_on` config options.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = state_topic.into();
-        self
-    }
-
-    /// An ID that uniquely identifies this sensor. If two sensors have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that returns a string to be compared to `payload_on`/`payload_off` or an empty string, in which case the MQTT message will be removed. Remove this option when `payload_on` and `payload_off` are sufficient to match your payloads (i.e no preprocessing of original message is required).
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for BinarySensor {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            force_update: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            off_delay: Default::default(),
-            payload_off: Default::default(),
-            payload_on: Default::default(),
-            platform: "binary_sensor".to_string(),
-            qos: Default::default(),
-            state_topic: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<BinarySensor> for Entity {
@@ -5295,24 +2754,25 @@ impl From<BinarySensor> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Tag {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -5320,70 +2780,13 @@ pub struct Tag {
 
     /// The MQTT topic subscribed to receive tag scanned events.
     #[serde(rename = "t")]
+    #[builder(into)]
     pub topic: String,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that returns a tag ID.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Tag {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The MQTT topic subscribed to receive tag scanned events.
-    pub fn topic<T: Into<String>>(mut self, topic: T) -> Self {
-        self.topic = topic.into();
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that returns a tag ID.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Tag {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            topic: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Tag> for Entity {
@@ -5540,24 +2943,25 @@ impl From<Tag> for Entity {
 /// mosquitto_pub -h 127.0.0.1 -t home-assistant/valve/set -m "CLOSE"
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Valve {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -5565,14 +2969,17 @@ pub struct Valve {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to control the valve. The value sent can be a value defined by `payload_open`, `payload_close` or `payload_stop`. If `reports_position` is set to `true`, a numeric value will be published instead.
     #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_topic: Option<String>,
 
     /// Sets the [class of the device](/integrations/valve/#device_class), changing the device state and icon that is displayed on the frontend. The `device_class` can be `null`.
     #[serde(rename = "dev_cla", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub device_class: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -5581,30 +2988,37 @@ pub struct Valve {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. A usage example can be found in the [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. A usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the valve. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used instead of `name` to have the `entity_id` generated automatically.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if a switch works in optimistic mode.
@@ -5613,19 +3027,18 @@ pub struct Valve {
 
     /// The command payload that closes the valve. Is only used when `reports_position` is set to `false` (default). The `payload_close` is not allowed if `reports_position` is set to `true`. Can be set to `null` to disable the valve's close option.
     #[serde(rename = "pl_cls", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_close: Option<String>,
 
     /// The command payload that opens the valve. Is only used when `reports_position` is set to `false` (default). The `payload_open` is not allowed if `reports_position` is set to `true`. Can be set to `null` to disable the valve's open option.
     #[serde(rename = "pl_open", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_open: Option<String>,
 
     /// The command payload that stops the valve. When not configured, the valve will not support the `valve.stop` action.
     #[serde(rename = "pl_stop", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_stop: Option<String>,
-
-    /// Must be `valve`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// Number which represents closed position. The valve's position will be scaled to the(`position_closed`...`position_open`) range when an action is performed and scaled back when a value is received.
     #[serde(rename = "pos_clsd", skip_serializing_if = "Option::is_none")]
@@ -5649,275 +3062,38 @@ pub struct Valve {
 
     /// The payload that represents the closed state. Is only allowed when `reports_position` is set to `False` (default).
     #[serde(rename = "stat_clsd", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_closed: Option<String>,
 
     /// The payload that represents the closing state.
     #[serde(rename = "stat_closing", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_closing: Option<String>,
 
     /// The payload that represents the open state. Is only allowed when `reports_position` is set to `False` (default).
     #[serde(rename = "stat_open", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_open: Option<String>,
 
     /// The payload that represents the opening state.
     #[serde(rename = "stat_opening", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_opening: Option<String>,
 
     /// The MQTT topic subscribed to receive valve state messages. State topic accepts a state payload (`open`, `opening`, `closed`, or `closing`) or, if `reports_position` is supported, a numeric value representing the position. In a JSON format with variables `state` and `position` both values can received together. A "None" state value resets to an `unknown` state. An empty string is ignored.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// An ID that uniquely identifies this valve. If two valves have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `state_topic` topic. The rendered value should be a defined state payload or, if reporting a `position` is supported and `reports_position` is set to `true`, a numeric value is expected representing the position. See also `state_topic`.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Valve {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to control the valve. The value sent can be a value defined by `payload_open`, `payload_close` or `payload_stop`. If `reports_position` is set to `true`, a numeric value will be published instead.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = Some(command_topic.into());
-        self
-    }
-
-    /// Sets the [class of the device](/integrations/valve/#device_class), changing the device state and icon that is displayed on the frontend. The `device_class` can be `null`.
-    pub fn device_class<T: Into<String>>(mut self, device_class: T) -> Self {
-        self.device_class = Some(device_class.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. A usage example can be found in the [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. A usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the valve. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used instead of `name` to have the `entity_id` generated automatically.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if a switch works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The command payload that closes the valve. Is only used when `reports_position` is set to `false` (default). The `payload_close` is not allowed if `reports_position` is set to `true`. Can be set to `null` to disable the valve's close option.
-    pub fn payload_close<T: Into<String>>(mut self, payload_close: T) -> Self {
-        self.payload_close = Some(payload_close.into());
-        self
-    }
-
-    /// The command payload that opens the valve. Is only used when `reports_position` is set to `false` (default). The `payload_open` is not allowed if `reports_position` is set to `true`. Can be set to `null` to disable the valve's open option.
-    pub fn payload_open<T: Into<String>>(mut self, payload_open: T) -> Self {
-        self.payload_open = Some(payload_open.into());
-        self
-    }
-
-    /// The command payload that stops the valve. When not configured, the valve will not support the `valve.stop` action.
-    pub fn payload_stop<T: Into<String>>(mut self, payload_stop: T) -> Self {
-        self.payload_stop = Some(payload_stop.into());
-        self
-    }
-
-    /// Must be `valve`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// Number which represents closed position. The valve's position will be scaled to the(`position_closed`...`position_open`) range when an action is performed and scaled back when a value is received.
-    pub fn position_closed(mut self, position_closed: i32) -> Self {
-        self.position_closed = Some(position_closed);
-        self
-    }
-
-    /// Number which represents open position. The valve's position will be scaled to (`position_closed`...`position_open`) range when an is performed and scaled back when a value is received.
-    pub fn position_open(mut self, position_open: i32) -> Self {
-        self.position_open = Some(position_open);
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// Set to `true` if the value reports the position or supports setting the position. Enabling the `reports_position` option will cause the position to be published instead of a payload defined by `payload_open`, `payload_close` or `payload_stop`. When receiving messages, `state_topic` will accept numeric payloads or one of the following state messages: `open`, `opening`, `closed`, or `closing`.
-    pub fn reports_position(mut self, reports_position: bool) -> Self {
-        self.reports_position = Some(reports_position);
-        self
-    }
-
-    /// Defines if published messages should have the retain flag set.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The payload that represents the closed state. Is only allowed when `reports_position` is set to `False` (default).
-    pub fn state_closed<T: Into<String>>(mut self, state_closed: T) -> Self {
-        self.state_closed = Some(state_closed.into());
-        self
-    }
-
-    /// The payload that represents the closing state.
-    pub fn state_closing<T: Into<String>>(mut self, state_closing: T) -> Self {
-        self.state_closing = Some(state_closing.into());
-        self
-    }
-
-    /// The payload that represents the open state. Is only allowed when `reports_position` is set to `False` (default).
-    pub fn state_open<T: Into<String>>(mut self, state_open: T) -> Self {
-        self.state_open = Some(state_open.into());
-        self
-    }
-
-    /// The payload that represents the opening state.
-    pub fn state_opening<T: Into<String>>(mut self, state_opening: T) -> Self {
-        self.state_opening = Some(state_opening.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive valve state messages. State topic accepts a state payload (`open`, `opening`, `closed`, or `closing`) or, if `reports_position` is supported, a numeric value representing the position. In a JSON format with variables `state` and `position` both values can received together. A "None" state value resets to an `unknown` state. An empty string is ignored.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this valve. If two valves have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `state_topic` topic. The rendered value should be a defined state payload or, if reporting a `position` is supported and `reports_position` is set to `true`, a numeric value is expected representing the position. See also `state_topic`.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Valve {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_close: Default::default(),
-            payload_open: Default::default(),
-            payload_stop: Default::default(),
-            platform: "valve".to_string(),
-            position_closed: Default::default(),
-            position_open: Default::default(),
-            qos: Default::default(),
-            reports_position: Default::default(),
-            retain: Default::default(),
-            state_closed: Default::default(),
-            state_closing: Default::default(),
-            state_open: Default::default(),
-            state_opening: Default::default(),
-            state_topic: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Valve> for Entity {
@@ -6044,24 +3220,25 @@ impl From<Valve> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Fan {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -6069,26 +3246,32 @@ pub struct Fan {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the fan state.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `direction_command_topic`.
     #[serde(rename = "dir_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub direction_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the direction state.
     #[serde(rename = "dir_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub direction_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive direction state updates.
     #[serde(rename = "dir_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub direction_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the direction.
     #[serde(rename = "dir_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub direction_value_template: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -6097,30 +3280,37 @@ pub struct Fan {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the fan. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if fan works in optimistic mode
@@ -6129,82 +3319,97 @@ pub struct Fan {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `oscillation_command_topic`.
     #[serde(rename = "osc_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub oscillation_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the oscillation state.
     #[serde(rename = "osc_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub oscillation_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive oscillation state updates.
     #[serde(rename = "osc_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub oscillation_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the oscillation.
     #[serde(rename = "osc_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub oscillation_value_template: Option<String>,
 
     /// The payload that represents the stop state.
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_off: Option<String>,
 
     /// The payload that represents the running state.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
 
     /// The payload that represents the oscillation off state.
     #[serde(rename = "pl_osc_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_oscillation_off: Option<String>,
 
     /// The payload that represents the oscillation on state.
     #[serde(rename = "pl_osc_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_oscillation_on: Option<String>,
 
     /// A special payload that resets the `percentage` state attribute to `unknown` when received at the `percentage_state_topic`.
     #[serde(rename = "pl_rst_pct", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_reset_percentage: Option<String>,
 
     /// A special payload that resets the `preset_mode` state attribute to `unknown` when received at the `preset_mode_state_topic`.
     #[serde(rename = "pl_rst_pr_mode", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_reset_preset_mode: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `percentage_command_topic`.
     #[serde(rename = "pct_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub percentage_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the fan speed state based on a percentage.
     #[serde(rename = "pct_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub percentage_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive fan speed based on percentage.
     #[serde(rename = "pct_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub percentage_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `percentage` value from the payload received on `percentage_state_topic`.
     #[serde(rename = "pct_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub percentage_value_template: Option<String>,
-
-    /// Must be `fan`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.
     #[serde(rename = "pr_mode_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_mode_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the preset mode.
     #[serde(rename = "pr_mode_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_mode_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive fan speed based on presets.
     #[serde(rename = "pr_mode_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_mode_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
     #[serde(rename = "pr_mode_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_mode_value_template: Option<String>,
 
     /// List of preset modes this fan is capable of running at. Common examples include `auto`, `smart`, `whoosh`, `eco` and `breeze`.
     #[serde(rename = "pr_modes", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub preset_modes: Option<Vec<String>>,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
@@ -6225,396 +3430,18 @@ pub struct Fan {
 
     /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. By default, valid state payloads are `OFF` and `ON`. The accepted payloads can be overridden with the `payload_off` and `payload_on` config options.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the state.
     #[serde(rename = "stat_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_value_template: Option<String>,
 
     /// An ID that uniquely identifies this fan. If two fans have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl Fan {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the fan state.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `direction_command_topic`.
-    pub fn direction_command_template<T: Into<String>>(
-        mut self,
-        direction_command_template: T,
-    ) -> Self {
-        self.direction_command_template = Some(direction_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the direction state.
-    pub fn direction_command_topic<T: Into<String>>(mut self, direction_command_topic: T) -> Self {
-        self.direction_command_topic = Some(direction_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive direction state updates.
-    pub fn direction_state_topic<T: Into<String>>(mut self, direction_state_topic: T) -> Self {
-        self.direction_state_topic = Some(direction_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the direction.
-    pub fn direction_value_template<T: Into<String>>(
-        mut self,
-        direction_value_template: T,
-    ) -> Self {
-        self.direction_value_template = Some(direction_value_template.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the fan. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if fan works in optimistic mode
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `oscillation_command_topic`.
-    pub fn oscillation_command_template<T: Into<String>>(
-        mut self,
-        oscillation_command_template: T,
-    ) -> Self {
-        self.oscillation_command_template = Some(oscillation_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the oscillation state.
-    pub fn oscillation_command_topic<T: Into<String>>(
-        mut self,
-        oscillation_command_topic: T,
-    ) -> Self {
-        self.oscillation_command_topic = Some(oscillation_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive oscillation state updates.
-    pub fn oscillation_state_topic<T: Into<String>>(mut self, oscillation_state_topic: T) -> Self {
-        self.oscillation_state_topic = Some(oscillation_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the oscillation.
-    pub fn oscillation_value_template<T: Into<String>>(
-        mut self,
-        oscillation_value_template: T,
-    ) -> Self {
-        self.oscillation_value_template = Some(oscillation_value_template.into());
-        self
-    }
-
-    /// The payload that represents the stop state.
-    pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
-        self.payload_off = Some(payload_off.into());
-        self
-    }
-
-    /// The payload that represents the running state.
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// The payload that represents the oscillation off state.
-    pub fn payload_oscillation_off<T: Into<String>>(mut self, payload_oscillation_off: T) -> Self {
-        self.payload_oscillation_off = Some(payload_oscillation_off.into());
-        self
-    }
-
-    /// The payload that represents the oscillation on state.
-    pub fn payload_oscillation_on<T: Into<String>>(mut self, payload_oscillation_on: T) -> Self {
-        self.payload_oscillation_on = Some(payload_oscillation_on.into());
-        self
-    }
-
-    /// A special payload that resets the `percentage` state attribute to `unknown` when received at the `percentage_state_topic`.
-    pub fn payload_reset_percentage<T: Into<String>>(
-        mut self,
-        payload_reset_percentage: T,
-    ) -> Self {
-        self.payload_reset_percentage = Some(payload_reset_percentage.into());
-        self
-    }
-
-    /// A special payload that resets the `preset_mode` state attribute to `unknown` when received at the `preset_mode_state_topic`.
-    pub fn payload_reset_preset_mode<T: Into<String>>(
-        mut self,
-        payload_reset_preset_mode: T,
-    ) -> Self {
-        self.payload_reset_preset_mode = Some(payload_reset_preset_mode.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `percentage_command_topic`.
-    pub fn percentage_command_template<T: Into<String>>(
-        mut self,
-        percentage_command_template: T,
-    ) -> Self {
-        self.percentage_command_template = Some(percentage_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the fan speed state based on a percentage.
-    pub fn percentage_command_topic<T: Into<String>>(
-        mut self,
-        percentage_command_topic: T,
-    ) -> Self {
-        self.percentage_command_topic = Some(percentage_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive fan speed based on percentage.
-    pub fn percentage_state_topic<T: Into<String>>(mut self, percentage_state_topic: T) -> Self {
-        self.percentage_state_topic = Some(percentage_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `percentage` value from the payload received on `percentage_state_topic`.
-    pub fn percentage_value_template<T: Into<String>>(
-        mut self,
-        percentage_value_template: T,
-    ) -> Self {
-        self.percentage_value_template = Some(percentage_value_template.into());
-        self
-    }
-
-    /// Must be `fan`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `preset_mode_command_topic`.
-    pub fn preset_mode_command_template<T: Into<String>>(
-        mut self,
-        preset_mode_command_template: T,
-    ) -> Self {
-        self.preset_mode_command_template = Some(preset_mode_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the preset mode.
-    pub fn preset_mode_command_topic<T: Into<String>>(
-        mut self,
-        preset_mode_command_topic: T,
-    ) -> Self {
-        self.preset_mode_command_topic = Some(preset_mode_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive fan speed based on presets.
-    pub fn preset_mode_state_topic<T: Into<String>>(mut self, preset_mode_state_topic: T) -> Self {
-        self.preset_mode_state_topic = Some(preset_mode_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `preset_mode` value from the payload received on `preset_mode_state_topic`.
-    pub fn preset_mode_value_template<T: Into<String>>(
-        mut self,
-        preset_mode_value_template: T,
-    ) -> Self {
-        self.preset_mode_value_template = Some(preset_mode_value_template.into());
-        self
-    }
-
-    /// List of preset modes this fan is capable of running at. Common examples include `auto`, `smart`, `whoosh`, `eco` and `breeze`.
-    pub fn preset_modes<T: Into<String>>(mut self, preset_modes: Vec<T>) -> Self {
-        self.preset_modes = Some(preset_modes.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The maximum of numeric output range (representing 100 %). The `percentage_step` is defined by `100` / the number of speeds within the speed range.
-    pub fn speed_range_max(mut self, speed_range_max: i32) -> Self {
-        self.speed_range_max = Some(speed_range_max);
-        self
-    }
-
-    /// The minimum of numeric output range (`off` not included, so `speed_range_min` - `1` represents 0 %). The `percentage_step` is defined by `100` / the number of speeds within the speed range.
-    pub fn speed_range_min(mut self, speed_range_min: i32) -> Self {
-        self.speed_range_min = Some(speed_range_min);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. By default, valid state payloads are `OFF` and `ON`. The accepted payloads can be overridden with the `payload_off` and `payload_on` config options.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a value from the state.
-    pub fn state_value_template<T: Into<String>>(mut self, state_value_template: T) -> Self {
-        self.state_value_template = Some(state_value_template.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this fan. If two fans have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for Fan {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            direction_command_template: Default::default(),
-            direction_command_topic: Default::default(),
-            direction_state_topic: Default::default(),
-            direction_value_template: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            oscillation_command_template: Default::default(),
-            oscillation_command_topic: Default::default(),
-            oscillation_state_topic: Default::default(),
-            oscillation_value_template: Default::default(),
-            payload_off: Default::default(),
-            payload_on: Default::default(),
-            payload_oscillation_off: Default::default(),
-            payload_oscillation_on: Default::default(),
-            payload_reset_percentage: Default::default(),
-            payload_reset_preset_mode: Default::default(),
-            percentage_command_template: Default::default(),
-            percentage_command_topic: Default::default(),
-            percentage_state_topic: Default::default(),
-            percentage_value_template: Default::default(),
-            platform: "fan".to_string(),
-            preset_mode_command_template: Default::default(),
-            preset_mode_command_topic: Default::default(),
-            preset_mode_state_topic: Default::default(),
-            preset_mode_value_template: Default::default(),
-            preset_modes: Default::default(),
-            qos: Default::default(),
-            retain: Default::default(),
-            speed_range_max: Default::default(),
-            speed_range_min: Default::default(),
-            state_topic: Default::default(),
-            state_value_template: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<Fan> for Entity {
@@ -6907,24 +3734,25 @@ impl From<Fan> for Entity {
 ///       state_topic: "home/bathroom/analog/brightness"
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Sensor {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -6940,10 +3768,12 @@ pub struct Sensor {
 
     /// The encoding of the payloads received. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// Sends update events even if the value hasn't changed. Useful if you want to have meaningful value graphs in history.
@@ -6952,35 +3782,38 @@ pub struct Sensor {
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Implies `force_update` of the current sensor state when a message is received on this topic.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the last_reset. When `last_reset_value_template` is set, the `state_class` option must be `total`. Available variables: `entity_id`. The `entity_id` can be used to reference the entity's attributes.
     #[serde(rename = "lrst_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub last_reset_value_template: Option<String>,
 
     /// The name of the MQTT sensor. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// List of allowed sensor state value. An empty list is not allowed. The sensor's `device_class` must be set to `enum`. The `options` option cannot be used together with `state_class` or `unit_of_measurement`.
     #[serde(rename = "ops", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub options: Option<Vec<String>>,
-
-    /// Must be `sensor`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -6988,11 +3821,13 @@ pub struct Sensor {
 
     /// The [state_class](https://developers.home-assistant.io/docs/core/entity/sensor#available-state-classes) of the sensor.
     #[serde(rename = "stat_cla", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_class: Option<SensorStateClass>,
 
     /// The MQTT topic subscribed to receive sensor values. If `device_class`, `state_class`, `unit_of_measurement` or `suggested_display_precision` is set, and a numeric value is expected, an empty value `''` will be ignored and will not update the state, a `'None'` value will set the sensor to an `unknown` state. If a `value_template` is used to parse a JSON payload, a `null` value in the JSON [will be rendered as](/docs/configuration/templating/#using-value-templates-with-mqtt) `'None'`. Note that the `device_class` can be `null`.
-    #[serde(rename = "stat_t")]
-    pub state_topic: String,
+    #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
+    pub state_topic: Option<String>,
 
     /// The number of decimals which should be used in the sensor's state after rounding.
     #[serde(rename = "sug_dsp_prc", skip_serializing_if = "Option::is_none")]
@@ -7000,206 +3835,18 @@ pub struct Sensor {
 
     /// An ID that uniquely identifies this sensor. If two sensors have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines the units of measurement of the sensor, if any. The `unit_of_measurement` can be `null`.
     #[serde(rename = "unit_of_meas", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unit_of_measurement: Option<Unit>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value. If the template throws an error, the current state will be used instead.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Sensor {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The [type/class](/integrations/sensor/#device-class) of the sensor to set the icon in the frontend. The `device_class` can be `null`.
-    pub fn device_class(mut self, device_class: SensorDeviceClass) -> Self {
-        self.device_class = Some(device_class);
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// Sends update events even if the value hasn't changed. Useful if you want to have meaningful value graphs in history.
-    pub fn force_update(mut self, force_update: bool) -> Self {
-        self.force_update = Some(force_update);
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Implies `force_update` of the current sensor state when a message is received on this topic.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the last_reset. When `last_reset_value_template` is set, the `state_class` option must be `total`. Available variables: `entity_id`. The `entity_id` can be used to reference the entity's attributes.
-    pub fn last_reset_value_template<T: Into<String>>(
-        mut self,
-        last_reset_value_template: T,
-    ) -> Self {
-        self.last_reset_value_template = Some(last_reset_value_template.into());
-        self
-    }
-
-    /// The name of the MQTT sensor. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// List of allowed sensor state value. An empty list is not allowed. The sensor's `device_class` must be set to `enum`. The `options` option cannot be used together with `state_class` or `unit_of_measurement`.
-    pub fn options<T: Into<String>>(mut self, options: Vec<T>) -> Self {
-        self.options = Some(options.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// Must be `sensor`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// The [state_class](https://developers.home-assistant.io/docs/core/entity/sensor#available-state-classes) of the sensor.
-    pub fn state_class<T: Into<SensorStateClass>>(mut self, state_class: T) -> Self {
-        self.state_class = Some(state_class.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive sensor values. If `device_class`, `state_class`, `unit_of_measurement` or `suggested_display_precision` is set, and a numeric value is expected, an empty value `''` will be ignored and will not update the state, a `'None'` value will set the sensor to an `unknown` state. If a `value_template` is used to parse a JSON payload, a `null` value in the JSON [will be rendered as](/docs/configuration/templating/#using-value-templates-with-mqtt) `'None'`. Note that the `device_class` can be `null`.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = state_topic.into();
-        self
-    }
-
-    /// The number of decimals which should be used in the sensor's state after rounding.
-    pub fn suggested_display_precision(mut self, suggested_display_precision: i32) -> Self {
-        self.suggested_display_precision = Some(suggested_display_precision);
-        self
-    }
-
-    /// An ID that uniquely identifies this sensor. If two sensors have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines the units of measurement of the sensor, if any. The `unit_of_measurement` can be `null`.
-    pub fn unit_of_measurement<T: Into<Unit>>(mut self, unit_of_measurement: T) -> Self {
-        self.unit_of_measurement = Some(unit_of_measurement.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value. If the template throws an error, the current state will be used instead.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Sensor {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            force_update: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            last_reset_value_template: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            options: Default::default(),
-            platform: "sensor".to_string(),
-            qos: Default::default(),
-            state_class: Default::default(),
-            state_topic: Default::default(),
-            suggested_display_precision: Default::default(),
-            unique_id: Default::default(),
-            unit_of_measurement: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Sensor> for Entity {
@@ -7259,24 +3906,25 @@ impl From<Sensor> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct LawnMower {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -7284,18 +3932,22 @@ pub struct LawnMower {
 
     /// The MQTT topic subscribed to receive an update of the activity. Valid activities are `mowing`, `paused`, `docked`, and `error`. Use `value_template` to extract the activity state from a custom payload. When payload `none` is received, the activity state will be reset to `unknown`.
     #[serde(rename = "act_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub activity_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     #[serde(rename = "act_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub activity_value_template: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `dock_command_topic`. The `value` parameter in the template will be set to `dock`.
     #[serde(rename = "dock_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub dock_command_template: Option<String>,
 
     /// The MQTT topic that publishes commands when the `lawn_mower.dock` action is performed. The value `dock` is published when the action is used. Use a `dock_command_template` to publish a custom format.
     #[serde(rename = "dock_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub dock_command_topic: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -7304,30 +3956,37 @@ pub struct LawnMower {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of the incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current activity state when a message is received on this topic.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the lawn mower. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if the lawn mower works in optimistic mode.
@@ -7336,15 +3995,13 @@ pub struct LawnMower {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `pause_command_topic`. The `value` parameter in the template will be set to `pause`.
     #[serde(rename = "pause_mw_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub pause_command_template: Option<String>,
 
     /// The MQTT topic that publishes commands when the `lawn_mower.pause` action is performed. The value `pause` is published when the action is used. Use a `pause_command_template` to publish a custom format.
     #[serde(rename = "pause_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub pause_command_topic: Option<String>,
-
-    /// Must be `lawn_mower`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -7356,6 +4013,7 @@ pub struct LawnMower {
 
     /// The MQTT topic that publishes commands when the `lawn_mower.start_mowing` action is performed. The value `start_mowing` is published when the action used. Use a `start_mowing_command_template` to publish a custom format.
     #[serde(rename = "strt_mw_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub start_mowing_command_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
@@ -7363,209 +4021,13 @@ pub struct LawnMower {
         rename = "start_mowing_template",
         skip_serializing_if = "Option::is_none"
     )]
+    #[builder(into)]
     pub start_mowing_template: Option<String>,
 
     /// An ID that uniquely identifies this lawn mower. If two lawn mowers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl LawnMower {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The MQTT topic subscribed to receive an update of the activity. Valid activities are `mowing`, `paused`, `docked`, and `error`. Use `value_template` to extract the activity state from a custom payload. When payload `none` is received, the activity state will be reset to `unknown`.
-    pub fn activity_state_topic<T: Into<String>>(mut self, activity_state_topic: T) -> Self {
-        self.activity_state_topic = Some(activity_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
-    pub fn activity_value_template<T: Into<String>>(mut self, activity_value_template: T) -> Self {
-        self.activity_value_template = Some(activity_value_template.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `dock_command_topic`. The `value` parameter in the template will be set to `dock`.
-    pub fn dock_command_template<T: Into<String>>(mut self, dock_command_template: T) -> Self {
-        self.dock_command_template = Some(dock_command_template.into());
-        self
-    }
-
-    /// The MQTT topic that publishes commands when the `lawn_mower.dock` action is performed. The value `dock` is published when the action is used. Use a `dock_command_template` to publish a custom format.
-    pub fn dock_command_topic<T: Into<String>>(mut self, dock_command_topic: T) -> Self {
-        self.dock_command_topic = Some(dock_command_topic.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of the incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current activity state when a message is received on this topic.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the lawn mower. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if the lawn mower works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `pause_command_topic`. The `value` parameter in the template will be set to `pause`.
-    pub fn pause_command_template<T: Into<String>>(mut self, pause_command_template: T) -> Self {
-        self.pause_command_template = Some(pause_command_template.into());
-        self
-    }
-
-    /// The MQTT topic that publishes commands when the `lawn_mower.pause` action is performed. The value `pause` is published when the action is used. Use a `pause_command_template` to publish a custom format.
-    pub fn pause_command_topic<T: Into<String>>(mut self, pause_command_topic: T) -> Self {
-        self.pause_command_topic = Some(pause_command_topic.into());
-        self
-    }
-
-    /// Must be `lawn_mower`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The MQTT topic that publishes commands when the `lawn_mower.start_mowing` action is performed. The value `start_mowing` is published when the action used. Use a `start_mowing_command_template` to publish a custom format.
-    pub fn start_mowing_command_topic<T: Into<String>>(
-        mut self,
-        start_mowing_command_topic: T,
-    ) -> Self {
-        self.start_mowing_command_topic = Some(start_mowing_command_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `start_mowing_command_topic`. The `value` parameter in the template will be set to `start_mowing`.
-    pub fn start_mowing_template<T: Into<String>>(mut self, start_mowing_template: T) -> Self {
-        self.start_mowing_template = Some(start_mowing_template.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this lawn mower. If two lawn mowers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for LawnMower {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            activity_state_topic: Default::default(),
-            activity_value_template: Default::default(),
-            dock_command_template: Default::default(),
-            dock_command_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            pause_command_template: Default::default(),
-            pause_command_topic: Default::default(),
-            platform: "lawn_mower".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            start_mowing_command_topic: Default::default(),
-            start_mowing_template: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<LawnMower> for Entity {
@@ -7737,24 +4199,25 @@ impl From<LawnMower> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Update {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -7762,6 +4225,7 @@ pub struct Update {
 
     /// The MQTT topic to publish `payload_install` to start installing process.
     #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_topic: Option<String>,
 
     /// The [type/class](/integrations/update/#device-classes) of the update to set the icon in the frontend. The `device_class` can be `null`.
@@ -7778,47 +4242,53 @@ pub struct Update {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current select state when a message is received on this topic.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the latest version value. Use `state_topic` with a `value_template` if all update state values can be extracted from a single JSON payload.
     #[serde(rename = "l_ver_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub latest_version_template: Option<String>,
 
     /// The MQTT topic subscribed to receive an update of the latest version. Use `state_topic` with a `value_template` if all update state values can be extracted from a single JSON payload.
     #[serde(rename = "l_ver_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub latest_version_topic: Option<String>,
 
     /// The name of the Update. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// The MQTT payload to start installing process.
     #[serde(rename = "pl_inst", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_install: Option<String>,
-
-    /// Must be `update`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -7826,10 +4296,12 @@ pub struct Update {
 
     /// Summary of the release notes or changelog. This is suitable a brief update description of max 255 characters.
     #[serde(rename = "rel_s", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub release_summary: Option<String>,
 
     /// URL to the full release notes of the latest version available.
     #[serde(rename = "rel_u", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub release_url: Option<String>,
 
     /// If the published message should have the retain flag on or not.
@@ -7838,228 +4310,23 @@ pub struct Update {
 
     /// The MQTT topic subscribed to receive state updates. The state update may be either JSON or a simple string with `installed_version` value. When a JSON payload is detected, the state value of the JSON payload should supply the `installed_version` and can optionally supply: `latest_version`, `title`, `release_summary`, `release_url`, and an `entity_picture` URL. To allow progress monitoring `in_progress` (a boolean to indicate an update is in progress), or `update_percentage` (a float value to indicate the progress percentage) may be part of the JSON message.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// Title of the software, or firmware update. This helps to differentiate between the device or entity name versus the title of the software installed.
     #[serde(rename = "tit", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub title: Option<String>,
 
     /// An ID that uniquely identifies this Update. If two Updates have the same unique ID Home Assistant will raise an exception.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `installed_version` state value or to render to a valid JSON payload on from the payload received on `state_topic`.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Update {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The MQTT topic to publish `payload_install` to start installing process.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = Some(command_topic.into());
-        self
-    }
-
-    /// The [type/class](/integrations/update/#device-classes) of the update to set the icon in the frontend. The `device_class` can be `null`.
-    pub fn device_class(mut self, device_class: UpdateDeviceClass) -> Self {
-        self.device_class = Some(device_class);
-        self
-    }
-
-    /// Number of decimal digits for display of update progress.
-    pub fn display_precision(mut self, display_precision: i32) -> Self {
-        self.display_precision = Some(display_precision);
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current select state when a message is received on this topic.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the latest version value. Use `state_topic` with a `value_template` if all update state values can be extracted from a single JSON payload.
-    pub fn latest_version_template<T: Into<String>>(mut self, latest_version_template: T) -> Self {
-        self.latest_version_template = Some(latest_version_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive an update of the latest version. Use `state_topic` with a `value_template` if all update state values can be extracted from a single JSON payload.
-    pub fn latest_version_topic<T: Into<String>>(mut self, latest_version_topic: T) -> Self {
-        self.latest_version_topic = Some(latest_version_topic.into());
-        self
-    }
-
-    /// The name of the Update. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// The MQTT payload to start installing process.
-    pub fn payload_install<T: Into<String>>(mut self, payload_install: T) -> Self {
-        self.payload_install = Some(payload_install.into());
-        self
-    }
-
-    /// Must be `update`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// Summary of the release notes or changelog. This is suitable a brief update description of max 255 characters.
-    pub fn release_summary<T: Into<String>>(mut self, release_summary: T) -> Self {
-        self.release_summary = Some(release_summary.into());
-        self
-    }
-
-    /// URL to the full release notes of the latest version available.
-    pub fn release_url<T: Into<String>>(mut self, release_url: T) -> Self {
-        self.release_url = Some(release_url.into());
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state updates. The state update may be either JSON or a simple string with `installed_version` value. When a JSON payload is detected, the state value of the JSON payload should supply the `installed_version` and can optionally supply: `latest_version`, `title`, `release_summary`, `release_url`, and an `entity_picture` URL. To allow progress monitoring `in_progress` (a boolean to indicate an update is in progress), or `update_percentage` (a float value to indicate the progress percentage) may be part of the JSON message.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// Title of the software, or firmware update. This helps to differentiate between the device or entity name versus the title of the software installed.
-    pub fn title<T: Into<String>>(mut self, title: T) -> Self {
-        self.title = Some(title.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this Update. If two Updates have the same unique ID Home Assistant will raise an exception.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the `installed_version` state value or to render to a valid JSON payload on from the payload received on `state_topic`.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Update {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_topic: Default::default(),
-            device_class: Default::default(),
-            display_precision: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            latest_version_template: Default::default(),
-            latest_version_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            payload_install: Default::default(),
-            platform: "update".to_string(),
-            qos: Default::default(),
-            release_summary: Default::default(),
-            release_url: Default::default(),
-            retain: Default::default(),
-            state_topic: Default::default(),
-            title: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Update> for Entity {
@@ -8171,24 +4438,25 @@ impl From<Update> for Entity {
 ///       payload_off: "0"
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Switch {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -8196,10 +4464,12 @@ pub struct Switch {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`. The switch command template accepts the parameters `value`. The `value` parameter will contain the configured value for either `payload_on` or `payload_off`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the switch state.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// The [type/class](/integrations/switch/#device-class) of the switch to set the icon in the frontend. The `device_class` can be `null`.
@@ -8212,30 +4482,37 @@ pub struct Switch {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name to use when displaying this switch. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if switch works in optimistic mode.
@@ -8244,15 +4521,13 @@ pub struct Switch {
 
     /// The payload that represents `off` state. If specified, will be used for both comparing to the value in the `state_topic` (see `value_template` and `state_off` for details) and sending as `off` command to the `command_topic`.
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_off: Option<String>,
 
     /// The payload that represents `on` state. If specified, will be used for both comparing to the value in the `state_topic` (see `value_template` and `state_on`  for details) and sending as `on` command to the `command_topic`.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
-
-    /// Must be `switch`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -8264,225 +4539,28 @@ pub struct Switch {
 
     /// The payload that represents the `off` state. Used when value that represents `off` state in the `state_topic` is different from value that should be sent to the `command_topic` to turn the device `off`.
     #[serde(rename = "stat_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_off: Option<String>,
 
     /// The payload that represents the `on` state. Used when value that represents `on` state in the `state_topic` is different from value that should be sent to the `command_topic` to turn the device `on`.
     #[serde(rename = "stat_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_on: Option<String>,
 
     /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored.By default, valid state payloads are `OFF` and `ON`. The accepted payloads can be overridden with the `payload_off` and `payload_on` config options.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// An ID that uniquely identifies this switch device. If two switches have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract device's state from the `state_topic`. To determine the switches's state result of this template will be compared to `state_on` and `state_off`.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Switch {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`. The switch command template accepts the parameters `value`. The `value` parameter will contain the configured value for either `payload_on` or `payload_off`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the switch state.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// The [type/class](/integrations/switch/#device-class) of the switch to set the icon in the frontend. The `device_class` can be `null`.
-    pub fn device_class(mut self, device_class: SwitchDeviceClass) -> Self {
-        self.device_class = Some(device_class);
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name to use when displaying this switch. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if switch works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The payload that represents `off` state. If specified, will be used for both comparing to the value in the `state_topic` (see `value_template` and `state_off` for details) and sending as `off` command to the `command_topic`.
-    pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
-        self.payload_off = Some(payload_off.into());
-        self
-    }
-
-    /// The payload that represents `on` state. If specified, will be used for both comparing to the value in the `state_topic` (see `value_template` and `state_on`  for details) and sending as `on` command to the `command_topic`.
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// Must be `switch`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The payload that represents the `off` state. Used when value that represents `off` state in the `state_topic` is different from value that should be sent to the `command_topic` to turn the device `off`.
-    pub fn state_off<T: Into<String>>(mut self, state_off: T) -> Self {
-        self.state_off = Some(state_off.into());
-        self
-    }
-
-    /// The payload that represents the `on` state. Used when value that represents `on` state in the `state_topic` is different from value that should be sent to the `command_topic` to turn the device `on`.
-    pub fn state_on<T: Into<String>>(mut self, state_on: T) -> Self {
-        self.state_on = Some(state_on.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored.By default, valid state payloads are `OFF` and `ON`. The accepted payloads can be overridden with the `payload_off` and `payload_on` config options.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this switch device. If two switches have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract device's state from the `state_topic`. To determine the switches's state result of this template will be compared to `state_on` and `state_off`.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Switch {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_off: Default::default(),
-            payload_on: Default::default(),
-            platform: "switch".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            state_off: Default::default(),
-            state_on: Default::default(),
-            state_topic: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Switch> for Entity {
@@ -8815,24 +4893,25 @@ impl From<Switch> for Entity {
 /// mosquitto_pub -h 127.0.0.1 -t living-room-cover/set -m "CLOSE"
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Cover {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -8840,10 +4919,12 @@ pub struct Cover {
 
     /// The MQTT topic to publish commands to control the cover.
     #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_topic: Option<String>,
 
     /// Sets the [class of the device](/integrations/cover/#device_class), changing the device state and icon that is displayed on the frontend. The `device_class` can be `null`.
     #[serde(rename = "dev_cla", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub device_class: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -8852,30 +4933,37 @@ pub struct Cover {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the cover. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if switch works in optimistic mode.
@@ -8884,23 +4972,23 @@ pub struct Cover {
 
     /// The command payload that closes the cover.
     #[serde(rename = "pl_cls", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_close: Option<String>,
 
     /// The command payload that opens the cover.
     #[serde(rename = "pl_open", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_open: Option<String>,
 
     /// The command payload that stops the cover.
     #[serde(rename = "pl_stop", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_stop: Option<String>,
 
     /// The command payload that stops the tilt.
     #[serde(rename = "pl_stop_tilt", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_stop_tilt: Option<String>,
-
-    /// Must be `cover`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// Number which represents closed position.
     #[serde(rename = "pos_clsd", skip_serializing_if = "Option::is_none")]
@@ -8912,10 +5000,12 @@ pub struct Cover {
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `position_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     #[serde(rename = "pos_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub position_template: Option<String>,
 
     /// The MQTT topic subscribed to receive cover position messages.
     #[serde(rename = "pos_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub position_topic: Option<String>,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
@@ -8928,34 +5018,42 @@ pub struct Cover {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to define the position to be sent to the `set_position_topic` topic. Incoming position value is available for use in the template `{% raw %}{{ position }}{% endraw %}`. Within the template the following variables are available: `entity_id`, `position`, the target position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     #[serde(rename = "set_pos_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub set_position_template: Option<String>,
 
     /// The MQTT topic to publish position commands to. You need to set position_topic as well if you want to use position topic. Use template if position topic wants different values than within range `position_closed` - `position_open`. If template is not defined and `position_closed != 100` and `position_open != 0` then proper position value is calculated from percentage position.
     #[serde(rename = "set_pos_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub set_position_topic: Option<String>,
 
     /// The payload that represents the closed state.
     #[serde(rename = "stat_clsd", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_closed: Option<String>,
 
     /// The payload that represents the closing state.
     #[serde(rename = "stat_closing", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_closing: Option<String>,
 
     /// The payload that represents the open state.
     #[serde(rename = "stat_open", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_open: Option<String>,
 
     /// The payload that represents the opening state.
     #[serde(rename = "stat_opening", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_opening: Option<String>,
 
     /// The payload that represents the stopped state (for covers that do not report `open`/`closed` state).
     #[serde(rename = "stat_stopped", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_stopped: Option<String>,
 
     /// The MQTT topic subscribed to receive cover state messages. State topic can only read a (`open`, `opening`, `closed`, `closing` or `stopped`) state.  A "None" payload resets to an `unknown` state. An empty payload is ignored.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// The value that will be sent on a `close_cover_tilt` command.
@@ -8964,10 +5062,12 @@ pub struct Cover {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) that can be used to extract the payload for the `tilt_command_topic` topic. Within the template the following variables are available: `entity_id`, `tilt_position`, the target tilt position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     #[serde(rename = "tilt_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub tilt_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to control the cover tilt.
     #[serde(rename = "tilt_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub tilt_command_topic: Option<String>,
 
     /// The maximum tilt value.
@@ -8988,354 +5088,23 @@ pub struct Cover {
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `tilt_status_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
     #[serde(rename = "tilt_status_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub tilt_status_template: Option<String>,
 
     /// The MQTT topic subscribed to receive tilt status update values.
     #[serde(rename = "tilt_status_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub tilt_status_topic: Option<String>,
 
     /// An ID that uniquely identifies this cover. If two covers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `state_topic` topic.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Cover {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The MQTT topic to publish commands to control the cover.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = Some(command_topic.into());
-        self
-    }
-
-    /// Sets the [class of the device](/integrations/cover/#device_class), changing the device state and icon that is displayed on the frontend. The `device_class` can be `null`.
-    pub fn device_class<T: Into<String>>(mut self, device_class: T) -> Self {
-        self.device_class = Some(device_class.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the cover. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if switch works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The command payload that closes the cover.
-    pub fn payload_close<T: Into<String>>(mut self, payload_close: T) -> Self {
-        self.payload_close = Some(payload_close.into());
-        self
-    }
-
-    /// The command payload that opens the cover.
-    pub fn payload_open<T: Into<String>>(mut self, payload_open: T) -> Self {
-        self.payload_open = Some(payload_open.into());
-        self
-    }
-
-    /// The command payload that stops the cover.
-    pub fn payload_stop<T: Into<String>>(mut self, payload_stop: T) -> Self {
-        self.payload_stop = Some(payload_stop.into());
-        self
-    }
-
-    /// The command payload that stops the tilt.
-    pub fn payload_stop_tilt<T: Into<String>>(mut self, payload_stop_tilt: T) -> Self {
-        self.payload_stop_tilt = Some(payload_stop_tilt.into());
-        self
-    }
-
-    /// Must be `cover`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// Number which represents closed position.
-    pub fn position_closed(mut self, position_closed: i32) -> Self {
-        self.position_closed = Some(position_closed);
-        self
-    }
-
-    /// Number which represents open position.
-    pub fn position_open(mut self, position_open: i32) -> Self {
-        self.position_open = Some(position_open);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `position_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
-    pub fn position_template<T: Into<String>>(mut self, position_template: T) -> Self {
-        self.position_template = Some(position_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive cover position messages.
-    pub fn position_topic<T: Into<String>>(mut self, position_topic: T) -> Self {
-        self.position_topic = Some(position_topic.into());
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// Defines if published messages should have the retain flag set.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to define the position to be sent to the `set_position_topic` topic. Incoming position value is available for use in the template `{% raw %}{{ position }}{% endraw %}`. Within the template the following variables are available: `entity_id`, `position`, the target position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
-    pub fn set_position_template<T: Into<String>>(mut self, set_position_template: T) -> Self {
-        self.set_position_template = Some(set_position_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish position commands to. You need to set position_topic as well if you want to use position topic. Use template if position topic wants different values than within range `position_closed` - `position_open`. If template is not defined and `position_closed != 100` and `position_open != 0` then proper position value is calculated from percentage position.
-    pub fn set_position_topic<T: Into<String>>(mut self, set_position_topic: T) -> Self {
-        self.set_position_topic = Some(set_position_topic.into());
-        self
-    }
-
-    /// The payload that represents the closed state.
-    pub fn state_closed<T: Into<String>>(mut self, state_closed: T) -> Self {
-        self.state_closed = Some(state_closed.into());
-        self
-    }
-
-    /// The payload that represents the closing state.
-    pub fn state_closing<T: Into<String>>(mut self, state_closing: T) -> Self {
-        self.state_closing = Some(state_closing.into());
-        self
-    }
-
-    /// The payload that represents the open state.
-    pub fn state_open<T: Into<String>>(mut self, state_open: T) -> Self {
-        self.state_open = Some(state_open.into());
-        self
-    }
-
-    /// The payload that represents the opening state.
-    pub fn state_opening<T: Into<String>>(mut self, state_opening: T) -> Self {
-        self.state_opening = Some(state_opening.into());
-        self
-    }
-
-    /// The payload that represents the stopped state (for covers that do not report `open`/`closed` state).
-    pub fn state_stopped<T: Into<String>>(mut self, state_stopped: T) -> Self {
-        self.state_stopped = Some(state_stopped.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive cover state messages. State topic can only read a (`open`, `opening`, `closed`, `closing` or `stopped`) state.  A "None" payload resets to an `unknown` state. An empty payload is ignored.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// The value that will be sent on a `close_cover_tilt` command.
-    pub fn tilt_closed_value(mut self, tilt_closed_value: i32) -> Self {
-        self.tilt_closed_value = Some(tilt_closed_value);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) that can be used to extract the payload for the `tilt_command_topic` topic. Within the template the following variables are available: `entity_id`, `tilt_position`, the target tilt position in percent; `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
-    pub fn tilt_command_template<T: Into<String>>(mut self, tilt_command_template: T) -> Self {
-        self.tilt_command_template = Some(tilt_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to control the cover tilt.
-    pub fn tilt_command_topic<T: Into<String>>(mut self, tilt_command_topic: T) -> Self {
-        self.tilt_command_topic = Some(tilt_command_topic.into());
-        self
-    }
-
-    /// The maximum tilt value.
-    pub fn tilt_max(mut self, tilt_max: i32) -> Self {
-        self.tilt_max = Some(tilt_max);
-        self
-    }
-
-    /// The minimum tilt value.
-    pub fn tilt_min(mut self, tilt_min: i32) -> Self {
-        self.tilt_min = Some(tilt_min);
-        self
-    }
-
-    /// The value that will be sent on an `open_cover_tilt` command.
-    pub fn tilt_opened_value(mut self, tilt_opened_value: i32) -> Self {
-        self.tilt_opened_value = Some(tilt_opened_value);
-        self
-    }
-
-    /// Flag that determines if tilt works in optimistic mode.
-    pub fn tilt_optimistic(mut self, tilt_optimistic: bool) -> Self {
-        self.tilt_optimistic = Some(tilt_optimistic);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `tilt_status_topic` topic. Within the template the following variables are available: `entity_id`, `position_open`; `position_closed`; `tilt_min`; `tilt_max`. The `entity_id` can be used to reference the entity's attributes with help of the [states](/docs/configuration/templating/#states) template function;
-    pub fn tilt_status_template<T: Into<String>>(mut self, tilt_status_template: T) -> Self {
-        self.tilt_status_template = Some(tilt_status_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive tilt status update values.
-    pub fn tilt_status_topic<T: Into<String>>(mut self, tilt_status_topic: T) -> Self {
-        self.tilt_status_topic = Some(tilt_status_topic.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this cover. If two covers have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) that can be used to extract the payload for the `state_topic` topic.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Cover {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_topic: Default::default(),
-            device_class: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_close: Default::default(),
-            payload_open: Default::default(),
-            payload_stop: Default::default(),
-            payload_stop_tilt: Default::default(),
-            platform: "cover".to_string(),
-            position_closed: Default::default(),
-            position_open: Default::default(),
-            position_template: Default::default(),
-            position_topic: Default::default(),
-            qos: Default::default(),
-            retain: Default::default(),
-            set_position_template: Default::default(),
-            set_position_topic: Default::default(),
-            state_closed: Default::default(),
-            state_closing: Default::default(),
-            state_open: Default::default(),
-            state_opening: Default::default(),
-            state_stopped: Default::default(),
-            state_topic: Default::default(),
-            tilt_closed_value: Default::default(),
-            tilt_command_template: Default::default(),
-            tilt_command_topic: Default::default(),
-            tilt_max: Default::default(),
-            tilt_min: Default::default(),
-            tilt_opened_value: Default::default(),
-            tilt_optimistic: Default::default(),
-            tilt_status_template: Default::default(),
-            tilt_status_topic: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Cover> for Entity {
@@ -9412,24 +5181,25 @@ impl From<Cover> for Entity {
 ///       payload_on: '{"activate_scene": "Blue Scene"}'
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Scene {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -9437,6 +5207,7 @@ pub struct Scene {
 
     /// The MQTT topic to publish `payload_on` to activate the scene.
     #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_topic: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -9445,39 +5216,43 @@ pub struct Scene {
 
     /// The encoding of the published messages.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// Icon for the scene.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name to use when displaying this scene.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// The payload that will be sent to `command_topic` when activating the MQTT scene.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
-
-    /// Must be `scene`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -9489,153 +5264,8 @@ pub struct Scene {
 
     /// An ID that uniquely identifies this scene entity. If two scenes have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl Scene {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The MQTT topic to publish `payload_on` to activate the scene.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = Some(command_topic.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the published messages.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// Icon for the scene.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name to use when displaying this scene.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// The payload that will be sent to `command_topic` when activating the MQTT scene.
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// Must be `scene`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// An ID that uniquely identifies this scene entity. If two scenes have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for Scene {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            payload_on: Default::default(),
-            platform: "scene".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<Scene> for Entity {
@@ -9724,24 +5354,25 @@ impl From<Scene> for Entity {
 /// mosquitto_pub -h 127.0.0.1 -t home-assistant/frontdoor/set -m "LOCK"
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Lock {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -9749,14 +5380,17 @@ pub struct Lock {
 
     /// A regular expression to validate a supplied code when it is set during the action to `open`, `lock` or `unlock` the MQTT lock.
     #[serde(rename = "cod_form", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub code_format: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`. The lock command template accepts the parameters `value` and `code`. The `value` parameter will contain the configured value for either `payload_open`, `payload_lock` or `payload_unlock`. The `code` parameter is set during the action to `open`, `lock` or `unlock` the MQTT lock and will be set `None` if no code was passed.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the lock state.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -9765,30 +5399,37 @@ pub struct Lock {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the lock. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if lock works in optimistic mode.
@@ -9797,23 +5438,23 @@ pub struct Lock {
 
     /// The payload sent to the lock to lock it.
     #[serde(rename = "pl_lock", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_lock: Option<String>,
 
     /// The payload sent to the lock to open it.
     #[serde(rename = "pl_open", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_open: Option<String>,
 
     /// A special payload that resets the state to `unknown` when received on the `state_topic`.
     #[serde(rename = "pl_rst", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_reset: Option<String>,
 
     /// The payload sent to the lock to unlock it.
     #[serde(rename = "pl_unlk", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_unlock: Option<String>,
-
-    /// Must be `lock`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -9825,272 +5466,43 @@ pub struct Lock {
 
     /// The payload sent to `state_topic` by the lock when it's jammed.
     #[serde(rename = "stat_jam", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_jammed: Option<String>,
 
     /// The payload sent to `state_topic` by the lock when it's locked.
     #[serde(rename = "stat_locked", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_locked: Option<String>,
 
     /// The payload sent to `state_topic` by the lock when it's locking.
     #[serde(rename = "stat_locking", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_locking: Option<String>,
 
     /// The MQTT topic subscribed to receive state updates. It accepts states configured with `state_jammed`, `state_locked`, `state_unlocked`, `state_locking` or `state_unlocking`. A "None" payload resets to an `unknown` state. An empty payload is ignored.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// The payload sent to `state_topic` by the lock when it's unlocked.
     #[serde(rename = "stat_unlocked", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_unlocked: Option<String>,
 
     /// The payload sent to `state_topic` by the lock when it's unlocking.
     #[serde(rename = "stat_unlocking", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_unlocking: Option<String>,
 
     /// An ID that uniquely identifies this lock. If two locks have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a state value from the payload.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Lock {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// A regular expression to validate a supplied code when it is set during the action to `open`, `lock` or `unlock` the MQTT lock.
-    pub fn code_format<T: Into<String>>(mut self, code_format: T) -> Self {
-        self.code_format = Some(code_format.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`. The lock command template accepts the parameters `value` and `code`. The `value` parameter will contain the configured value for either `payload_open`, `payload_lock` or `payload_unlock`. The `code` parameter is set during the action to `open`, `lock` or `unlock` the MQTT lock and will be set `None` if no code was passed.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the lock state.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the lock. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if lock works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The payload sent to the lock to lock it.
-    pub fn payload_lock<T: Into<String>>(mut self, payload_lock: T) -> Self {
-        self.payload_lock = Some(payload_lock.into());
-        self
-    }
-
-    /// The payload sent to the lock to open it.
-    pub fn payload_open<T: Into<String>>(mut self, payload_open: T) -> Self {
-        self.payload_open = Some(payload_open.into());
-        self
-    }
-
-    /// A special payload that resets the state to `unknown` when received on the `state_topic`.
-    pub fn payload_reset<T: Into<String>>(mut self, payload_reset: T) -> Self {
-        self.payload_reset = Some(payload_reset.into());
-        self
-    }
-
-    /// The payload sent to the lock to unlock it.
-    pub fn payload_unlock<T: Into<String>>(mut self, payload_unlock: T) -> Self {
-        self.payload_unlock = Some(payload_unlock.into());
-        self
-    }
-
-    /// Must be `lock`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The payload sent to `state_topic` by the lock when it's jammed.
-    pub fn state_jammed<T: Into<String>>(mut self, state_jammed: T) -> Self {
-        self.state_jammed = Some(state_jammed.into());
-        self
-    }
-
-    /// The payload sent to `state_topic` by the lock when it's locked.
-    pub fn state_locked<T: Into<String>>(mut self, state_locked: T) -> Self {
-        self.state_locked = Some(state_locked.into());
-        self
-    }
-
-    /// The payload sent to `state_topic` by the lock when it's locking.
-    pub fn state_locking<T: Into<String>>(mut self, state_locking: T) -> Self {
-        self.state_locking = Some(state_locking.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state updates. It accepts states configured with `state_jammed`, `state_locked`, `state_unlocked`, `state_locking` or `state_unlocking`. A "None" payload resets to an `unknown` state. An empty payload is ignored.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// The payload sent to `state_topic` by the lock when it's unlocked.
-    pub fn state_unlocked<T: Into<String>>(mut self, state_unlocked: T) -> Self {
-        self.state_unlocked = Some(state_unlocked.into());
-        self
-    }
-
-    /// The payload sent to `state_topic` by the lock when it's unlocking.
-    pub fn state_unlocking<T: Into<String>>(mut self, state_unlocking: T) -> Self {
-        self.state_unlocking = Some(state_unlocking.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this lock. If two locks have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract a state value from the payload.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Lock {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            code_format: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_lock: Default::default(),
-            payload_open: Default::default(),
-            payload_reset: Default::default(),
-            payload_unlock: Default::default(),
-            platform: "lock".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            state_jammed: Default::default(),
-            state_locked: Default::default(),
-            state_locking: Default::default(),
-            state_topic: Default::default(),
-            state_unlocked: Default::default(),
-            state_unlocking: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Lock> for Entity {
@@ -10147,24 +5559,25 @@ impl From<Lock> for Entity {
 /// ```
 ///
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Text {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -10172,10 +5585,12 @@ pub struct Text {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish the text value that is set.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -10184,18 +5599,22 @@ pub struct Text {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current select state when a message is received on this topic.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The maximum size of a text being set or received (maximum is 255).
@@ -10208,23 +5627,23 @@ pub struct Text {
 
     /// The mode off the text entity. Must be either `text` or `password`.
     #[serde(rename = "mode", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub mode: Option<String>,
 
     /// The name of the text entity. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// A valid regular expression the text being set or received must match with.
     #[serde(rename = "ptrn", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub pattern: Option<String>,
-
-    /// Must be `text`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -10236,196 +5655,18 @@ pub struct Text {
 
     /// The MQTT topic subscribed to receive text state updates. Text state updates should match the `pattern` (if set) and meet the size constraints `min` and `max`. Can be used with `value_template` to render the incoming payload to a text update.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// An ID that uniquely identifies this Select. If two Selects have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the text state value from the payload received on `state_topic`.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Text {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish the text value that is set.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current select state when a message is received on this topic.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The maximum size of a text being set or received (maximum is 255).
-    pub fn max(mut self, max: i32) -> Self {
-        self.max = Some(max);
-        self
-    }
-
-    /// The minimum size of a text being set or received.
-    pub fn min(mut self, min: i32) -> Self {
-        self.min = Some(min);
-        self
-    }
-
-    /// The mode off the text entity. Must be either `text` or `password`.
-    pub fn mode<T: Into<String>>(mut self, mode: T) -> Self {
-        self.mode = Some(mode.into());
-        self
-    }
-
-    /// The name of the text entity. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// A valid regular expression the text being set or received must match with.
-    pub fn pattern<T: Into<String>>(mut self, pattern: T) -> Self {
-        self.pattern = Some(pattern.into());
-        self
-    }
-
-    /// Must be `text`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive text state updates. Text state updates should match the `pattern` (if set) and meet the size constraints `min` and `max`. Can be used with `value_template` to render the incoming payload to a text update.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this Select. If two Selects have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the text state value from the payload received on `state_topic`.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Text {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            max: Default::default(),
-            min: Default::default(),
-            mode: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            pattern: Default::default(),
-            platform: "text".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            state_topic: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Text> for Entity {
@@ -10487,24 +5728,25 @@ impl From<Text> for Entity {
 ///       retain: false
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Notify {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -10512,10 +5754,12 @@ pub struct Notify {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish send message commands at.
     #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_topic: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -10524,30 +5768,37 @@ pub struct Notify {
 
     /// The encoding of the published messages.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name to use when displaying this notify entity. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
@@ -10560,146 +5811,8 @@ pub struct Notify {
 
     /// An ID that uniquely identifies this notify entity. If two notify entities have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl Notify {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish send message commands at.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = Some(command_topic.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the published messages.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name to use when displaying this notify entity. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// An ID that uniquely identifies this notify entity. If two notify entities have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for Notify {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            qos: Default::default(),
-            retain: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<Notify> for Entity {
@@ -10860,24 +5973,25 @@ impl From<Notify> for Entity {
 /// - Retrofitting your old Roomba with an ESP8266. [This repository](https://github.com/johnboiles/esp-roomba-mqtt) provides MQTT client firmware.
 /// - If you own a non-wifi Neato, you can refer to [this repository](https://github.com/jeroenterheerdt/neato-serial) that uses a Raspberry Pi to retrofit an old Neato.
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Vacuum {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -10885,59 +5999,68 @@ pub struct Vacuum {
 
     /// The MQTT topic to publish commands to control the vacuum.
     #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_topic: Option<String>,
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// List of possible fan speeds for the vacuum.
     #[serde(rename = "fanspd_lst", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub fan_speed_list: Option<Vec<String>>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the vacuum. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// The payload to send to the `command_topic` to begin a spot cleaning cycle.
     #[serde(rename = "pl_cln_sp", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_clean_spot: Option<String>,
 
     /// The payload to send to the `command_topic` to locate the vacuum (typically plays a song).
     #[serde(rename = "pl_loc", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_locate: Option<String>,
 
     /// The payload to send to the `command_topic` to pause the vacuum.
     #[serde(rename = "pl_paus", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_pause: Option<String>,
 
     /// The payload to send to the `command_topic` to tell the vacuum to return to base.
     #[serde(rename = "pl_ret", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_return_to_base: Option<String>,
 
     /// The payload to send to the `command_topic` to begin the cleaning cycle.
     #[serde(rename = "pl_strt", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_start: Option<String>,
 
     /// The payload to send to the `command_topic` to stop cleaning.
     #[serde(rename = "pl_stop", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_stop: Option<String>,
-
-    /// Must be `vacuum`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -10949,218 +6072,28 @@ pub struct Vacuum {
 
     /// The MQTT topic to publish custom commands to the vacuum.
     #[serde(rename = "send_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub send_command_topic: Option<String>,
 
     /// The MQTT topic to publish commands to control the vacuum's fan speed.
     #[serde(rename = "set_fan_spd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub set_fan_speed_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive state messages from the vacuum. Messages received on the `state_topic` must be a valid JSON dictionary, with a mandatory `state` key and optionally `fan_speed` keys as shown in the [example](#configuration-example).
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// List of features that the vacuum supports (possible values are `start`, `stop`, `pause`, `return_home`, `status`, `locate`, `clean_spot`, `fan_speed`, `send_command`).
     #[serde(rename = "sup_feat", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub supported_features: Option<Vec<String>>,
 
     /// An ID that uniquely identifies this vacuum. If two vacuums have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl Vacuum {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// The MQTT topic to publish commands to control the vacuum.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = Some(command_topic.into());
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// List of possible fan speeds for the vacuum.
-    pub fn fan_speed_list<T: Into<String>>(mut self, fan_speed_list: Vec<T>) -> Self {
-        self.fan_speed_list = Some(fan_speed_list.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the vacuum. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// The payload to send to the `command_topic` to begin a spot cleaning cycle.
-    pub fn payload_clean_spot<T: Into<String>>(mut self, payload_clean_spot: T) -> Self {
-        self.payload_clean_spot = Some(payload_clean_spot.into());
-        self
-    }
-
-    /// The payload to send to the `command_topic` to locate the vacuum (typically plays a song).
-    pub fn payload_locate<T: Into<String>>(mut self, payload_locate: T) -> Self {
-        self.payload_locate = Some(payload_locate.into());
-        self
-    }
-
-    /// The payload to send to the `command_topic` to pause the vacuum.
-    pub fn payload_pause<T: Into<String>>(mut self, payload_pause: T) -> Self {
-        self.payload_pause = Some(payload_pause.into());
-        self
-    }
-
-    /// The payload to send to the `command_topic` to tell the vacuum to return to base.
-    pub fn payload_return_to_base<T: Into<String>>(mut self, payload_return_to_base: T) -> Self {
-        self.payload_return_to_base = Some(payload_return_to_base.into());
-        self
-    }
-
-    /// The payload to send to the `command_topic` to begin the cleaning cycle.
-    pub fn payload_start<T: Into<String>>(mut self, payload_start: T) -> Self {
-        self.payload_start = Some(payload_start.into());
-        self
-    }
-
-    /// The payload to send to the `command_topic` to stop cleaning.
-    pub fn payload_stop<T: Into<String>>(mut self, payload_stop: T) -> Self {
-        self.payload_stop = Some(payload_stop.into());
-        self
-    }
-
-    /// Must be `vacuum`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The MQTT topic to publish custom commands to the vacuum.
-    pub fn send_command_topic<T: Into<String>>(mut self, send_command_topic: T) -> Self {
-        self.send_command_topic = Some(send_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to control the vacuum's fan speed.
-    pub fn set_fan_speed_topic<T: Into<String>>(mut self, set_fan_speed_topic: T) -> Self {
-        self.set_fan_speed_topic = Some(set_fan_speed_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state messages from the vacuum. Messages received on the `state_topic` must be a valid JSON dictionary, with a mandatory `state` key and optionally `fan_speed` keys as shown in the [example](#configuration-example).
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// List of features that the vacuum supports (possible values are `start`, `stop`, `pause`, `return_home`, `status`, `locate`, `clean_spot`, `fan_speed`, `send_command`).
-    pub fn supported_features<T: Into<String>>(mut self, supported_features: Vec<T>) -> Self {
-        self.supported_features = Some(supported_features.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// An ID that uniquely identifies this vacuum. If two vacuums have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for Vacuum {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_topic: Default::default(),
-            encoding: Default::default(),
-            fan_speed_list: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            payload_clean_spot: Default::default(),
-            payload_locate: Default::default(),
-            payload_pause: Default::default(),
-            payload_return_to_base: Default::default(),
-            payload_start: Default::default(),
-            payload_stop: Default::default(),
-            platform: "vacuum".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            send_command_topic: Default::default(),
-            set_fan_speed_topic: Default::default(),
-            state_topic: Default::default(),
-            supported_features: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<Vacuum> for Entity {
@@ -11265,24 +6198,25 @@ impl From<Vacuum> for Entity {
 /// mosquitto_pub -h 127.0.0.1 -t home/alarm/siren1 -m "ON"
 /// ```
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Siren {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -11290,19 +6224,23 @@ pub struct Siren {
 
     /// A list of available tones the siren supports. When configured, this enables the support for setting a `tone` and enables the `tone` state attribute.
     #[serde(rename = "av_tones", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub available_tones: Option<Vec<String>>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate a custom payload to send to `command_topic` when the siren turn off action is called. By default `command_template` will be used as template for action turn off. The variable `value` will be assigned with the configured `payload_off` setting.
     #[serde(rename = "cmd_off_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_off_template: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate a custom payload to send to `command_topic`. The variable `value` will be assigned with the configured `payload_on` or `payload_off` setting. The siren turn on action parameters `tone`, `volume_level` or `duration` can be used as variables in the template. When operation in optimistic mode the corresponding state attributes will be set. Turn on parameters will be filtered if a device misses the support.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the siren state. Without command templates, a default JSON payload like `{"state":"ON", "tone": "bell", "duration": 10, "volume_level": 0.5 }` is published. When the siren turn on action is performed, the startup parameters will be added to the JSON payload. The `state` value of the JSON payload will be set to the the `payload_on` or `payload_off` configured payload.
     ///
     #[serde(rename = "cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_topic: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -11311,30 +6249,37 @@ pub struct Siren {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name to use when displaying this siren. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if siren works in optimistic mode.
@@ -11343,15 +6288,13 @@ pub struct Siren {
 
     /// The payload that represents `off` state. If specified, will be used for both comparing to the value in the `state_topic` (see `value_template` and `state_off` for details) and sending as `off` command to the `command_topic`.
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_off: Option<String>,
 
     /// The payload that represents `on` state. If specified, will be used for both comparing to the value in the `state_topic` (see `value_template` and `state_on`  for details) and sending as `on` command to the `command_topic`.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
-
-    /// Must be `siren`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -11363,18 +6306,22 @@ pub struct Siren {
 
     /// The payload that represents the `off` state. Used when value that represents `off` state in the `state_topic` is different from value that should be sent to the `command_topic` to turn the device `off`.
     #[serde(rename = "stat_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_off: Option<String>,
 
     /// The payload that represents the `on` state. Used when value that represents `on` state in the `state_topic` is different from value that should be sent to the `command_topic` to turn the device `on`.
     #[serde(rename = "stat_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_on: Option<String>,
 
     /// The MQTT topic subscribed to receive state updates. The state update may be either JSON or a simple string. When a JSON payload is detected, the `state` value of the JSON payload should supply the `payload_on` or `payload_off` defined payload to turn the siren on or off. Additionally, the state attributes `duration`, `tone` and `volume_level` can be updated. Use `value_template` to transform the received state update to a compliant JSON payload. Attributes will only be set if the function is supported by the device and a valid value is supplied. When a non JSON payload is detected, it should be either of the `payload_on` or `payload_off` defined payloads or `None` to reset the siren's state to `unknown`. The initial state will be `unknown`. The state will be reset to `unknown` if a `None` payload or `null` JSON value is received as a state update.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract device's state from the `state_topic`. To determine the siren's state result of this template will be compared to `state_on` and `state_off`. Alternatively `value_template` can be used to render to a valid JSON payload.
     #[serde(rename = "stat_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_value_template: Option<String>,
 
     /// Set to `true` if the MQTT siren supports the `duration` turn on action parameter and enables the `duration` state attribute.
@@ -11387,231 +6334,8 @@ pub struct Siren {
 
     /// An ID that uniquely identifies this siren device. If two sirens have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
-}
-
-impl Siren {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// A list of available tones the siren supports. When configured, this enables the support for setting a `tone` and enables the `tone` state attribute.
-    pub fn available_tones<T: Into<String>>(mut self, available_tones: Vec<T>) -> Self {
-        self.available_tones = Some(available_tones.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate a custom payload to send to `command_topic` when the siren turn off action is called. By default `command_template` will be used as template for action turn off. The variable `value` will be assigned with the configured `payload_off` setting.
-    pub fn command_off_template<T: Into<String>>(mut self, command_off_template: T) -> Self {
-        self.command_off_template = Some(command_off_template.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate a custom payload to send to `command_topic`. The variable `value` will be assigned with the configured `payload_on` or `payload_off` setting. The siren turn on action parameters `tone`, `volume_level` or `duration` can be used as variables in the template. When operation in optimistic mode the corresponding state attributes will be set. Turn on parameters will be filtered if a device misses the support.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the siren state. Without command templates, a default JSON payload like `{"state":"ON", "tone": "bell", "duration": 10, "volume_level": 0.5 }` is published. When the siren turn on action is performed, the startup parameters will be added to the JSON payload. The `state` value of the JSON payload will be set to the the `payload_on` or `payload_off` configured payload.
-    ///
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = Some(command_topic.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name to use when displaying this siren. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if siren works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The payload that represents `off` state. If specified, will be used for both comparing to the value in the `state_topic` (see `value_template` and `state_off` for details) and sending as `off` command to the `command_topic`.
-    pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
-        self.payload_off = Some(payload_off.into());
-        self
-    }
-
-    /// The payload that represents `on` state. If specified, will be used for both comparing to the value in the `state_topic` (see `value_template` and `state_on`  for details) and sending as `on` command to the `command_topic`.
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// Must be `siren`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The payload that represents the `off` state. Used when value that represents `off` state in the `state_topic` is different from value that should be sent to the `command_topic` to turn the device `off`.
-    pub fn state_off<T: Into<String>>(mut self, state_off: T) -> Self {
-        self.state_off = Some(state_off.into());
-        self
-    }
-
-    /// The payload that represents the `on` state. Used when value that represents `on` state in the `state_topic` is different from value that should be sent to the `command_topic` to turn the device `on`.
-    pub fn state_on<T: Into<String>>(mut self, state_on: T) -> Self {
-        self.state_on = Some(state_on.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state updates. The state update may be either JSON or a simple string. When a JSON payload is detected, the `state` value of the JSON payload should supply the `payload_on` or `payload_off` defined payload to turn the siren on or off. Additionally, the state attributes `duration`, `tone` and `volume_level` can be updated. Use `value_template` to transform the received state update to a compliant JSON payload. Attributes will only be set if the function is supported by the device and a valid value is supplied. When a non JSON payload is detected, it should be either of the `payload_on` or `payload_off` defined payloads or `None` to reset the siren's state to `unknown`. The initial state will be `unknown`. The state will be reset to `unknown` if a `None` payload or `null` JSON value is received as a state update.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract device's state from the `state_topic`. To determine the siren's state result of this template will be compared to `state_on` and `state_off`. Alternatively `value_template` can be used to render to a valid JSON payload.
-    pub fn state_value_template<T: Into<String>>(mut self, state_value_template: T) -> Self {
-        self.state_value_template = Some(state_value_template.into());
-        self
-    }
-
-    /// Set to `true` if the MQTT siren supports the `duration` turn on action parameter and enables the `duration` state attribute.
-    pub fn support_duration(mut self, support_duration: bool) -> Self {
-        self.support_duration = Some(support_duration);
-        self
-    }
-
-    /// Set to `true` if the MQTT siren supports the `volume_set` turn on action parameter and enables the `volume_level` state attribute.
-    pub fn support_volume_set(mut self, support_volume_set: bool) -> Self {
-        self.support_volume_set = Some(support_volume_set);
-        self
-    }
-
-    /// An ID that uniquely identifies this siren device. If two sirens have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-}
-
-impl Default for Siren {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            available_tones: Default::default(),
-            command_off_template: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            payload_off: Default::default(),
-            payload_on: Default::default(),
-            platform: "siren".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            state_off: Default::default(),
-            state_on: Default::default(),
-            state_topic: Default::default(),
-            state_value_template: Default::default(),
-            support_duration: Default::default(),
-            support_volume_set: Default::default(),
-            unique_id: Default::default(),
-        }
-    }
 }
 
 impl From<Siren> for Entity {
@@ -12101,24 +6825,25 @@ impl From<Siren> for Entity {
 ///
 /// If you don't want brightness, color or effect support, just omit the corresponding configuration sections.
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Light {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -12126,10 +6851,12 @@ pub struct Light {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `brightness_command_topic`. Available variables: `value`.
     #[serde(rename = "bri_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub brightness_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the light’s brightness.
     #[serde(rename = "bri_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub brightness_command_topic: Option<String>,
 
     /// Defines the maximum brightness value (i.e., 100%) of the MQTT device.
@@ -12138,26 +6865,32 @@ pub struct Light {
 
     /// The MQTT topic subscribed to receive brightness state updates.
     #[serde(rename = "bri_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub brightness_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the brightness value.
     #[serde(rename = "bri_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub brightness_value_template: Option<String>,
 
     /// The MQTT topic subscribed to receive color mode updates. If this is not configured, `color_mode` will be automatically set according to the last received valid color or color temperature. The unit used is mireds, or if `color_temp_kelvin` is set to `true`, in Kelvin.
     #[serde(rename = "clrm_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub color_mode_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the color mode.
     #[serde(rename = "clrm_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub color_mode_value_template: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `color_temp_command_topic`. Available variables: `value`.
     #[serde(rename = "clr_temp_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub color_temp_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the light’s color temperature state. By default the color temperature command slider has a range of 153 to 500 mireds (micro reciprocal degrees) or a range of 2000 to 6535 Kelvin if `color_temp_kelvin` is set to `true`.
     #[serde(rename = "clr_temp_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub color_temp_command_topic: Option<String>,
 
     /// When set to `true`, `color_temp_command_topic` will publish color mode updates in Kelvin and process `color_temp_state_topic` will process state updates in Kelvin. When not set the `color_temp` values are converted to mireds.
@@ -12166,34 +6899,42 @@ pub struct Light {
 
     /// The MQTT topic subscribed to receive color temperature state updates.
     #[serde(rename = "clr_temp_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub color_temp_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the color temperature value.
     #[serde(rename = "clr_temp_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub color_temp_value_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the switch state.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `effect_command_topic`. Available variables: `value`.
     #[serde(rename = "fx_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub effect_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the light's effect state.
     #[serde(rename = "fx_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub effect_command_topic: Option<String>,
 
     /// The list of effects the light supports.
     #[serde(rename = "fx_list", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub effect_list: Option<Vec<String>>,
 
     /// The MQTT topic subscribed to receive effect state updates.
     #[serde(rename = "fx_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub effect_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the effect value.
     #[serde(rename = "fx_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub effect_value_template: Option<String>,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -12202,38 +6943,47 @@ pub struct Light {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `hs_command_topic`. Available variables: `hue` and `sat`.
     #[serde(rename = "hs_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub hs_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the light's color state in HS format (Hue Saturation). Range for Hue: 0° .. 360°, Range of Saturation: 0..100. Note: Brightness is sent separately in the `brightness_command_topic`.
     #[serde(rename = "hs_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub hs_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive color state updates in HS format. The expected payload is the hue and saturation values separated by commas, for example, `359.5,100.0`. Note: Brightness is received separately in the `brightness_state_topic`.
     #[serde(rename = "hs_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub hs_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the HS value.
     #[serde(rename = "hs_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub hs_value_template: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The maximum color temperature in Kelvin.
@@ -12254,14 +7004,17 @@ pub struct Light {
 
     /// The name of the light. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Defines when on the payload_on is sent. Using `last` (the default) will send any style (brightness, color, etc) topics first and then a `payload_on` to the `command_topic`. Using `first` will send the `payload_on` and then any style topics. Using `brightness` will only send brightness commands instead of the `payload_on` to turn the light on.
     #[serde(rename = "on_cmd_type", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub on_command_type: Option<String>,
 
     /// Flag that defines if switch works in optimistic mode.
@@ -12270,15 +7023,13 @@ pub struct Light {
 
     /// The payload that represents the off state.
     #[serde(rename = "pl_off", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_off: Option<String>,
 
     /// The payload that represents the on state.
     #[serde(rename = "pl_on", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub payload_on: Option<String>,
-
-    /// Must be `light`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -12290,70 +7041,87 @@ pub struct Light {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgb_command_topic`. Available variables: `red`, `green` and `blue`.
     #[serde(rename = "rgb_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgb_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the light's RGB state.
     #[serde(rename = "rgb_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgb_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive RGB state updates. The expected payload is the RGB values separated by commas, for example, `255,0,127`.
     #[serde(rename = "rgb_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgb_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGB value.
     #[serde(rename = "rgb_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgb_value_template: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgbw_command_topic`. Available variables: `red`, `green`, `blue` and `white`.
     #[serde(rename = "rgbw_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgbw_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the light's RGBW state.
     #[serde(rename = "rgbw_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgbw_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive RGBW state updates. The expected payload is the RGBW values separated by commas, for example, `255,0,127,64`.
     #[serde(rename = "rgbw_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgbw_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGBW value.
     #[serde(rename = "rgbw_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgbw_value_template: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgbww_command_topic`. Available variables: `red`, `green`, `blue`, `cold_white` and `warm_white`.
     #[serde(rename = "rgbww_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgbww_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the light's RGBWW state.
     #[serde(rename = "rgbww_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgbww_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive RGBWW state updates. The expected payload is the RGBWW values separated by commas, for example, `255,0,127,64,32`.
     #[serde(rename = "rgbww_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgbww_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGBWW value.
     #[serde(rename = "rgbww_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub rgbww_value_template: Option<String>,
 
     /// The schema to use. Must be `basic` or omitted to select the default schema.
     #[serde(rename = "schema", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub schema: Option<String>,
 
     /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. By default, valid state payloads are `OFF` and `ON`. The accepted payloads can be overridden with the `payload_off` and `payload_on` config options.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the state value. The template should return the values defined by `payload_on` (defaults to "ON") and `payload_off` (defaults to "OFF") settings, or "None".
     #[serde(rename = "stat_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_value_template: Option<String>,
 
     /// An ID that uniquely identifies this light. If two lights have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// The MQTT topic to publish commands to change the light to white mode with a given brightness.
     #[serde(rename = "whit_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub white_command_topic: Option<String>,
 
     /// Defines the maximum white level (i.e., 100%) of the MQTT device.
@@ -12362,529 +7130,23 @@ pub struct Light {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `xy_command_topic`. Available variables: `x` and `y`.
     #[serde(rename = "xy_cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub xy_command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the light's XY state.
     #[serde(rename = "xy_cmd_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub xy_command_topic: Option<String>,
 
     /// The MQTT topic subscribed to receive XY state updates. The expected payload is the X and Y color values separated by commas, for example, `0.675,0.322`.
     #[serde(rename = "xy_stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub xy_state_topic: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the XY value.
     #[serde(rename = "xy_val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub xy_value_template: Option<String>,
-}
-
-impl Light {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `brightness_command_topic`. Available variables: `value`.
-    pub fn brightness_command_template<T: Into<String>>(
-        mut self,
-        brightness_command_template: T,
-    ) -> Self {
-        self.brightness_command_template = Some(brightness_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light’s brightness.
-    pub fn brightness_command_topic<T: Into<String>>(
-        mut self,
-        brightness_command_topic: T,
-    ) -> Self {
-        self.brightness_command_topic = Some(brightness_command_topic.into());
-        self
-    }
-
-    /// Defines the maximum brightness value (i.e., 100%) of the MQTT device.
-    pub fn brightness_scale(mut self, brightness_scale: i32) -> Self {
-        self.brightness_scale = Some(brightness_scale);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive brightness state updates.
-    pub fn brightness_state_topic<T: Into<String>>(mut self, brightness_state_topic: T) -> Self {
-        self.brightness_state_topic = Some(brightness_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the brightness value.
-    pub fn brightness_value_template<T: Into<String>>(
-        mut self,
-        brightness_value_template: T,
-    ) -> Self {
-        self.brightness_value_template = Some(brightness_value_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive color mode updates. If this is not configured, `color_mode` will be automatically set according to the last received valid color or color temperature. The unit used is mireds, or if `color_temp_kelvin` is set to `true`, in Kelvin.
-    pub fn color_mode_state_topic<T: Into<String>>(mut self, color_mode_state_topic: T) -> Self {
-        self.color_mode_state_topic = Some(color_mode_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the color mode.
-    pub fn color_mode_value_template<T: Into<String>>(
-        mut self,
-        color_mode_value_template: T,
-    ) -> Self {
-        self.color_mode_value_template = Some(color_mode_value_template.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `color_temp_command_topic`. Available variables: `value`.
-    pub fn color_temp_command_template<T: Into<String>>(
-        mut self,
-        color_temp_command_template: T,
-    ) -> Self {
-        self.color_temp_command_template = Some(color_temp_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light’s color temperature state. By default the color temperature command slider has a range of 153 to 500 mireds (micro reciprocal degrees) or a range of 2000 to 6535 Kelvin if `color_temp_kelvin` is set to `true`.
-    pub fn color_temp_command_topic<T: Into<String>>(
-        mut self,
-        color_temp_command_topic: T,
-    ) -> Self {
-        self.color_temp_command_topic = Some(color_temp_command_topic.into());
-        self
-    }
-
-    /// When set to `true`, `color_temp_command_topic` will publish color mode updates in Kelvin and process `color_temp_state_topic` will process state updates in Kelvin. When not set the `color_temp` values are converted to mireds.
-    pub fn color_temp_kelvin(mut self, color_temp_kelvin: bool) -> Self {
-        self.color_temp_kelvin = Some(color_temp_kelvin);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive color temperature state updates.
-    pub fn color_temp_state_topic<T: Into<String>>(mut self, color_temp_state_topic: T) -> Self {
-        self.color_temp_state_topic = Some(color_temp_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the color temperature value.
-    pub fn color_temp_value_template<T: Into<String>>(
-        mut self,
-        color_temp_value_template: T,
-    ) -> Self {
-        self.color_temp_value_template = Some(color_temp_value_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the switch state.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `effect_command_topic`. Available variables: `value`.
-    pub fn effect_command_template<T: Into<String>>(mut self, effect_command_template: T) -> Self {
-        self.effect_command_template = Some(effect_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light's effect state.
-    pub fn effect_command_topic<T: Into<String>>(mut self, effect_command_topic: T) -> Self {
-        self.effect_command_topic = Some(effect_command_topic.into());
-        self
-    }
-
-    /// The list of effects the light supports.
-    pub fn effect_list<T: Into<String>>(mut self, effect_list: Vec<T>) -> Self {
-        self.effect_list = Some(effect_list.into_iter().map(|v| v.into()).collect());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive effect state updates.
-    pub fn effect_state_topic<T: Into<String>>(mut self, effect_state_topic: T) -> Self {
-        self.effect_state_topic = Some(effect_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the effect value.
-    pub fn effect_value_template<T: Into<String>>(mut self, effect_value_template: T) -> Self {
-        self.effect_value_template = Some(effect_value_template.into());
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `hs_command_topic`. Available variables: `hue` and `sat`.
-    pub fn hs_command_template<T: Into<String>>(mut self, hs_command_template: T) -> Self {
-        self.hs_command_template = Some(hs_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light's color state in HS format (Hue Saturation). Range for Hue: 0° .. 360°, Range of Saturation: 0..100. Note: Brightness is sent separately in the `brightness_command_topic`.
-    pub fn hs_command_topic<T: Into<String>>(mut self, hs_command_topic: T) -> Self {
-        self.hs_command_topic = Some(hs_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive color state updates in HS format. The expected payload is the hue and saturation values separated by commas, for example, `359.5,100.0`. Note: Brightness is received separately in the `brightness_state_topic`.
-    pub fn hs_state_topic<T: Into<String>>(mut self, hs_state_topic: T) -> Self {
-        self.hs_state_topic = Some(hs_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the HS value.
-    pub fn hs_value_template<T: Into<String>>(mut self, hs_value_template: T) -> Self {
-        self.hs_value_template = Some(hs_value_template.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-template-configuration) documentation.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as sensor attributes. Usage example can be found in [MQTT sensor](/integrations/sensor.mqtt/#json-attributes-topic-configuration) documentation.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The maximum color temperature in Kelvin.
-    pub fn max_kelvin(mut self, max_kelvin: i32) -> Self {
-        self.max_kelvin = Some(max_kelvin);
-        self
-    }
-
-    /// The maximum color temperature in mireds.
-    pub fn max_mireds(mut self, max_mireds: i32) -> Self {
-        self.max_mireds = Some(max_mireds);
-        self
-    }
-
-    /// The minimum color temperature in Kelvin.
-    pub fn min_kelvin(mut self, min_kelvin: i32) -> Self {
-        self.min_kelvin = Some(min_kelvin);
-        self
-    }
-
-    /// The minimum color temperature in mireds.
-    pub fn min_mireds(mut self, min_mireds: i32) -> Self {
-        self.min_mireds = Some(min_mireds);
-        self
-    }
-
-    /// The name of the light. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Defines when on the payload_on is sent. Using `last` (the default) will send any style (brightness, color, etc) topics first and then a `payload_on` to the `command_topic`. Using `first` will send the `payload_on` and then any style topics. Using `brightness` will only send brightness commands instead of the `payload_on` to turn the light on.
-    pub fn on_command_type<T: Into<String>>(mut self, on_command_type: T) -> Self {
-        self.on_command_type = Some(on_command_type.into());
-        self
-    }
-
-    /// Flag that defines if switch works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// The payload that represents the off state.
-    pub fn payload_off<T: Into<String>>(mut self, payload_off: T) -> Self {
-        self.payload_off = Some(payload_off.into());
-        self
-    }
-
-    /// The payload that represents the on state.
-    pub fn payload_on<T: Into<String>>(mut self, payload_on: T) -> Self {
-        self.payload_on = Some(payload_on.into());
-        self
-    }
-
-    /// Must be `light`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgb_command_topic`. Available variables: `red`, `green` and `blue`.
-    pub fn rgb_command_template<T: Into<String>>(mut self, rgb_command_template: T) -> Self {
-        self.rgb_command_template = Some(rgb_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light's RGB state.
-    pub fn rgb_command_topic<T: Into<String>>(mut self, rgb_command_topic: T) -> Self {
-        self.rgb_command_topic = Some(rgb_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive RGB state updates. The expected payload is the RGB values separated by commas, for example, `255,0,127`.
-    pub fn rgb_state_topic<T: Into<String>>(mut self, rgb_state_topic: T) -> Self {
-        self.rgb_state_topic = Some(rgb_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGB value.
-    pub fn rgb_value_template<T: Into<String>>(mut self, rgb_value_template: T) -> Self {
-        self.rgb_value_template = Some(rgb_value_template.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgbw_command_topic`. Available variables: `red`, `green`, `blue` and `white`.
-    pub fn rgbw_command_template<T: Into<String>>(mut self, rgbw_command_template: T) -> Self {
-        self.rgbw_command_template = Some(rgbw_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light's RGBW state.
-    pub fn rgbw_command_topic<T: Into<String>>(mut self, rgbw_command_topic: T) -> Self {
-        self.rgbw_command_topic = Some(rgbw_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive RGBW state updates. The expected payload is the RGBW values separated by commas, for example, `255,0,127,64`.
-    pub fn rgbw_state_topic<T: Into<String>>(mut self, rgbw_state_topic: T) -> Self {
-        self.rgbw_state_topic = Some(rgbw_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGBW value.
-    pub fn rgbw_value_template<T: Into<String>>(mut self, rgbw_value_template: T) -> Self {
-        self.rgbw_value_template = Some(rgbw_value_template.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `rgbww_command_topic`. Available variables: `red`, `green`, `blue`, `cold_white` and `warm_white`.
-    pub fn rgbww_command_template<T: Into<String>>(mut self, rgbww_command_template: T) -> Self {
-        self.rgbww_command_template = Some(rgbww_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light's RGBWW state.
-    pub fn rgbww_command_topic<T: Into<String>>(mut self, rgbww_command_topic: T) -> Self {
-        self.rgbww_command_topic = Some(rgbww_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive RGBWW state updates. The expected payload is the RGBWW values separated by commas, for example, `255,0,127,64,32`.
-    pub fn rgbww_state_topic<T: Into<String>>(mut self, rgbww_state_topic: T) -> Self {
-        self.rgbww_state_topic = Some(rgbww_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the RGBWW value.
-    pub fn rgbww_value_template<T: Into<String>>(mut self, rgbww_value_template: T) -> Self {
-        self.rgbww_value_template = Some(rgbww_value_template.into());
-        self
-    }
-
-    /// The schema to use. Must be `basic` or omitted to select the default schema.
-    pub fn schema<T: Into<String>>(mut self, schema: T) -> Self {
-        self.schema = Some(schema.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive state updates. A "None" payload resets to an `unknown` state. An empty payload is ignored. By default, valid state payloads are `OFF` and `ON`. The accepted payloads can be overridden with the `payload_off` and `payload_on` config options.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the state value. The template should return the values defined by `payload_on` (defaults to "ON") and `payload_off` (defaults to "OFF") settings, or "None".
-    pub fn state_value_template<T: Into<String>>(mut self, state_value_template: T) -> Self {
-        self.state_value_template = Some(state_value_template.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this light. If two lights have the same unique ID, Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light to white mode with a given brightness.
-    pub fn white_command_topic<T: Into<String>>(mut self, white_command_topic: T) -> Self {
-        self.white_command_topic = Some(white_command_topic.into());
-        self
-    }
-
-    /// Defines the maximum white level (i.e., 100%) of the MQTT device.
-    pub fn white_scale(mut self, white_scale: i32) -> Self {
-        self.white_scale = Some(white_scale);
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to compose message which will be sent to `xy_command_topic`. Available variables: `x` and `y`.
-    pub fn xy_command_template<T: Into<String>>(mut self, xy_command_template: T) -> Self {
-        self.xy_command_template = Some(xy_command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the light's XY state.
-    pub fn xy_command_topic<T: Into<String>>(mut self, xy_command_topic: T) -> Self {
-        self.xy_command_topic = Some(xy_command_topic.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive XY state updates. The expected payload is the X and Y color values separated by commas, for example, `0.675,0.322`.
-    pub fn xy_state_topic<T: Into<String>>(mut self, xy_state_topic: T) -> Self {
-        self.xy_state_topic = Some(xy_state_topic.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the XY value.
-    pub fn xy_value_template<T: Into<String>>(mut self, xy_value_template: T) -> Self {
-        self.xy_value_template = Some(xy_value_template.into());
-        self
-    }
-}
-
-impl Default for Light {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            brightness_command_template: Default::default(),
-            brightness_command_topic: Default::default(),
-            brightness_scale: Default::default(),
-            brightness_state_topic: Default::default(),
-            brightness_value_template: Default::default(),
-            color_mode_state_topic: Default::default(),
-            color_mode_value_template: Default::default(),
-            color_temp_command_template: Default::default(),
-            color_temp_command_topic: Default::default(),
-            color_temp_kelvin: Default::default(),
-            color_temp_state_topic: Default::default(),
-            color_temp_value_template: Default::default(),
-            command_topic: Default::default(),
-            effect_command_template: Default::default(),
-            effect_command_topic: Default::default(),
-            effect_list: Default::default(),
-            effect_state_topic: Default::default(),
-            effect_value_template: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            hs_command_template: Default::default(),
-            hs_command_topic: Default::default(),
-            hs_state_topic: Default::default(),
-            hs_value_template: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            max_kelvin: Default::default(),
-            max_mireds: Default::default(),
-            min_kelvin: Default::default(),
-            min_mireds: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            on_command_type: Default::default(),
-            optimistic: Default::default(),
-            payload_off: Default::default(),
-            payload_on: Default::default(),
-            platform: "light".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            rgb_command_template: Default::default(),
-            rgb_command_topic: Default::default(),
-            rgb_state_topic: Default::default(),
-            rgb_value_template: Default::default(),
-            rgbw_command_template: Default::default(),
-            rgbw_command_topic: Default::default(),
-            rgbw_state_topic: Default::default(),
-            rgbw_value_template: Default::default(),
-            rgbww_command_template: Default::default(),
-            rgbww_command_topic: Default::default(),
-            rgbww_state_topic: Default::default(),
-            rgbww_value_template: Default::default(),
-            schema: Default::default(),
-            state_topic: Default::default(),
-            state_value_template: Default::default(),
-            unique_id: Default::default(),
-            white_command_topic: Default::default(),
-            white_scale: Default::default(),
-            xy_command_template: Default::default(),
-            xy_command_topic: Default::default(),
-            xy_state_topic: Default::default(),
-            xy_value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Light> for Entity {
@@ -12926,24 +7188,25 @@ impl From<Light> for Entity {
 /// ⚠ Important\
 /// Make sure that your topic matches exactly. `some-topic/` and `some-topic` are different topics.
 ///
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Builder)]
 pub struct Select {
     /// Replaces `~` with this value in any MQTT topic attribute.
     /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
     #[serde(rename = "~", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub topic_prefix: Option<String>,
 
     /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    #[serde(rename = "o")]
-    pub origin: Origin,
+    #[serde(rename = "o", skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Origin>,
 
     /// Information about the device this button is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/en/device_registry_index.html). Only works when [`unique_id`](#unique_id) is set. At least one of identifiers or connections must be present to identify the device.
-    #[serde(rename = "dev")]
-    pub device: DeviceInformation,
+    #[serde(rename = "dev", skip_serializing_if = "Option::is_none")]
+    pub device: Option<DeviceInformation>,
 
     /// A list of MQTT topics subscribed to receive availability (online/offline) updates. Must not be used together with `availability_topic`.
-    #[serde(flatten)]
-    pub availability: Availability,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub availability: Option<Availability>,
 
     /// The category of the entity. (optional, default: None)
     #[serde(rename = "ent_cat", skip_serializing_if = "Option::is_none")]
@@ -12951,10 +7214,12 @@ pub struct Select {
 
     /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
     #[serde(rename = "cmd_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub command_template: Option<String>,
 
     /// The MQTT topic to publish commands to change the selected option.
     #[serde(rename = "cmd_t")]
+    #[builder(into)]
     pub command_topic: String,
 
     /// Flag which defines if the entity should be enabled when first added.
@@ -12963,30 +7228,37 @@ pub struct Select {
 
     /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
     #[serde(rename = "e", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub encoding: Option<String>,
 
     /// Picture URL for the entity.
     #[serde(rename = "ent_pic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub entity_picture: Option<String>,
 
     /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
     #[serde(rename = "ic", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub icon: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
     #[serde(rename = "json_attr_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_template: Option<String>,
 
     /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current select state when a message is received on this topic.
     #[serde(rename = "json_attr_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub json_attributes_topic: Option<String>,
 
     /// The name of the Select. Can be set to `null` if only the device name is relevant.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub name: Option<String>,
 
     /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
     #[serde(rename = "obj_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub object_id: Option<String>,
 
     /// Flag that defines if the select works in optimistic mode.
@@ -12995,11 +7267,8 @@ pub struct Select {
 
     /// List of options that can be selected. An empty list or a list with a single item is allowed.
     #[serde(rename = "ops")]
+    #[builder(into)]
     pub options: Vec<String>,
-
-    /// Must be `select`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    #[serde(rename = "p")]
-    pub platform: String,
 
     /// The maximum QoS level to be used when receiving and publishing messages.
     #[serde(rename = "qos", skip_serializing_if = "Option::is_none")]
@@ -13011,189 +7280,18 @@ pub struct Select {
 
     /// The MQTT topic subscribed to receive update of the selected option. A "None" payload resets to an `unknown` state. An empty payload is ignored.
     #[serde(rename = "stat_t", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub state_topic: Option<String>,
 
     /// An ID that uniquely identifies this Select. If two Selects have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
     #[serde(rename = "uniq_id", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub unique_id: Option<String>,
 
     /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
     #[serde(rename = "val_tpl", skip_serializing_if = "Option::is_none")]
+    #[builder(into)]
     pub value_template: Option<String>,
-}
-
-impl Select {
-    /// Replaces `~` with this value in any MQTT topic attribute.
-    /// [See Home Assistant documentation](https://www.home-assistant.io/integrations/mqtt/#using-abbreviations-and-base-topic)
-    pub fn topic_prefix<S: Into<String>>(mut self, topic_prefix: S) -> Self {
-        self.topic_prefix = Some(topic_prefix.into());
-        self
-    }
-
-    /// It is encouraged to add additional information about the origin that supplies MQTT entities via MQTT discovery by adding the origin option (can be abbreviated to o) to the discovery payload. Note that these options also support abbreviations. Information of the origin will be logged to the core event log when an item is discovered or updated.
-    pub fn origin(mut self, origin: Origin) -> Self {
-        self.origin = origin;
-        self
-    }
-
-    /// Information about the device this sensor is a part of to tie it into the [device registry](https://developers.home-assistant.io/docs/device_registry_index/). Only works when `unique_id` is set. At least one of identifiers or connections must be present to identify the device.
-    pub fn device(mut self, device: DeviceInformation) -> Self {
-        self.device = device;
-        self
-    }
-
-    /// The category of the entity. (optional, default: None)
-    pub fn entity_category(mut self, entity_category: EntityCategory) -> Self {
-        self.entity_category = Some(entity_category);
-        self
-    }
-
-    /// Defines how HA will check for entity availability.
-    pub fn availability(mut self, availability: Availability) -> Self {
-        self.availability = availability;
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-command-templates-with-mqtt) to generate the payload to send to `command_topic`.
-    pub fn command_template<T: Into<String>>(mut self, command_template: T) -> Self {
-        self.command_template = Some(command_template.into());
-        self
-    }
-
-    /// The MQTT topic to publish commands to change the selected option.
-    pub fn command_topic<T: Into<String>>(mut self, command_topic: T) -> Self {
-        self.command_topic = command_topic.into();
-        self
-    }
-
-    /// Flag which defines if the entity should be enabled when first added.
-    pub fn enabled_by_default(mut self, enabled_by_default: bool) -> Self {
-        self.enabled_by_default = Some(enabled_by_default);
-        self
-    }
-
-    /// The encoding of the payloads received and published messages. Set to `""` to disable decoding of incoming payload.
-    pub fn encoding<T: Into<String>>(mut self, encoding: T) -> Self {
-        self.encoding = Some(encoding.into());
-        self
-    }
-
-    /// Picture URL for the entity.
-    pub fn entity_picture<T: Into<String>>(mut self, entity_picture: T) -> Self {
-        self.entity_picture = Some(entity_picture.into());
-        self
-    }
-
-    /// [Icon](/docs/configuration/customizing-devices/#icon) for the entity.
-    pub fn icon<T: Into<String>>(mut self, icon: T) -> Self {
-        self.icon = Some(icon.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the JSON dictionary from messages received on the `json_attributes_topic`.
-    pub fn json_attributes_template<T: Into<String>>(
-        mut self,
-        json_attributes_template: T,
-    ) -> Self {
-        self.json_attributes_template = Some(json_attributes_template.into());
-        self
-    }
-
-    /// The MQTT topic subscribed to receive a JSON dictionary payload and then set as entity attributes. Implies `force_update` of the current select state when a message is received on this topic.
-    pub fn json_attributes_topic<T: Into<String>>(mut self, json_attributes_topic: T) -> Self {
-        self.json_attributes_topic = Some(json_attributes_topic.into());
-        self
-    }
-
-    /// The name of the Select. Can be set to `null` if only the device name is relevant.
-    pub fn name<T: Into<String>>(mut self, name: T) -> Self {
-        self.name = Some(name.into());
-        self
-    }
-
-    /// Used `object_id` instead of `name` for automatic generation of `entity_id`. This only works when the entity is added for the first time. When set, this overrides a user-customized Entity ID in case the entity was deleted and added again.
-    pub fn object_id<T: Into<String>>(mut self, object_id: T) -> Self {
-        self.object_id = Some(object_id.into());
-        self
-    }
-
-    /// Flag that defines if the select works in optimistic mode.
-    pub fn optimistic(mut self, optimistic: bool) -> Self {
-        self.optimistic = Some(optimistic);
-        self
-    }
-
-    /// List of options that can be selected. An empty list or a list with a single item is allowed.
-    pub fn options<T: Into<String>>(mut self, options: Vec<T>) -> Self {
-        self.options = options.into_iter().map(|v| v.into()).collect();
-        self
-    }
-
-    /// Must be `select`. Only allowed and required in [MQTT auto discovery device messages](/integrations/mqtt/#device-discovery-payload).
-    pub fn platform<T: Into<String>>(mut self, platform: T) -> Self {
-        self.platform = platform.into();
-        self
-    }
-
-    /// The maximum QoS level to be used when receiving and publishing messages.
-    pub fn qos(mut self, qos: Qos) -> Self {
-        self.qos = Some(qos);
-        self
-    }
-
-    /// If the published message should have the retain flag on or not.
-    pub fn retain(mut self, retain: bool) -> Self {
-        self.retain = Some(retain);
-        self
-    }
-
-    /// The MQTT topic subscribed to receive update of the selected option. A "None" payload resets to an `unknown` state. An empty payload is ignored.
-    pub fn state_topic<T: Into<String>>(mut self, state_topic: T) -> Self {
-        self.state_topic = Some(state_topic.into());
-        self
-    }
-
-    /// An ID that uniquely identifies this Select. If two Selects have the same unique ID Home Assistant will raise an exception. Required when used with device-based discovery.
-    pub fn unique_id<T: Into<String>>(mut self, unique_id: T) -> Self {
-        self.unique_id = Some(unique_id.into());
-        self
-    }
-
-    /// Defines a [template](/docs/configuration/templating/#using-value-templates-with-mqtt) to extract the value.
-    pub fn value_template<T: Into<String>>(mut self, value_template: T) -> Self {
-        self.value_template = Some(value_template.into());
-        self
-    }
-}
-
-impl Default for Select {
-    fn default() -> Self {
-        Self {
-            topic_prefix: Default::default(),
-            origin: Default::default(),
-            device: Default::default(),
-            entity_category: Default::default(),
-            availability: Default::default(),
-            command_template: Default::default(),
-            command_topic: Default::default(),
-            enabled_by_default: Default::default(),
-            encoding: Default::default(),
-            entity_picture: Default::default(),
-            icon: Default::default(),
-            json_attributes_template: Default::default(),
-            json_attributes_topic: Default::default(),
-            name: Default::default(),
-            object_id: Default::default(),
-            optimistic: Default::default(),
-            options: Default::default(),
-            platform: "select".to_string(),
-            qos: Default::default(),
-            retain: Default::default(),
-            state_topic: Default::default(),
-            unique_id: Default::default(),
-            value_template: Default::default(),
-        }
-    }
 }
 
 impl From<Select> for Entity {

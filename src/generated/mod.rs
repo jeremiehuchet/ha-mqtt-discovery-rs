@@ -1,6 +1,181 @@
 pub mod entities;
 
+use crate::entities::{
+    AlarmControlPanel, BinarySensor, Button, Camera, Climate, Cover, DeviceTracker, DeviceTrigger,
+    Event, Fan, Humidifier, Image, LawnMower, Light, Lock, Notify, Number, Scene, Select, Sensor,
+    Siren, Switch, Tag, Text, Update, Vacuum, Valve, WaterHeater,
+};
+
+use anyhow::Result;
 use serde_derive::Serialize;
+use serde_json::Value;
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(tag = "p")]
+pub enum Entity {
+    #[serde(rename = "camera")]
+    Camera(Camera),
+    #[serde(rename = "button")]
+    Button(Button),
+    #[serde(rename = "humidifier")]
+    Humidifier(Humidifier),
+    #[serde(rename = "climate")]
+    Climate(Climate),
+    #[serde(rename = "alarm_control_panel")]
+    AlarmControlPanel(AlarmControlPanel),
+    #[serde(rename = "device_tracker")]
+    DeviceTracker(DeviceTracker),
+    #[serde(rename = "water_heater")]
+    WaterHeater(WaterHeater),
+    #[serde(rename = "image")]
+    Image(Image),
+    #[serde(rename = "event")]
+    Event(Event),
+    #[serde(rename = "number")]
+    Number(Number),
+    #[serde(rename = "binary_sensor")]
+    BinarySensor(BinarySensor),
+    #[serde(rename = "valve")]
+    Valve(Valve),
+    #[serde(rename = "fan")]
+    Fan(Fan),
+    #[serde(rename = "sensor")]
+    Sensor(Sensor),
+    #[serde(rename = "lawn_mower")]
+    LawnMower(LawnMower),
+    #[serde(rename = "update")]
+    Update(Update),
+    #[serde(rename = "switch")]
+    Switch(Switch),
+    #[serde(rename = "cover")]
+    Cover(Cover),
+    #[serde(rename = "scene")]
+    Scene(Scene),
+    #[serde(rename = "lock")]
+    Lock(Lock),
+    #[serde(rename = "text")]
+    Text(Text),
+    #[serde(rename = "notify")]
+    Notify(Notify),
+    #[serde(rename = "vacuum")]
+    Vacuum(Vacuum),
+    #[serde(rename = "siren")]
+    Siren(Siren),
+    #[serde(rename = "light")]
+    Light(Light),
+    #[serde(rename = "select")]
+    Select(Select),
+
+    #[serde(rename = "tag")]
+    Tag(Tag),
+    #[serde(rename = "device_trigger")]
+    DeviceTrigger(DeviceTrigger),
+}
+
+impl Entity {
+    pub fn get_platform(&self) -> &str {
+        match self {
+            Entity::Camera(_) => "camera",
+            Entity::Button(_) => "button",
+            Entity::Humidifier(_) => "humidifier",
+            Entity::Climate(_) => "climate",
+            Entity::AlarmControlPanel(_) => "alarm_control_panel",
+            Entity::DeviceTracker(_) => "device_tracker",
+            Entity::WaterHeater(_) => "water_heater",
+            Entity::Image(_) => "image",
+            Entity::Event(_) => "event",
+            Entity::Number(_) => "number",
+            Entity::BinarySensor(_) => "binary_sensor",
+            Entity::Valve(_) => "valve",
+            Entity::Fan(_) => "fan",
+            Entity::Sensor(_) => "sensor",
+            Entity::LawnMower(_) => "lawn_mower",
+            Entity::Update(_) => "update",
+            Entity::Switch(_) => "switch",
+            Entity::Cover(_) => "cover",
+            Entity::Scene(_) => "scene",
+            Entity::Lock(_) => "lock",
+            Entity::Text(_) => "text",
+            Entity::Notify(_) => "notify",
+            Entity::Vacuum(_) => "vacuum",
+            Entity::Siren(_) => "siren",
+            Entity::Light(_) => "light",
+            Entity::Select(_) => "select",
+            Entity::Tag(_) => "tag",
+            Entity::DeviceTrigger(_) => "device_trigger",
+        }
+    }
+
+    pub fn get_object_id(&self) -> Option<&String> {
+        match self {
+            Entity::Camera(camera) => camera.object_id.as_ref(),
+            Entity::Button(button) => button.object_id.as_ref(),
+            Entity::Humidifier(humidifier) => humidifier.object_id.as_ref(),
+            Entity::Climate(climate) => climate.object_id.as_ref(),
+            Entity::AlarmControlPanel(alarm_control_panel) => {
+                alarm_control_panel.object_id.as_ref()
+            }
+            Entity::DeviceTracker(device_tracker) => device_tracker.object_id.as_ref(),
+            Entity::WaterHeater(water_heater) => water_heater.object_id.as_ref(),
+            Entity::Image(image) => image.object_id.as_ref(),
+            Entity::Event(event) => event.object_id.as_ref(),
+            Entity::Number(number) => number.object_id.as_ref(),
+            Entity::BinarySensor(binary_sensor) => binary_sensor.object_id.as_ref(),
+            Entity::Valve(valve) => valve.object_id.as_ref(),
+            Entity::Fan(fan) => fan.object_id.as_ref(),
+            Entity::Sensor(sensor) => sensor.object_id.as_ref(),
+            Entity::LawnMower(lawn_mower) => lawn_mower.object_id.as_ref(),
+            Entity::Update(update) => update.object_id.as_ref(),
+            Entity::Switch(switch) => switch.object_id.as_ref(),
+            Entity::Cover(cover) => cover.object_id.as_ref(),
+            Entity::Scene(scene) => scene.object_id.as_ref(),
+            Entity::Lock(lock) => lock.object_id.as_ref(),
+            Entity::Text(text) => text.object_id.as_ref(),
+            Entity::Notify(notify) => notify.object_id.as_ref(),
+            Entity::Vacuum(vacuum) => vacuum.object_id.as_ref(),
+            Entity::Siren(siren) => siren.object_id.as_ref(),
+            Entity::Light(light) => light.object_id.as_ref(),
+            Entity::Select(select) => select.object_id.as_ref(),
+            Entity::Tag(_) => panic!("Tag doesn't have an object_id attribute"),
+            Entity::DeviceTrigger(_) => panic!("DeviceTrigger doesn't have an object_id attribute"),
+        }
+    }
+
+    pub fn get_unique_id(&self) -> Option<&String> {
+        match self {
+            Entity::Camera(camera) => camera.unique_id.as_ref(),
+            Entity::Button(button) => button.unique_id.as_ref(),
+            Entity::Humidifier(humidifier) => humidifier.unique_id.as_ref(),
+            Entity::Climate(climate) => climate.unique_id.as_ref(),
+            Entity::AlarmControlPanel(alarm_control_panel) => {
+                alarm_control_panel.unique_id.as_ref()
+            }
+            Entity::DeviceTracker(device_tracker) => device_tracker.unique_id.as_ref(),
+            Entity::WaterHeater(water_heater) => water_heater.unique_id.as_ref(),
+            Entity::Image(image) => image.unique_id.as_ref(),
+            Entity::Event(event) => event.unique_id.as_ref(),
+            Entity::Number(number) => number.unique_id.as_ref(),
+            Entity::BinarySensor(binary_sensor) => binary_sensor.unique_id.as_ref(),
+            Entity::Valve(valve) => valve.unique_id.as_ref(),
+            Entity::Fan(fan) => fan.unique_id.as_ref(),
+            Entity::Sensor(sensor) => sensor.unique_id.as_ref(),
+            Entity::LawnMower(lawn_mower) => lawn_mower.unique_id.as_ref(),
+            Entity::Update(update) => update.unique_id.as_ref(),
+            Entity::Switch(switch) => switch.unique_id.as_ref(),
+            Entity::Cover(cover) => cover.unique_id.as_ref(),
+            Entity::Scene(scene) => scene.unique_id.as_ref(),
+            Entity::Lock(lock) => lock.unique_id.as_ref(),
+            Entity::Text(text) => text.unique_id.as_ref(),
+            Entity::Notify(notify) => notify.unique_id.as_ref(),
+            Entity::Vacuum(vacuum) => vacuum.unique_id.as_ref(),
+            Entity::Siren(siren) => siren.unique_id.as_ref(),
+            Entity::Light(light) => light.unique_id.as_ref(),
+            Entity::Select(select) => select.unique_id.as_ref(),
+            Entity::Tag(_) => panic!("Tag doesn't have an object_id attribute"),
+            Entity::DeviceTrigger(_) => panic!("DeviceTrigger doesn't have an object_id attribute"),
+        }
+    }
+}
 
 /// Units of measurement
 #[allow(dead_code)]

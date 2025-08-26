@@ -9,6 +9,7 @@ const IGNORED_ATTRS = [
   "availability_topic",
   "payload_available",
   "payload_not_available",
+  "platform",
   "expire_after",
   "device",
   "entity_category",
@@ -142,6 +143,9 @@ function appendRustType(name: string, attrs: FieldAttributes) {
     case "temperature_unit":
       attrs.rustType = "TemperatureUnit";
       attrs.import = `use crate::common::TemperatureUnit`;
+      break;
+    case "state_topic":
+      attrs.required = false;
       break;
   }
 }

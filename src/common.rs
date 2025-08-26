@@ -1,3 +1,4 @@
+use bon::bon;
 use serde::ser::SerializeSeq;
 use serde_derive::Serialize;
 
@@ -87,7 +88,24 @@ pub struct DeviceInformation {
     pub via_device: Option<String>,
 }
 
+#[bon]
 impl DeviceInformation {
+    #[builder]
+    pub fn new<S: Into<String>>(identifier: S, name: Option<S>) -> Self {
+        Self {
+            name: name.map(|s| s.into()),
+            identifiers: vec![identifier.into()],
+            connections: vec![],
+            configuration_url: None,
+            manufacturer: None,
+            model: None,
+            suggested_area: None,
+            sw_version: None,
+            hw_version: None,
+            via_device: None,
+        }
+    }
+
     /// The name of the device.
     pub fn name<S: Into<String>>(mut self, name: S) -> Self {
         self.name = Some(name.into());
