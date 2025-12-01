@@ -16,6 +16,6 @@ unicode-normalization = "0.1"
 
 [dev-dependencies]
 assert-json-diff = "=2.0.2"
-testcontainers-modules = {version = "=0.13.0", features = ["mosquitto"]}
+testcontainers-modules = {version = "=0.14.0", features = ["mosquitto"]}
 tokio = "=1.48.0"
 rust_decimal_macros = "=1.39.0"
